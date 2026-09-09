@@ -193,6 +193,9 @@ $string['setting_grade_decline_threshold_desc'] = 'Percentage drop between asses
 
 // Tasks.
 $string['task_refresh_student_data'] = 'Refresh student learning success cache and signals';
+$string['task_process_followups'] = 'Process due intervention follow-ups and notify teachers';
+$string['followup_notification_subject'] = 'Follow-up Due: Student {$a}';
+$string['followup_notification_body'] = 'A scheduled follow-up for student {$a->student} in course {$a->course} is due today. Please review the student progress and record the outcome.';
 
 // Privacy metadata strings.
 $string['privacy:metadata:local_ls_intervention'] = 'Stores records of teacher interventions and before/after outcome snapshots.';
