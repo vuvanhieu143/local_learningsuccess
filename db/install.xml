@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/learningsuccess/db" VERSION="20260830" COMMENT="XMLDB file for local_learningsuccess">
+  <TABLES>
+    <TABLE NAME="local_ls_intervention" COMMENT="Tracks student intervention records and outcomes">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Target student ID"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Target course ID"/>
+        <FIELD NAME="teacherid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Intervening teacher ID"/>
+        <FIELD NAME="type" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="CONTACT, LEARNING_RESOURCE, MISSED_ACTIVITY, EXTENSION, ADVISOR_REFERRAL, OTHER"/>
+        <FIELD NAME="reason" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Explanation of risk driving the intervention"/>
+        <FIELD NAME="recommended_action" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="System-recommended action description"/>
+        <FIELD NAME="actual_action" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Actual action taken by teacher"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="OPEN" SEQUENCE="false" COMMENT="OPEN, IN_PROGRESS, COMPLETED, DISMISSED"/>
+        <FIELD NAME="outcome" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="UNKNOWN" SEQUENCE="false" COMMENT="IMPROVED, NO_CHANGE, DECLINED, UNKNOWN"/>
+        <FIELD NAME="before_snapshot" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON snapshot of student metrics prior to intervention"/>
+        <FIELD NAME="after_snapshot" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON snapshot of student metrics post intervention"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="completed_at" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid_idx" UNIQUE="false" FIELDS="userid"/>
+        <INDEX NAME="courseid_idx" UNIQUE="false" FIELDS="courseid"/>
+        <INDEX NAME="teacherid_idx" UNIQUE="false" FIELDS="teacherid"/>
+        <INDEX NAME="status_idx" UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="course_user_idx" UNIQUE="false" FIELDS="courseid, userid"/>
+        <INDEX NAME="course_status_outcome_idx" UNIQUE="false" FIELDS="courseid, status, outcome"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_ls_signal" COMMENT="Stores derived risk explanation signals for students">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="signal_type" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="inactivity, completion, grade_decline, missed_activity, etc."/>
+        <FIELD NAME="severity" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="medium" SEQUENCE="false" COMMENT="critical, high, medium, low"/>
+        <FIELD NAME="value" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="metadata" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid_idx" UNIQUE="false" FIELDS="courseid"/>
+        <INDEX NAME="user_course_idx" UNIQUE="false" FIELDS="userid, courseid"/>
+        <INDEX NAME="signal_type_idx" UNIQUE="false" FIELDS="signal_type"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
+
