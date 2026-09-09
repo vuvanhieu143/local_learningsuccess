@@ -16,3 +16,13 @@
 3. Use structured JSON envelopes for all inter-agent communications and state handoffs.
 4. Execute via partitioned sub-agents: `moodle-architect`, `moodle-core-engine`, `moodle-ui-dev`, and `moodle-qa-auditor`.
 
+## Product Specification & Technical Plan
+- Strictly conform to the product architecture, boundaries, domain model, and UI workflows documented in [technical.md](technical.md).
+- Follow the multi-phase roadmap:
+  - Phase 1: Risk Provider Abstraction (`classes/local/risk/`) & Signals/Explanation (`classes/local/signal/`, `classes/local/explanation/`)
+  - Phase 2: Recommendations (`classes/local/recommendation/`) & Teacher Actions / Notes (`classes/local/intervention/`, `db/install.xml`)
+  - Phase 3: Follow-up System (`classes/task/process_followups.php`, follow-up notifications)
+  - Phase 4: Before/After Snapshots (`local_ls_snapshot`) & Outcome Evaluator (`classes/local/outcome/`)
+  - Phase 5: Student Summary Application Service (`classes/local/service/`), UI Views & External Exporters
+
+
