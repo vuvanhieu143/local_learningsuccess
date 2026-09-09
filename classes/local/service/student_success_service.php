@@ -19,10 +19,11 @@ namespace local_learningsuccess\local\service;
 defined('MOODLE_INTERNAL') || die();
 
 use cache;
-use local_learningsuccess\local\analytics\analytics_adapter;
 use local_learningsuccess\local\explanation\explanation_engine;
 use local_learningsuccess\local\intervention\intervention_manager;
+use local_learningsuccess\local\outcome\outcome;
 use local_learningsuccess\local\recommendation\recommendation_engine;
+use local_learningsuccess\local\risk\risk_result;
 
 /**
  * Application service assembling high-performance views for teachers and course dashboards.
@@ -77,10 +78,10 @@ class student_success_service {
 
         $total = count($enrolledusers);
         $counts = [
-            analytics_adapter::STATUS_HEALTHY => 0,
-            analytics_adapter::STATUS_MONITOR => 0,
-            analytics_adapter::STATUS_ATRISK => 0,
-            analytics_adapter::STATUS_CRITICAL => 0,
+            risk_result::LEVEL_HEALTHY => 0,
+            risk_result::LEVEL_MONITOR => 0,
+            risk_result::LEVEL_ATRISK => 0,
+            risk_result::LEVEL_CRITICAL => 0,
         ];
 
         $studentprofiles = $this->batch_explain_students($enrolledusers, $courseid);
@@ -104,17 +105,17 @@ class student_success_service {
             [
                 'courseid' => $courseid,
                 'status' => intervention_manager::STATUS_COMPLETED,
-                'outcome' => 'IMPROVED',
+                'outcome' => outcome::IMPROVED,
             ]
         );
 
         $result = [
             'courseid' => $courseid,
             'total_students' => $total,
-            'healthy_count' => $counts[analytics_adapter::STATUS_HEALTHY],
-            'monitor_count' => $counts[analytics_adapter::STATUS_MONITOR],
-            'atrisk_count' => $counts[analytics_adapter::STATUS_ATRISK],
-            'critical_count' => $counts[analytics_adapter::STATUS_CRITICAL],
+            'healthy_count' => $counts[risk_result::LEVEL_HEALTHY],
+            'monitor_count' => $counts[risk_result::LEVEL_MONITOR],
+            'atrisk_count' => $counts[risk_result::LEVEL_ATRISK],
+            'critical_count' => $counts[risk_result::LEVEL_CRITICAL],
             'active_interventions' => $activeinterventions,
             'resolved_interventions' => $resolvedinterventions,
             'students' => $studentprofiles,
@@ -249,7 +250,7 @@ class student_success_service {
         // Filter for students who are not healthy.
         $needsattention = array_filter(
             $students,
-            fn($s) => in_array($s['status'], [analytics_adapter::STATUS_CRITICAL, analytics_adapter::STATUS_ATRISK, analytics_adapter::STATUS_MONITOR])
+            fn($s) => in_array($s['status'], [risk_result::LEVEL_CRITICAL, risk_result::LEVEL_ATRISK, risk_result::LEVEL_MONITOR])
         );
 
         // Sort descending by risk score, then signal count.
@@ -496,13 +497,13 @@ class student_success_service {
 
             // Determine status.
             if ($riskscore >= 70) {
-                $status = analytics_adapter::STATUS_CRITICAL;
+                $status = risk_result::LEVEL_CRITICAL;
             } else if ($riskscore >= 45) {
-                $status = analytics_adapter::STATUS_ATRISK;
+                $status = risk_result::LEVEL_ATRISK;
             } else if ($riskscore >= 20) {
-                $status = analytics_adapter::STATUS_MONITOR;
+                $status = risk_result::LEVEL_MONITOR;
             } else {
-                $status = analytics_adapter::STATUS_HEALTHY;
+                $status = risk_result::LEVEL_HEALTHY;
             }
 
             $results[] = [

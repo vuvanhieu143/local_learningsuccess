@@ -19,7 +19,7 @@ namespace local_learningsuccess\task;
 defined('MOODLE_INTERNAL') || die();
 
 use core\task\scheduled_task;
-use local_learningsuccess\local\explanation\signal_collector;
+use local_learningsuccess\local\signal\signal_collector;
 use local_learningsuccess\local\service\student_success_service;
 
 /**

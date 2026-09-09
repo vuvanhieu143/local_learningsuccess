@@ -27,7 +27,7 @@ use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 use local_learningsuccess\privacy\provider;
 use local_learningsuccess\local\intervention\intervention_manager;
-use local_learningsuccess\local\explanation\signal_collector;
+use local_learningsuccess\local\signal\signal_collector;
 
 /**
  * Unit test suite verifying GDPR Privacy API compliance: metadata, export, and deletion.

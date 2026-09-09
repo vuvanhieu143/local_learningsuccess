@@ -53,6 +53,15 @@ class outcome {
     }
 
     /**
+     * Get outcome status.
+     *
+     * @return string
+     */
+    public function get_status(): string {
+        return $this->status;
+    }
+
+    /**
      * Convert to array representation.
      *
      * @return array

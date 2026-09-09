@@ -65,9 +65,12 @@ class signal_collector {
      *
      * @param int $userid
      * @param int $courseid
+     * @param bool $persist Whether to persist active signals to local_ls_signal table.
      * @return explanation[]
      */
-    public function collect(int $userid, int $courseid): array {
+    public function collect(int $userid, int $courseid, bool $persist = false): array {
+        global $DB;
+
         $results = [];
 
         foreach ($this->signals as $signal) {
@@ -79,6 +82,25 @@ class signal_collector {
             } catch (\Throwable $e) {
                 // Safeguard against individual evaluator exceptions.
                 continue;
+            }
+        }
+
+        if ($persist) {
+            // Remove previous active signals for this user and course to maintain fresh state.
+            $DB->delete_records('local_ls_signal', ['userid' => $userid, 'courseid' => $courseid]);
+
+            $now = time();
+            foreach ($results as $item) {
+                $record = (object) [
+                    'userid' => $userid,
+                    'courseid' => $courseid,
+                    'signal_type' => $item->get_type(),
+                    'severity' => $item->get_severity(),
+                    'value' => is_numeric($item->get_value()) ? (float) $item->get_value() : 0.0,
+                    'metadata' => json_encode($item->get_evidence()),
+                    'timecreated' => $now,
+                ];
+                $DB->insert_record('local_ls_signal', $record);
             }
         }
 

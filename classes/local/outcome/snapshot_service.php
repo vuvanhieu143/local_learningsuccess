@@ -57,6 +57,7 @@ class snapshot_service {
         return [
             'risk_score' => round($risk->get_score(), 1),
             'risk_level' => $risk->get_level(),
+            'status' => $risk->get_level(),
             'completion' => (float) $metrics['completion_pct'],
             'grade' => ($metrics['gradepct'] !== null) ? (float) $metrics['gradepct'] : 0.0,
             'inactive_days' => (int) $metrics['inactive_days'],

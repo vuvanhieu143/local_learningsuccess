@@ -19,6 +19,9 @@ namespace local_learningsuccess\local\intervention;
 defined('MOODLE_INTERNAL') || die();
 
 use local_learningsuccess\local\helper\cache_helper;
+use local_learningsuccess\local\outcome\outcome;
+use local_learningsuccess\local\outcome\outcome_evaluator;
+use local_learningsuccess\local\outcome\snapshot_service;
 
 /**
  * Domain manager managing student intervention lifecycle and state transitions.
@@ -29,15 +32,20 @@ use local_learningsuccess\local\helper\cache_helper;
  */
 class intervention_manager {
 
-    public const STATUS_OPEN        = 'OPEN';
-    public const STATUS_IN_PROGRESS = 'IN_PROGRESS';
-    public const STATUS_COMPLETED   = 'COMPLETED';
-    public const STATUS_DISMISSED   = 'DISMISSED';
+    public const STATUS_OPEN        = intervention_status::OPEN;
+    public const STATUS_IN_PROGRESS = intervention_status::IN_PROGRESS;
+    public const STATUS_COMPLETED   = intervention_status::COMPLETED;
+    public const STATUS_DISMISSED   = intervention_status::DISMISSED;
 
-    protected outcome_tracker $outcometracker;
+    protected snapshot_service $snapshotservice;
+    protected outcome_evaluator $outcomeevaluator;
 
-    public function __construct(?outcome_tracker $outcometracker = null) {
-        $this->outcometracker = $outcometracker ?? new outcome_tracker();
+    public function __construct(
+        ?snapshot_service $snapshotservice = null,
+        ?outcome_evaluator $outcomeevaluator = null
+    ) {
+        $this->snapshotservice = $snapshotservice ?? new snapshot_service();
+        $this->outcomeevaluator = $outcomeevaluator ?? new outcome_evaluator();
     }
 
     /**
@@ -67,7 +75,7 @@ class intervention_manager {
         global $DB;
 
         $now = time();
-        $snapshot = $this->outcometracker->capture_snapshot($userid, $courseid);
+        $snapshot = $this->snapshotservice->capture($userid, $courseid);
 
         $record = (object) [
             'userid' => $userid,
@@ -78,7 +86,7 @@ class intervention_manager {
             'recommended_action' => $recommended,
             'actual_action' => $actual,
             'status' => self::STATUS_OPEN,
-            'outcome' => outcome_tracker::OUTCOME_UNKNOWN,
+            'outcome' => outcome::UNKNOWN,
             'before_snapshot' => json_encode($snapshot),
             'after_snapshot' => null,
             'timecreated' => $now,
@@ -89,6 +97,7 @@ class intervention_manager {
         ];
 
         $id = $DB->insert_record('local_ls_intervention', $record);
+        $this->snapshotservice->record_snapshot($id, $userid, $courseid, 'before');
 
         if ($sendmessage && !empty($actual)) {
             $this->send_direct_message($teacherid, $userid, $actual, $courseid);
@@ -173,13 +182,14 @@ class intervention_manager {
         $record = $DB->get_record('local_ls_intervention', ['id' => $id], '*', MUST_EXIST);
 
         $now = time();
-        $aftersnapshot = $this->outcometracker->capture_snapshot($record->userid, $record->courseid);
-        $outcome = $this->outcometracker->calculate_outcome($record->before_snapshot, $aftersnapshot);
+        $aftersnapshot = $this->snapshotservice->capture($record->userid, $record->courseid);
+        $outcomeobj = $this->outcomeevaluator->evaluate($record->before_snapshot, $aftersnapshot);
 
         $record->status = self::STATUS_COMPLETED;
-        $record->outcome = $outcome;
+        $record->outcome = $outcomeobj->get_status();
         $record->after_snapshot = json_encode($aftersnapshot);
         $record->completed_at = $now;
+        $record->resolvedat = $now;
         $record->timemodified = $now;
 
         if ($actualaction !== null) {
@@ -188,6 +198,7 @@ class intervention_manager {
 
         $success = $DB->update_record('local_ls_intervention', $record);
         if ($success) {
+            $this->snapshotservice->record_snapshot($id, $record->userid, $record->courseid, 'followup');
             $this->invalidate_cache($record->courseid, $record->userid);
         }
 

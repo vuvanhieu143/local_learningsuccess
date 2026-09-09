@@ -20,7 +20,8 @@ defined('MOODLE_INTERNAL') || die();
 
 use advanced_testcase;
 use local_learningsuccess\local\intervention\intervention_manager;
-use local_learningsuccess\local\intervention\outcome_tracker;
+use local_learningsuccess\local\outcome\outcome;
+use local_learningsuccess\local\outcome\outcome_evaluator;
 
 /**
  * Unit test suite verifying intervention lifecycle, state transitions, and outcome tracking.
@@ -62,7 +63,7 @@ class intervention_test extends advanced_testcase {
         $record = $DB->get_record('local_ls_intervention', ['id' => $id]);
         $this->assertNotEmpty($record);
         $this->assertEquals(intervention_manager::STATUS_OPEN, $record->status);
-        $this->assertEquals(outcome_tracker::OUTCOME_UNKNOWN, $record->outcome);
+        $this->assertEquals(outcome::UNKNOWN, $record->outcome);
         $this->assertNotEmpty($record->before_snapshot);
         $this->assertNull($record->after_snapshot);
         $this->assertNull($record->completed_at);
@@ -139,18 +140,18 @@ class intervention_test extends advanced_testcase {
         $this->assertArrayHasKey('timestamp', $afterData);
 
         $this->assertContains($record->outcome, [
-            outcome_tracker::OUTCOME_IMPROVED,
-            outcome_tracker::OUTCOME_NO_CHANGE,
-            outcome_tracker::OUTCOME_DECLINED,
-            outcome_tracker::OUTCOME_UNKNOWN,
+            outcome::IMPROVED,
+            outcome::NO_CHANGE,
+            outcome::DECLINED,
+            outcome::UNKNOWN,
         ]);
     }
 
     /**
-     * Test outcome tracker calculation logic with simulated snapshots (arrays and JSON strings).
+     * Test outcome calculation logic with simulated snapshots (arrays and JSON strings).
      */
     public function test_outcome_calculation(): void {
-        $tracker = new outcome_tracker();
+        $evaluator = new outcome_evaluator();
 
         $baseBefore = [
             'risk_score' => 80,
@@ -167,7 +168,7 @@ class intervention_test extends advanced_testcase {
             'completion' => 30,
             'grade' => 45,
         ];
-        $this->assertEquals(outcome_tracker::OUTCOME_IMPROVED, $tracker->calculate_outcome($baseBefore, $afterRiskReduced));
+        $this->assertEquals(outcome::IMPROVED, $evaluator->evaluate($baseBefore, $afterRiskReduced)->get_status());
 
         // 2. Improvement scenario: completion increase >= 15.
         $afterCompletionImproved = [
@@ -175,7 +176,7 @@ class intervention_test extends advanced_testcase {
             'completion' => 50,
             'grade' => 45,
         ];
-        $this->assertEquals(outcome_tracker::OUTCOME_IMPROVED, $tracker->calculate_outcome($baseBefore, $afterCompletionImproved));
+        $this->assertEquals(outcome::IMPROVED, $evaluator->evaluate($baseBefore, $afterCompletionImproved)->get_status());
 
         // 3. Improvement scenario: grade increase >= 10.
         $afterGradeImproved = [
@@ -183,23 +184,23 @@ class intervention_test extends advanced_testcase {
             'completion' => 30,
             'grade' => 60,
         ];
-        $this->assertEquals(outcome_tracker::OUTCOME_IMPROVED, $tracker->calculate_outcome($baseBefore, $afterGradeImproved));
+        $this->assertEquals(outcome::IMPROVED, $evaluator->evaluate($baseBefore, $afterGradeImproved)->get_status());
 
-        // 4. Decline scenario: risk increased by >= 10.
+        // 4. Decline scenario: risk increased by >= 15.
         $afterRiskIncreased = [
-            'risk_score' => 95,
+            'risk_score' => 100,
             'completion' => 30,
             'grade' => 45,
         ];
-        $this->assertEquals(outcome_tracker::OUTCOME_DECLINED, $tracker->calculate_outcome($baseBefore, $afterRiskIncreased));
+        $this->assertEquals(outcome::DECLINED, $evaluator->evaluate($baseBefore, $afterRiskIncreased)->get_status());
 
-        // 5. Decline scenario: grade decreased by >= 10.
+        // 5. Decline scenario: grade decreased by >= 15.
         $afterGradeDecreased = [
-            'risk_score' => 85,
+            'risk_score' => 80,
             'completion' => 30,
-            'grade' => 30,
+            'grade' => 25,
         ];
-        $this->assertEquals(outcome_tracker::OUTCOME_DECLINED, $tracker->calculate_outcome($baseBefore, $afterGradeDecreased));
+        $this->assertEquals(outcome::DECLINED, $evaluator->evaluate($baseBefore, $afterGradeDecreased)->get_status());
 
         // 6. No change scenario.
         $afterSame = [
@@ -207,17 +208,17 @@ class intervention_test extends advanced_testcase {
             'completion' => 32,
             'grade' => 46,
         ];
-        $this->assertEquals(outcome_tracker::OUTCOME_NO_CHANGE, $tracker->calculate_outcome($baseBefore, $afterSame));
+        $this->assertEquals(outcome::NO_CHANGE, $evaluator->evaluate($baseBefore, $afterSame)->get_status());
 
         // 7. Unknown scenario: missing snapshots.
-        $this->assertEquals(outcome_tracker::OUTCOME_UNKNOWN, $tracker->calculate_outcome(null, $afterSame));
-        $this->assertEquals(outcome_tracker::OUTCOME_UNKNOWN, $tracker->calculate_outcome($baseBefore, null));
-        $this->assertEquals(outcome_tracker::OUTCOME_UNKNOWN, $tracker->calculate_outcome('', ''));
+        $this->assertEquals(outcome::UNKNOWN, $evaluator->evaluate(null, $afterSame)->get_status());
+        $this->assertEquals(outcome::UNKNOWN, $evaluator->evaluate($baseBefore, null)->get_status());
+        $this->assertEquals(outcome::UNKNOWN, $evaluator->evaluate('', '')->get_status());
 
         // 8. JSON string inputs deserialization.
         $jsonBefore = json_encode($baseBefore);
         $jsonAfter = json_encode($afterRiskReduced);
-        $this->assertEquals(outcome_tracker::OUTCOME_IMPROVED, $tracker->calculate_outcome($jsonBefore, $jsonAfter));
+        $this->assertEquals(outcome::IMPROVED, $evaluator->evaluate($jsonBefore, $jsonAfter)->get_status());
     }
 
     /**
