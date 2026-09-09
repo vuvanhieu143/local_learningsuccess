@@ -1,0 +1,102 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learningsuccess/dashboard
+
+    Main teacher dashboard template.
+}}
+<div class="local-learningsuccess-dashboard" data-region="dashboard" data-courseid="{{courseid}}">
+    {{#has_success_stories}}
+    <div class="card shadow-sm border-0 mb-4 bg-light border-left border-success" style="border-left-width: 5px !important;" role="region" aria-labelledby="success-stories-heading">
+        <div class="card-body">
+            <h2 id="success-stories-heading" class="h5 card-title text-success d-flex align-items-center mb-3">
+                <i class="fa fa-star text-warning mr-2" aria-hidden="true"></i>
+                {{#str}}recent_success_stories, local_learningsuccess{{/str}}
+            </h2>
+            <div class="row">
+                {{#success_stories}}
+                <div class="col-md-6 col-lg-3 mb-2">
+                    <div class="p-3 bg-white rounded shadow-sm border h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong class="text-dark">{{fullname}}</strong>
+                            <span class="badge badge-success small">{{#str}}outcome_improved, local_learningsuccess{{/str}} 🎉</span>
+                        </div>
+                        <div class="small text-muted mb-1">
+                            <i class="fa fa-calendar-check-o mr-1" aria-hidden="true"></i>{{completed_date}}
+                        </div>
+                        <div class="small text-secondary font-italic text-truncate" title="{{action_note}}">
+                            "{{action_note}}"
+                        </div>
+                    </div>
+                </div>
+                {{/success_stories}}
+            </div>
+        </div>
+    </div>
+    {{/has_success_stories}}
+
+    <div class="card shadow-sm border-0 mb-4" role="region" aria-labelledby="priorities-heading">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+                <h2 id="priorities-heading" class="h4 card-title text-primary d-flex align-items-center mb-2 mb-md-0">
+                    <i class="fa fa-fire text-danger mr-2" aria-hidden="true"></i>
+                    {{#str}}todayspriorities, local_learningsuccess{{/str}}
+                </h2>
+
+                <div class="d-flex align-items-center">
+                    {{#has_groups}}
+                        <div class="mr-2 d-flex align-items-center">
+                            <label for="learning-success-group-select" class="mr-1 mb-0 small text-muted font-weight-bold sr-only">
+                                {{#str}}filter_by_group, local_learningsuccess{{/str}}
+                            </label>
+                            <select id="learning-success-group-select" class="custom-select custom-select-sm" onchange="location.href='?courseid={{courseid}}&groupid=' + this.value;" aria-label="{{#str}}filter_by_group, local_learningsuccess{{/str}}">
+                                <option value="0">{{#str}}all_groups, local_learningsuccess{{/str}}</option>
+                                {{#groups}}
+                                    <option value="{{id}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+                                {{/groups}}
+                            </select>
+                        </div>
+                    {{/has_groups}}
+
+                    <button type="button" class="btn btn-outline-secondary btn-sm btn-refresh-dashboard" aria-label="{{#str}}refresh_help, local_learningsuccess{{/str}}">
+                        <i class="fa fa-refresh mr-1" aria-hidden="true"></i>{{#str}}refresh, local_learningsuccess{{/str}}
+                    </button>
+                </div>
+            </div>
+
+            <!-- ARIA Live Region for dynamic state updates -->
+            <div class="priority-queue-container" aria-live="polite" aria-atomic="true" id="priority-list-container">
+                {{#has_priorities}}
+                    <div class="list-group list-group-flush" role="list">
+                        {{#priorities}}
+                            {{> local_learningsuccess/student_row }}
+                        {{/priorities}}
+                    </div>
+                {{/has_priorities}}
+                {{^has_priorities}}
+                    <div class="alert alert-success d-flex align-items-center my-3" role="status">
+                        <i class="fa fa-check-circle fa-2x mr-3 text-success" aria-hidden="true"></i>
+                        <div>
+                            <h3 class="h6 mb-0">{{#str}}nostudentsatrisk, local_learningsuccess{{/str}}</h3>
+                        </div>
+                    </div>
+                {{/has_priorities}}
+            </div>
+        </div>
+    </div>
+</div>
+
