@@ -18,10 +18,15 @@ namespace local_learningsuccess\local\explanation;
 
 defined('MOODLE_INTERNAL') || die();
 
-use local_learningsuccess\local\analytics\analytics_adapter;
+use local_learningsuccess\local\risk\risk_provider;
+use local_learningsuccess\local\risk\risk_result;
+use local_learningsuccess\local\risk\moodle_analytics_provider;
+use local_learningsuccess\local\signal\signal_collector;
 
 /**
- * Domain engine that synthesizes student signals into explainable risk narratives.
+ * Domain engine that synthesizes student signals and risk evaluations into explainable evidence.
+ *
+ * Keeps observable evidence strictly separate from actionable recommendations.
  *
  * @package    local_learningsuccess
  * @copyright  2026 Learning Success Team
@@ -29,46 +34,97 @@ use local_learningsuccess\local\analytics\analytics_adapter;
  */
 class explanation_engine {
 
-    protected analytics_adapter $analyticsadapter;
+    /** @var risk_provider */
+    protected risk_provider $riskprovider;
+
+    /** @var signal_collector */
     protected signal_collector $signalcollector;
 
+    /**
+     * Constructor.
+     *
+     * @param risk_provider|null $riskprovider
+     * @param signal_collector|null $signalcollector
+     */
     public function __construct(
-        ?analytics_adapter $analyticsadapter = null,
+        ?risk_provider $riskprovider = null,
         ?signal_collector $signalcollector = null
     ) {
-        $this->analyticsadapter = $analyticsadapter ?? new analytics_adapter();
+        $this->riskprovider = $riskprovider ?? new moodle_analytics_provider();
         $this->signalcollector = $signalcollector ?? new signal_collector();
     }
 
     /**
-     * Explain why a student is at risk in a course.
+     * Build and normalize explanation items from a risk result and raw signal list.
+     *
+     * @param risk_result $risk
+     * @param explanation[]|array $signals
+     * @return array Array of normalized explanation arrays.
+     */
+    public function build(risk_result $risk, array $signals): array {
+        $normalized = [];
+
+        foreach ($signals as $item) {
+            if ($item instanceof explanation) {
+                $normalized[] = $item->to_array();
+            } else if (is_array($item)) {
+                $normalized[] = $item;
+            }
+        }
+
+        // Deduplicate by type.
+        $deduped = [];
+        foreach ($normalized as $exp) {
+            $type = $exp['type'] ?? 'unknown';
+            if (!isset($deduped[$type])) {
+                $deduped[$type] = $exp;
+            }
+        }
+
+        // Sort by severity: critical (3) > warning/high (2) > info/low (1).
+        $severityweight = [
+            explanation::SEVERITY_CRITICAL => 3,
+            'high' => 2,
+            explanation::SEVERITY_WARNING => 2,
+            explanation::SEVERITY_INFO => 1,
+            'low' => 1,
+        ];
+
+        uasort($deduped, function ($a, $b) use ($severityweight) {
+            $wa = $severityweight[$a['severity'] ?? ''] ?? 0;
+            $wb = $severityweight[$b['severity'] ?? ''] ?? 0;
+            return $wb <=> $wa;
+        });
+
+        return array_values($deduped);
+    }
+
+    /**
+     * Explain why a student requires attention in a course.
      *
      * @param int $userid
      * @param int $courseid
      * @return array
      */
     public function explain_student(int $userid, int $courseid): array {
-        $statusinfo = $this->analyticsadapter->get_student_status($userid, $courseid);
+        $risk = $this->riskprovider->get_risk($userid, $courseid);
         $signals = $this->signalcollector->collect($userid, $courseid);
+        $explanations = $this->build($risk, $signals);
 
-        // Sort signals by severity priority: critical > high > medium > low.
-        $prioritymap = ['critical' => 4, 'high' => 3, 'medium' => 2, 'low' => 1];
-        usort($signals, function ($a, $b) use ($prioritymap) {
-            $pa = $prioritymap[$a['severity']] ?? 0;
-            $pb = $prioritymap[$b['severity']] ?? 0;
-            return $pb <=> $pa;
-        });
+        $statuskey = $risk->get_level();
+        $statuslabel = get_string('status_' . $statuskey, 'local_learningsuccess');
 
         return [
             'userid' => $userid,
             'courseid' => $courseid,
-            'status' => $statusinfo['status'],
-            'risk_score' => $statusinfo['risk_score'],
-            'status_label' => get_string('status_' . $statusinfo['status'], 'local_learningsuccess'),
-            'signals' => $signals,
-            'signal_count' => count($signals),
-            'has_critical_signals' => !empty(array_filter($signals, fn($s) => $s['severity'] === 'critical')),
+            'status' => $statuskey,
+            'risk_score' => (int) round($risk->get_score()),
+            'status_label' => $statuslabel,
+            'source' => $risk->get_source(),
+            'model' => $risk->get_model(),
+            'signals' => $explanations,
+            'signal_count' => count($explanations),
+            'has_critical_signals' => !empty(array_filter($explanations, fn($s) => ($s['severity'] ?? '') === explanation::SEVERITY_CRITICAL)),
         ];
     }
 }
-

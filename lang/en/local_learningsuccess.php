@@ -81,10 +81,28 @@ $string['outcome_declined'] = 'Declined';
 $string['outcome_unknown'] = 'Evaluating / Unknown';
 
 // Signal messages.
+$string['signal_inactivity_title'] = 'Course Inactivity';
+$string['signal_inactivity_critical_desc'] = 'No course activity recorded for {$a} consecutive days.';
+$string['signal_inactivity_warning_desc'] = 'Student has been inactive for {$a} days.';
 $string['signal_inactivity_critical'] = 'No course activity for {$a} days';
 $string['signal_inactivity_warning'] = 'Inactive for {$a} days';
-$string['signal_completion_low'] = 'Course completion rate is low ({$a}%)';
+
+$string['signal_overdue_title'] = 'Overdue Activities';
+$string['signal_overdue_desc'] = 'Student has {$a} overdue assignment activities.';
+
+$string['signal_grade_title'] = 'Course Assessment Performance';
+$string['signal_grade_critical_desc'] = 'Current course grade is critically low at {$a}%.';
+$string['signal_grade_warning_desc'] = 'Current course grade is below expectations at {$a}%.';
 $string['signal_grade_decline'] = 'Assessment performance dropped by {$a}%';
+
+$string['signal_completion_title'] = 'Module Completion Progress';
+$string['signal_completion_critical_desc'] = 'Course completion rate is critically stalled at {$a}%.';
+$string['signal_completion_warning_desc'] = 'Course completion progress is pacing slow at {$a}%.';
+$string['signal_completion_low'] = 'Course completion rate is low ({$a}%)';
+
+$string['signal_analytics_title'] = 'Moodle Analytics Risk Flag';
+$string['signal_analytics_desc'] = 'Moodle Learning Analytics model ({$a}) flagged this student as potentially at risk.';
+
 $string['signal_missed_activities'] = '{$a} required activities overdue or incomplete';
 $string['signal_quiz_low'] = 'Recent quiz performance below passing threshold ({$a}%)';
 $string['signal_quiz_retries'] = 'Repeated quiz attempts ({$a} attempts recorded)';
