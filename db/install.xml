@@ -18,6 +18,8 @@
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="completed_at" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="followupat" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Scheduled follow-up timestamp"/>
+        <FIELD NAME="resolvedat" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Resolution timestamp"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -29,6 +31,45 @@
         <INDEX NAME="status_idx" UNIQUE="false" FIELDS="status"/>
         <INDEX NAME="course_user_idx" UNIQUE="false" FIELDS="courseid, userid"/>
         <INDEX NAME="course_status_outcome_idx" UNIQUE="false" FIELDS="courseid, status, outcome"/>
+        <INDEX NAME="followupat_idx" UNIQUE="false" FIELDS="followupat"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_ls_note" COMMENT="Stores teacher notes and follow-up annotations on interventions">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="interventionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Associated intervention ID"/>
+        <FIELD NAME="authorid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Teacher who wrote the note"/>
+        <FIELD NAME="note" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Body of teacher note"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="interventionid_idx" UNIQUE="false" FIELDS="interventionid"/>
+        <INDEX NAME="authorid_idx" UNIQUE="false" FIELDS="authorid"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_ls_snapshot" COMMENT="Before and followup metrics snapshots for intervention outcome evaluation">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="interventionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Associated intervention ID"/>
+        <FIELD NAME="phase" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="before or followup"/>
+        <FIELD NAME="riskscore" TYPE="number" LENGTH="5" DECIMALS="2" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="risklevel" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="completion" TYPE="number" LENGTH="5" DECIMALS="2" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="grade" TYPE="number" LENGTH="5" DECIMALS="2" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="activitylevel" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="overduecount" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="intervention_phase_idx" UNIQUE="false" FIELDS="interventionid, phase"/>
       </INDEXES>
     </TABLE>
 

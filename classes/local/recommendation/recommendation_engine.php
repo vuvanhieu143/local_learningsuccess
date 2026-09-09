@@ -18,8 +18,13 @@ namespace local_learningsuccess\local\recommendation;
 
 defined('MOODLE_INTERNAL') || die();
 
+use local_learningsuccess\local\recommendation\rules\inactivity_rule;
+use local_learningsuccess\local\recommendation\rules\overdue_rule;
+use local_learningsuccess\local\recommendation\rules\grade_decline_rule;
+use local_learningsuccess\local\recommendation\rules\completion_rule;
+
 /**
- * Deterministic recommendation engine that maps student signals to concrete intervention actions.
+ * Domain engine mapping student risk evidence into practical, explainable teacher recommendations.
  *
  * @package    local_learningsuccess
  * @copyright  2026 Learning Success Team
@@ -27,94 +32,66 @@ defined('MOODLE_INTERNAL') || die();
  */
 class recommendation_engine {
 
-    public const ACTION_CONTACT           = 'CONTACT';
-    public const ACTION_LEARNING_RESOURCE = 'LEARNING_RESOURCE';
-    public const ACTION_MISSED_ACTIVITY   = 'MISSED_ACTIVITY';
-    public const ACTION_EXTENSION         = 'EXTENSION';
-    public const ACTION_ADVISOR_REFERRAL  = 'ADVISOR_REFERRAL';
-    public const ACTION_OTHER             = 'OTHER';
+    /** @var recommendation_rule[] */
+    private array $rules = [];
 
     /**
-     * Generate recommendations based on collected signals.
+     * Constructor.
      *
-     * @param array $signals Array of signals produced by signal_collector
-     * @return array List of recommended actions with priority and reason
+     * @param recommendation_rule[]|null $rules
      */
-    public function recommend(array $signals): array {
-        $recommendations = [];
-
-        foreach ($signals as $sig) {
-            switch ($sig['type']) {
-                case 'inactivity':
-                    $recommendations[] = [
-                        'action' => self::ACTION_CONTACT,
-                        'title' => get_string('type_contact', 'local_learningsuccess'),
-                        'priority' => ($sig['severity'] === 'critical') ? 'urgent' : 'high',
-                        'reason' => $sig['message'],
-                        'description' => get_string('recommend_contact', 'local_learningsuccess'),
-                    ];
-                    break;
-
-                case 'missed_activity':
-                    $recommendations[] = [
-                        'action' => self::ACTION_MISSED_ACTIVITY,
-                        'title' => get_string('type_missed_activity', 'local_learningsuccess'),
-                        'priority' => 'urgent',
-                        'reason' => $sig['message'],
-                        'description' => get_string('recommend_review_missing', 'local_learningsuccess'),
-                    ];
-                    $recommendations[] = [
-                        'action' => self::ACTION_EXTENSION,
-                        'title' => get_string('type_extension', 'local_learningsuccess'),
-                        'priority' => 'medium',
-                        'reason' => $sig['message'],
-                        'description' => get_string('recommend_extension', 'local_learningsuccess'),
-                    ];
-                    break;
-
-                case 'grade_decline':
-                    $recommendations[] = [
-                        'action' => self::ACTION_CONTACT,
-                        'title' => get_string('type_contact', 'local_learningsuccess'),
-                        'priority' => 'high',
-                        'reason' => $sig['message'],
-                        'description' => get_string('recommend_contact', 'local_learningsuccess'),
-                    ];
-                    break;
-
-                case 'completion':
-                    $recommendations[] = [
-                        'action' => self::ACTION_LEARNING_RESOURCE,
-                        'title' => get_string('type_learning_resource', 'local_learningsuccess'),
-                        'priority' => 'medium',
-                        'reason' => $sig['message'],
-                        'description' => get_string('recommend_resource', 'local_learningsuccess'),
-                    ];
-                    break;
-            }
-        }
-
-        // Multi-signal critical condition warrants academic advisor referral.
-        $criticalcount = count(array_filter($signals, fn($s) => ($s['severity'] ?? '') === 'critical'));
-        if ($criticalcount >= 2) {
-            $recommendations[] = [
-                'action' => self::ACTION_ADVISOR_REFERRAL,
-                'title' => get_string('type_advisor_referral', 'local_learningsuccess'),
-                'priority' => 'urgent',
-                'reason' => get_string('status_critical', 'local_learningsuccess'),
-                'description' => get_string('recommend_advisor', 'local_learningsuccess'),
+    public function __construct(?array $rules = null) {
+        if ($rules !== null) {
+            $this->rules = $rules;
+        } else {
+            $this->rules = [
+                new inactivity_rule(),
+                new overdue_rule(),
+                new grade_decline_rule(),
+                new completion_rule(),
             ];
         }
+    }
 
-        // Deduplicate recommendations by action type.
-        $deduped = [];
-        foreach ($recommendations as $rec) {
-            if (!isset($deduped[$rec['action']])) {
-                $deduped[$rec['action']] = $rec;
+    /**
+     * Build prioritized recommendations based on student explanation signals.
+     *
+     * @param array $signals Array of explanation arrays or objects.
+     * @return array Array of recommendation arrays.
+     */
+    public function build(array $signals): array {
+        $recommendations = [];
+
+        foreach ($this->rules as $rule) {
+            if ($rule->matches($signals)) {
+                $rec = $rule->get_recommendation($signals);
+                $recommendations[] = $rec->to_array();
             }
         }
 
-        return array_values($deduped);
+        // Sort by urgency: high > medium > low.
+        $urgencyweight = [
+            recommendation::URGENCY_HIGH => 3,
+            recommendation::URGENCY_MEDIUM => 2,
+            recommendation::URGENCY_LOW => 1,
+        ];
+
+        usort($recommendations, function ($a, $b) use ($urgencyweight) {
+            $wa = $urgencyweight[$a['urgency'] ?? ''] ?? 0;
+            $wb = $urgencyweight[$b['urgency'] ?? ''] ?? 0;
+            return $wb <=> $wa;
+        });
+
+        return $recommendations;
+    }
+
+    /**
+     * Backward-compatible helper returning structured recommendation list for a student.
+     *
+     * @param array $signals
+     * @return array
+     */
+    public function get_recommendations(array $signals): array {
+        return $this->build($signals);
     }
 }
-

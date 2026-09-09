@@ -61,7 +61,8 @@ class intervention_manager {
         ?string $reason = null,
         ?string $recommended = null,
         ?string $actual = null,
-        bool $sendmessage = false
+        bool $sendmessage = false,
+        ?int $followupat = null
     ): int {
         global $DB;
 
@@ -83,6 +84,8 @@ class intervention_manager {
             'timecreated' => $now,
             'timemodified' => $now,
             'completed_at' => null,
+            'followupat' => $followupat ?? ($now + (7 * DAYSECS)),
+            'resolvedat' => null,
         ];
 
         $id = $DB->insert_record('local_ls_intervention', $record);
@@ -108,7 +111,7 @@ class intervention_manager {
 
         $record = $DB->get_record('local_ls_intervention', ['id' => $id], '*', MUST_EXIST);
 
-        $allowedfields = ['type', 'reason', 'actual_action', 'status'];
+        $allowedfields = ['type', 'reason', 'actual_action', 'status', 'followupat', 'resolvedat'];
         foreach ($allowedfields as $field) {
             if (array_key_exists($field, $data)) {
                 $record->$field = $data[$field];
@@ -122,6 +125,39 @@ class intervention_manager {
         }
 
         return $success;
+    }
+
+    /**
+     * Attach a teacher note to an intervention.
+     *
+     * @param int $interventionid
+     * @param int $authorid
+     * @param string $note
+     * @return int Created note ID
+     */
+    public function add_note(int $interventionid, int $authorid, string $note): int {
+        global $DB;
+
+        $record = (object) [
+            'interventionid' => $interventionid,
+            'authorid' => $authorid,
+            'note' => $note,
+            'timecreated' => time(),
+        ];
+
+        return $DB->insert_record('local_ls_note', $record);
+    }
+
+    /**
+     * Retrieve all teacher notes for an intervention.
+     *
+     * @param int $interventionid
+     * @return array
+     */
+    public function get_notes(int $interventionid): array {
+        global $DB;
+
+        return $DB->get_records('local_ls_note', ['interventionid' => $interventionid], 'timecreated ASC');
     }
 
     /**
