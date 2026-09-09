@@ -151,22 +151,41 @@ class student_success_service {
         $recommendations = $this->recommendationengine->recommend($explained['signals']);
         $interventions = $this->interventionmanager->get_for_student($userid, $courseid);
 
-        $result = [
-            'user' => [
+        // Fetch notes and due follow-ups for student interventions.
+        $allnotes = [];
+        $pendingfollowups = [];
+        foreach ($interventions as $inv) {
+            $notes = $this->interventionmanager->get_notes((int) $inv->id);
+            if (!empty($notes)) {
+                $allnotes[$inv->id] = array_values($notes);
+            }
+            if (!empty($inv->followupat) && (int) $inv->followupat <= time()) {
+                $pendingfollowups[] = $inv;
+            }
+        }
+
+        $summary = new student_summary(
+            userid: $userid,
+            courseid: $courseid,
+            user: [
                 'id' => $user->id,
                 'fullname' => fullname($user),
                 'email' => $user->email,
             ],
-            'courseid' => $courseid,
-            'status' => $explained['status'],
-            'status_label' => $explained['status_label'],
-            'risk_score' => $explained['risk_score'],
-            'signals' => $explained['signals'],
-            'recommendations' => $recommendations,
-            'interventions' => array_values($interventions),
-            'timestamp' => time(),
-        ];
+            risk: [
+                'score' => $explained['risk_score'],
+                'level' => $explained['status'],
+                'source' => $explained['source'] ?? 'course_activity_signals',
+            ],
+            signals: $explained['signals'],
+            explanations: $explained['signals'],
+            recommendations: $recommendations,
+            interventions: array_values($interventions),
+            pendingfollowups: $pendingfollowups,
+            notes: $allnotes
+        );
 
+        $result = $summary->to_array();
         $cache->set($cachekey, $result);
 
         return $result;

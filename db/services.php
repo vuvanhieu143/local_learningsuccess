@@ -57,5 +57,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/learningsuccess:manageintervention',
     ],
+    'local_learningsuccess_get_student_detail' => [
+        'classname' => 'local_learningsuccess\external\student_exporter',
+        'methodname' => 'get_student_detail',
+        'description' => 'Retrieves detailed student explanations and recommendations',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'local/learningsuccess:viewstudent',
+    ],
 ];
 

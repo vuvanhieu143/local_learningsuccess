@@ -73,6 +73,11 @@ class student_detail implements renderable, templatable {
                 ? get_string($outcomekey, 'local_learningsuccess')
                 : $outcome;
 
+            $followupformatted = !empty($record->followupat)
+                ? userdate((int) $record->followupat, get_string('strftimedate', 'langconfig'))
+                : null;
+            $notes = $this->studentdata['notes'][$record->id] ?? [];
+
             return [
                 'id' => $record->id,
                 'type' => $typelabel,
@@ -86,6 +91,10 @@ class student_detail implements renderable, templatable {
                 'outcome_is_improved' => ($outcome === 'IMPROVED'),
                 'outcome_is_declined' => ($outcome === 'DECLINED'),
                 'outcome_is_no_change' => ($outcome === 'NO_CHANGE'),
+                'followup_due' => $followupformatted,
+                'has_followup' => !empty($followupformatted),
+                'notes' => $notes,
+                'has_notes' => !empty($notes),
                 'can_complete' => $isOpen,
                 'can_dismiss' => $isOpen,
             ];

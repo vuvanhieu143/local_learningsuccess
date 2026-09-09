@@ -86,6 +86,16 @@ class recommendation_engine {
     }
 
     /**
+     * Alias for build to provide a clean action verb.
+     *
+     * @param array $signals
+     * @return array
+     */
+    public function recommend(array $signals): array {
+        return $this->build($signals);
+    }
+
+    /**
      * Backward-compatible helper returning structured recommendation list for a student.
      *
      * @param array $signals
