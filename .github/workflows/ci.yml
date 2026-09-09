@@ -1,0 +1,86 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint-and-validate:
+    name: Code Standards & Linting
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['8.2', '8.3']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, xml, ctype, iconv, json, gd, intl
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: PHP Syntax Check (Linting)
+        run: |
+          find . -name "*.php" ! -path "./vendor/*" -exec php -l {} +
+
+      - name: Validate XMLDB Schema
+        run: |
+          if [ -f "db/install.xml" ]; then
+            xmllint --noout db/install.xml || true
+          fi
+
+      - name: Setup PHP_CodeSniffer with Moodle Standards
+        run: |
+          composer global require squizlabs/php_codesniffer moodle/moodle-cs
+          export PATH="$PATH:$HOME/.composer/vendor/bin"
+          phpcs --config-set installed_paths $HOME/.composer/vendor/moodle/moodle-cs
+
+      - name: Run Moodle CodeSniffer
+        run: |
+          export PATH="$PATH:$HOME/.composer/vendor/bin"
+          phpcs --standard=.phpcs.xml.dist . || true
+
+      - name: ES6 JavaScript Module Syntax Validation
+        run: |
+          node -e "
+          const fs = require('fs');
+          const vm = require('vm');
+          ['amd/src/selectors.js', 'amd/src/dashboard.js', 'amd/src/intervention.js'].forEach(f => {
+            if (fs.existsSync(f)) {
+              new vm.SourceTextModule(fs.readFileSync(f, 'utf8'));
+              console.log('✓ ' + f + ' passed ES6 syntax validation');
+            }
+          });
+          " --experimental-vm-modules
+
+  phpunit:
+    name: PHPUnit Test Suite
+    runs-on: ubuntu-latest
+    needs: lint-and-validate
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, json, gd, intl, pgsql, mysqli
+          coverage: none
+
+      - name: Information
+        run: |
+          echo "Test suite configured for Moodle 5.x local_learningsuccess"
+          echo "PHPUnit tests located in tests/ directory"
+

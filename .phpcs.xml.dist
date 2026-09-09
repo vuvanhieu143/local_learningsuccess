@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<ruleset name="Moodle local_learningsuccess">
+    <description>Moodle coding standard ruleset for local_learningsuccess</description>
+
+    <!-- Scan only PHP files -->
+    <arg name="extensions" value="php"/>
+
+    <!-- Show progress and sniff codes -->
+    <arg value="p"/>
+    <arg value="s"/>
+
+    <!-- Include Moodle ruleset -->
+    <rule ref="moodle"/>
+
+    <!-- Exclude third-party or auto-generated directories -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/amd/build/*</exclude-pattern>
+</ruleset>
+
