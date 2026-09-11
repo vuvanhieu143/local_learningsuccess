@@ -20,20 +20,20 @@
     Main teacher dashboard template.
 }}
 <div class="local-learningsuccess-dashboard" data-region="dashboard" data-courseid="{{courseid}}">
-    {{#has_success_stories}}
-    <div class="card shadow-sm border-0 mb-4 bg-light border-left border-success" style="border-left-width: 5px !important;" role="region" aria-labelledby="success-stories-heading">
+    {{#has_recent_improvements}}
+    <div class="card shadow-sm border-0 mb-4 bg-light border-left border-success" style="border-left-width: 5px !important;" role="region" aria-labelledby="improvements-heading">
         <div class="card-body">
-            <h2 id="success-stories-heading" class="h5 card-title text-success d-flex align-items-center mb-3">
-                <i class="fa fa-star text-warning mr-2" aria-hidden="true"></i>
-                {{#str}}recent_success_stories, local_learningsuccess{{/str}}
+            <h2 id="improvements-heading" class="h5 card-title text-success d-flex align-items-center mb-3">
+                <i class="fa fa-line-chart text-success mr-2" aria-hidden="true"></i>
+                {{#str}}recent_improvements, local_learningsuccess{{/str}}
             </h2>
             <div class="row">
-                {{#success_stories}}
+                {{#recent_improvements}}
                 <div class="col-md-6 col-lg-3 mb-2">
                     <div class="p-3 bg-white rounded shadow-sm border h-100">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <strong class="text-dark">{{fullname}}</strong>
-                            <span class="badge badge-success small">{{#str}}outcome_improved, local_learningsuccess{{/str}} 🎉</span>
+                            <span class="badge badge-success small">{{#str}}outcome_improved, local_learningsuccess{{/str}}</span>
                         </div>
                         <div class="small text-muted mb-1">
                             <i class="fa fa-calendar-check-o mr-1" aria-hidden="true"></i>{{completed_date}}
@@ -43,11 +43,11 @@
                         </div>
                     </div>
                 </div>
-                {{/success_stories}}
+                {{/recent_improvements}}
             </div>
         </div>
     </div>
-    {{/has_success_stories}}
+    {{/has_recent_improvements}}
 
     <div class="card shadow-sm border-0 mb-4" role="region" aria-labelledby="priorities-heading">
         <div class="card-body">

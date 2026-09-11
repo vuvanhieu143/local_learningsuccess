@@ -19,7 +19,7 @@
 
     Individual student row in priority queue.
 }}
-<div class="list-group-item list-group-item-action d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3 mb-2 border rounded shadow-sm"
+<div class="list-group-item list-group-item-action d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3 mb-2 border rounded shadow-sm {{#is_urgent}}border-danger{{/is_urgent}} {{#is_follow_up}}border-primary{{/is_follow_up}}"
      data-userid="{{userid}}"
      data-courseid="{{courseid}}"
      role="listitem">
@@ -27,16 +27,17 @@
     <div class="d-flex align-items-center mb-2 mb-md-0">
         <div class="mr-3">
             <span class="badge badge-pill p-2 text-uppercase font-weight-bold 
-                {{#status_is_critical}}badge-danger text-white{{/status_is_critical}}
-                {{#status_is_atrisk}}badge-warning text-dark{{/status_is_atrisk}}
-                {{#status_is_monitor}}badge-info text-white{{/status_is_monitor}}
-                {{#status_is_healthy}}badge-success text-white{{/status_is_healthy}}"
-                aria-label="{{#str}}field_status, local_learningsuccess{{/str}}: {{status_label}}">
-                {{#status_is_critical}}<i class="fa fa-exclamation-circle mr-1" aria-hidden="true"></i>{{/status_is_critical}}
-                {{#status_is_atrisk}}<i class="fa fa-exclamation-triangle mr-1" aria-hidden="true"></i>{{/status_is_atrisk}}
-                {{#status_is_monitor}}<i class="fa fa-info-circle mr-1" aria-hidden="true"></i>{{/status_is_monitor}}
-                {{#status_is_healthy}}<i class="fa fa-check-circle mr-1" aria-hidden="true"></i>{{/status_is_healthy}}
-                {{status_label}}
+                {{#is_urgent}}badge-danger text-white{{/is_urgent}}
+                {{#is_follow_up}}badge-primary text-white{{/is_follow_up}}
+                {{#is_recommend}}badge-warning text-dark{{/is_recommend}}
+                {{#is_monitor}}badge-secondary text-white{{/is_monitor}}
+                {{^is_urgent}}{{^is_follow_up}}{{^is_recommend}}{{^is_monitor}}badge-info text-white{{/is_monitor}}{{/is_recommend}}{{/is_follow_up}}{{/is_urgent}}"
+                aria-label="{{actionability_level_label}}">
+                {{#is_urgent}}<i class="fa fa-fire mr-1" aria-hidden="true"></i>{{/is_urgent}}
+                {{#is_follow_up}}<i class="fa fa-clock-o mr-1" aria-hidden="true"></i>{{/is_follow_up}}
+                {{#is_recommend}}<i class="fa fa-lightbulb-o mr-1" aria-hidden="true"></i>{{/is_recommend}}
+                {{#is_monitor}}<i class="fa fa-eye mr-1" aria-hidden="true"></i>{{/is_monitor}}
+                {{actionability_level_label}}
             </span>
         </div>
 
@@ -48,11 +49,20 @@
                     </a>
                 </h3>
                 {{#struggle_tag}}
-                    <span class="badge {{class}} small px-2 py-1" title="{{label}}">
+                    <span class="badge {{class}} small px-2 py-1 mr-2" title="{{label}}">
                         <i class="fa {{icon}} mr-1" aria-hidden="true"></i>{{label}}
                     </span>
                 {{/struggle_tag}}
+                <a href="{{profile_url}}" class="text-muted small mr-2" target="_blank" rel="noopener" title="Moodle Profile">
+                    <i class="fa fa-external-link" aria-hidden="true"></i>
+                </a>
             </div>
+
+            {{#summary_reason}}
+                <div class="small font-weight-bold text-dark mb-1">
+                    {{summary_reason}}
+                </div>
+            {{/summary_reason}}
 
             <div class="text-muted small">
                 {{#signals}}
@@ -69,24 +79,31 @@
     </div>
 
     <div class="d-flex align-items-center mt-2 mt-md-0">
-        <a href="{{student_url}}" class="btn btn-outline-primary btn-sm mr-2" aria-label="{{#str}}action_view_student, local_learningsuccess{{/str}}: {{fullname}}">
-            <i class="fa fa-eye mr-1" aria-hidden="true"></i>{{#str}}action_view_student, local_learningsuccess{{/str}}
+        {{#is_follow_up}}
+            <a href="{{student_url}}" class="btn btn-primary btn-sm mr-2 font-weight-bold">
+                <i class="fa fa-calendar-check-o mr-1" aria-hidden="true"></i>{{#str}}action_review_followup, local_learningsuccess{{/str}}
+            </a>
+        {{/is_follow_up}}
+        {{^is_follow_up}}
+            <button type="button" 
+                    class="btn btn-outline-success btn-sm btn-quick-contact mr-2" 
+                    data-userid="{{userid}}" 
+                    data-fullname="{{fullname}}"
+                    data-type="checkin"
+                    aria-label="{{#str}}action_quick_contact, local_learningsuccess{{/str}}: {{fullname}}">
+                <i class="fa fa-paper-plane-o mr-1" aria-hidden="true"></i>{{#str}}action_checkin, local_learningsuccess{{/str}}
+            </button>
+            <button type="button" 
+                    class="btn btn-primary btn-sm btn-record-intervention mr-2" 
+                    data-userid="{{userid}}" 
+                    data-fullname="{{fullname}}"
+                    aria-label="{{#str}}action_create_intervention, local_learningsuccess{{/str}}: {{fullname}}">
+                <i class="fa fa-plus-circle mr-1" aria-hidden="true"></i>{{#str}}action_create_intervention, local_learningsuccess{{/str}}
+            </button>
+        {{/is_follow_up}}
+        <a href="{{student_url}}" class="btn btn-outline-secondary btn-sm" aria-label="{{#str}}action_view_student, local_learningsuccess{{/str}}: {{fullname}}">
+            <i class="fa fa-chevron-right" aria-hidden="true"></i>
         </a>
-        <button type="button" 
-                class="btn btn-outline-success btn-sm btn-quick-contact mr-2" 
-                data-userid="{{userid}}" 
-                data-fullname="{{fullname}}"
-                data-type="CONTACT"
-                aria-label="{{#str}}action_quick_contact, local_learningsuccess{{/str}}: {{fullname}}">
-            <i class="fa fa-commenting-o mr-1" aria-hidden="true"></i>{{#str}}action_quick_contact, local_learningsuccess{{/str}}
-        </button>
-        <button type="button" 
-                class="btn btn-primary btn-sm btn-record-intervention" 
-                data-userid="{{userid}}" 
-                data-fullname="{{fullname}}"
-                aria-label="{{#str}}action_create_intervention, local_learningsuccess{{/str}}: {{fullname}}">
-            <i class="fa fa-plus-circle mr-1" aria-hidden="true"></i>{{#str}}action_create_intervention, local_learningsuccess{{/str}}
-        </button>
     </div>
 </div>
 

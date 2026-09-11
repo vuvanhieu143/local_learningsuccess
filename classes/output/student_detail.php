@@ -100,9 +100,17 @@ class student_detail implements renderable, templatable {
             ];
         }, $this->studentdata['interventions'] ?? []);
 
+        $profileurl = (new \moodle_url('/user/profile.php', ['id' => $this->studentdata['user']['id']]))->out(false);
+        $messageurl = (new \moodle_url('/message/index.php', ['id' => $this->studentdata['user']['id']]))->out(false);
+
         return [
-            'user' => $this->studentdata['user'],
+            'user' => array_merge($this->studentdata['user'], [
+                'profile_url' => $profileurl,
+                'message_url' => $messageurl,
+            ]),
             'courseid' => $this->studentdata['courseid'],
+            'profile_url' => $profileurl,
+            'message_url' => $messageurl,
             'status' => $status,
             'status_label' => $this->studentdata['status_label'] ?? '',
             'status_is_critical' => ($status === 'critical'),
@@ -116,6 +124,8 @@ class student_detail implements renderable, templatable {
             'has_recommendations' => !empty($this->studentdata['recommendations']),
             'interventions' => $interventions,
             'has_interventions' => !empty($interventions),
+            'actionability' => $this->studentdata['actionability'] ?? null,
+            'has_actionability' => !empty($this->studentdata['actionability']),
         ];
     }
 }

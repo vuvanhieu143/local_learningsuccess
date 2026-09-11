@@ -6,24 +6,30 @@
 [![Moodle Support](https://img.shields.io/badge/Moodle-5.0--5.3-orange)](https://github.com/vuvanhieu143/local_learningsuccess/actions)
 [![License GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)](https://github.com/vuvanhieu143/local_learningsuccess/blob/main/LICENSE)
 
-**Moodle Learning Success & Intervention** (`local_learningsuccess`) turns Moodle Learning Analytics signals and observable student engagement data into **explainable, actionable, and measurable teacher interventions**.
+**Moodle Learning Success & Intervention** (`local_learningsuccess`) turns Moodle Learning Analytics flags and observable student engagement data into an **action-oriented, work-queue-first pedagogical intervention workflow**.
 
-Moodle already detects students who may need attention. Learning Success provides the missing pedagogical workflow: **Why? → What should the teacher do? → When should they follow up? → Did the situation improve?**
+Core Moodle detects students who may need attention. Learning Success provides the missing pedagogical journey: **Who needs me? → Why now? → What should I do? → When do I follow up? → Did the indicators improve?**
 
 ```text
-DETECT (Moodle Analytics / Activity Signals)
-  ↓
-EXPLAIN (Deterministic Observable Evidence)
-  ↓
-PRIORITISE (Today's Priority Queue)
-  ↓
-RECOMMEND (Action-Oriented Pedagogy)
-  ↓
-INTERVENE (Direct Moodle Message + Teacher Notes)
-  ↓
-FOLLOW UP (Scheduled Task & Reminders)
-  ↓
-MEASURE OUTCOME (Before/After Snapshots & Progress Evaluation)
+Moodle Analytics → DETECT
+      ↓
+Learning Success → EXPLAIN → PRIORITISE → RECOMMEND → INTERVENE → FOLLOW UP → MEASURE
+```
+
+```text
+[DETECT]      Core Moodle Analytics & activity signals identify potential struggle.
+   ↓
+[EXPLAIN]     Deterministic, observable evidence ("Why now?": 9 days inactive, 3 overdue tasks).
+   ↓
+[PRIORITISE]  Actionability Work-Queue (Urgent → Follow-Up Due → Recommended → Monitor).
+   ↓
+[RECOMMEND]   Actionable pedagogy (Primary recommendation + alternative options).
+   ↓
+[INTERVENE]   Editable message templates dispatched via Moodle Messaging + private notes.
+   ↓
+[FOLLOW UP]   Automated scheduled follow-ups (3-day check-in, 7-day assignment support).
+   ↓
+[MEASURE]     Canonical snapshots: System Evidence vs Teacher-Confirmed Outcome.
 ```
 
 ---
@@ -33,34 +39,41 @@ MEASURE OUTCOME (Before/After Snapshots & Progress Evaluation)
 - [Why Learning Success?](#why-learning-success)
 - [How to Use (Teacher Walkthrough)](#how-to-use-teacher-walkthrough)
   - [Step 1: Open the Course Dashboard](#step-1-open-the-course-dashboard)
-  - [Step 2: Inspect "Today's Priorities"](#step-2-inspect-todays-priorities)
-  - [Step 3: Understand the Contributing Signals ("Why?")](#step-3-understand-the-contributing-signals-why)
-  - [Step 4: Take Action & Schedule Follow-Up](#step-4-take-action--schedule-follow-up)
-  - [Step 5: Automated Follow-Up Reminders](#step-5-automated-follow-up-reminders)
-  - [Step 6: Measure Outcomes (Before/After)](#step-6-measure-outcomes-beforeafter)
-- [Key Features](#key-features)
+  - [Step 2: Review the Actionability Work-Queue](#step-2-review-the-actionability-work-queue)
+  - [Step 3: Understand Contributing Signals ("Why Now?")](#step-3-understand-contributing-signals-why-now)
+  - [Step 4: Take Action with Message Templates & Specific Follow-Up](#step-4-take-action-with-message-templates--specific-follow-up)
+  - [Step 5: Teacher Dismissals & Overrides](#step-5-teacher-dismissals--overrides)
+  - [Step 6: Automated Follow-Up Reminders](#step-6-automated-follow-up-reminders)
+  - [Step 7: Evidence-Based Outcome Confirmation ("What Changed?")](#step-7-evidence-based-outcome-confirmation-what-changed)
+- [Core Architecture & Technical Plan](#core-architecture--technical-plan)
+  - [1. Actionability Engine vs Risk Scoring](#1-actionability-engine-vs-risk-scoring)
+  - [2. Unified Single & Bulk Risk Provider](#2-unified-single--bulk-risk-provider)
+  - [3. Normalized Intervention Lifecycle State Machine](#3-normalized-intervention-lifecycle-state-machine)
+  - [4. Recommendation-Specific Follow-Up Windows](#4-recommendation-specific-follow-up-windows)
+  - [5. System Evidence vs Teacher-Confirmed Outcome](#5-system-evidence-vs-teacher-confirmed-outcome)
+  - [6. Canonical Before/After Snapshots](#6-canonical-beforeafter-snapshots)
+  - [7. Privacy & Data Minimisation](#7-privacy--data-minimisation)
 - [Screens & Navigation](#screens--navigation)
-- [Architecture & Design Rules](#architecture--design-rules)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Scheduled Tasks](#scheduled-tasks)
 - [Capabilities & Permissions](#capabilities--permissions)
 - [Security & Performance](#security--performance)
 - [Privacy & GDPR](#privacy--gdpr)
-- [Contributing & Testing](#contributing--testing)
+- [Testing & Quality Assurance](#testing--quality-assurance)
 - [License](#license)
 
 ---
 
 ## Why Learning Success?
 
-Traditional analytics dashboards display graphs, click counts, and prediction probabilities, but often fail to answer: **"Which 5 students need my attention today, and what action should I take right now?"**
+Traditional analytics dashboards display complex charts, log counters, and prediction probabilities, but leave teachers with decision fatigue: **"Which students actually need my attention right now, and what should I do?"**
 
-Learning Success is built around three core design principles:
+Learning Success solves this through three foundational principles:
 
-1. **Not Another Analytics Dashboard**: Focuses exclusively on intervention workflow, follow-up scheduling, and outcome measurement.
-2. **Deterministic & Explainable**: Always explains why a student is flagged using observable facts (e.g. *No activity for 9 days*, *3 overdue activities*, *Grade down 18%*) instead of opaque machine-learning percentages.
-3. **Moodle-Native & Safe**: Zero core modifications. Dispatches communications directly through Moodle Messaging and stores only the data needed to evaluate outcomes.
+1. **Work-Queue First**: Surfaces actionable work items rather than raw data. A high-risk student who was contacted yesterday and is waiting for a reply is in **Monitor** state; an unattended student with overdue tasks or a follow-up due today is prioritized as **Urgent**.
+2. **Deterministic & Explainable**: Always explains why a student is prioritized using observable facts (*"No activity for 9 days"*, *"3 overdue assignments"*, *"Completion stalled at 25%"*) instead of opaque percentages.
+3. **Moodle-Native & Safe**: Zero core modifications. Dispatches messages directly through Moodle Messaging (`\core\message\message`), stores canonical metric snapshots, and adheres strictly to GDPR data minimisation.
 
 ---
 
@@ -69,92 +82,134 @@ Learning Success is built around three core design principles:
 ### Step 1: Open the Course Dashboard
 1. Log in to Moodle with a **Teacher** or **Editing Teacher** role.
 2. Navigate to your course.
-3. In the course **Secondary Navigation** menu (the top tab bar in Boost theme), click **Learning Success**.
+3. In the course navigation tab bar, click **Learning Success**.
 
-### Step 2: Inspect "Today's Priorities"
-The primary dashboard screen presents two main sections:
-- **Class Pulse**: A concise distribution of enrolled students into four actionable buckets: **Healthy**, **Monitor**, **At Risk**, and **Critical**.
-- **Today's Priorities**: An intelligent queue surfacing students who require attention today, ranked by urgency.
-- **Group Filter**: If your course uses groups, select your cohort from the group dropdown.
+### Step 2: Review the Actionability Work-Queue
+The dashboard prioritizes students into distinct actionability tiers:
+- 🚨 **Urgent Action**: Students exhibiting critical or multiple struggle signals with no active intervention in place, or open intervention drafts awaiting teacher outreach.
+- ⏰ **Follow-Up Due**: Interventions whose scheduled follow-up window has elapsed and require teacher review.
+- 💡 **Recommended**: Students with early warning indicators where proactive outreach or learning resource support is advised.
+- 👁️ **Monitor**: Students where an intervention is already underway (`Contacted` or `Waiting`), awaiting student response or indicator movement. These are deprioritized so they do not clutter today's immediate action queue.
 
-### Step 3: Understand the Contributing Signals ("Why?")
+### Step 3: Understand Contributing Signals ("Why Now?")
 Click on any student card or click `[View Student Insights]` to open the **Student Success View**:
-- **Contributing Evidence**: Displays exact signals triggering the alert:
+- **Contributing Evidence**: Clear, observable facts explaining the alert:
   - ⏳ **Inactivity**: Days since last course access.
-  - 📝 **Overdue Work**: Specific assignments that have passed deadline without submission.
+  - 📝 **Overdue Work**: Specific assignments past deadline without submission.
   - 📉 **Grade Decline**: Drop in assessment scores.
-  - 📊 **Completion Stall**: Low course module completion progress.
-  - 🤖 **Moodle Analytics**: Prediction model status (if enabled).
+  - 📊 **Completion Stall**: Low or stalled module completion progress.
+  - 🤖 **Moodle Analytics**: Prediction model status (if trained).
+- **Struggle Archetype Tags**: Concise badges such as `Disengaged`, `Quiz Retries`, `Overdue Work`, or `Pacing Behind`.
 
-### Step 4: Take Action & Schedule Follow-Up
-Review the **Recommended Actions** provided by the system:
-1. Click **`[Take Action]`** or **`[Quick Message]`**.
-2. A modal dialog will appear:
-   - **Intervention Type**: Choose *Direct Message*, *Recommend Resource*, *Assignment Support*, *Grant Extension*, or *Advisor Referral*.
-   - **Empathetic Message Preset**: Select or customize a supportive, encouraging message.
-   - **Send via Moodle Messaging**: Check this box to automatically dispatch the message to the student's Moodle chat and email.
-   - **Schedule Follow-Up**: Pick a follow-up date (defaults to **7 days**).
-   - **Teacher Notes**: Add internal private notes (e.g., *Student discussed family illness, agreed to submit by Friday*).
-3. Click **Save Intervention**.
+### Step 4: Take Action with Message Templates & Specific Follow-Up
+Review the **Primary Recommendation** and any alternative actions:
+1. Click **`[Take Action]`** or **`[Check In]`**.
+2. A modal dialog opens with a **pre-filled, editable message draft**:
+   - **Inactivity Template**: Supportive check-in asking if the student needs assistance getting back on track.
+   - **Overdue Template**: Practical guidance offering help prioritizing overdue activities.
+   - **Grade Decline Template**: Constructive inquiry offering assessment feedback.
+3. **Edit Draft**: Teachers can personalize the message directly (all messages require explicit teacher action; nothing is sent automatically).
+4. **Follow-Up Scheduling**: Automatically defaults based on recommendation type:
+   - Check-in: **3 days**
+   - Meeting requested: **3 days**
+   - Assignment support: **7 days**
+   - Learning resources / progress monitoring: **7 days**
+   *(Teachers can override the due date as needed).*
+5. Click **Record Intervention**. The message is sent to the student via Moodle Messaging, and the intervention moves to `Contacted`.
 
-### Step 5: Automated Follow-Up Reminders
-- You don't need to manually keep track of calendar deadlines.
-- When an intervention's follow-up date arrives, the background task (`process_followups`) moves the intervention to **Follow-Up Due** and sends you a native Moodle notification reminder.
+### Step 5: Teacher Dismissals & Overrides
+Not every unusual learning pattern represents a problem. A student may have low online activity because they are on approved leave or studying offline with a textbook.
+- Teachers can **Dismiss** any signal by selecting a reason:
+  - *Student on approved leave*
+  - *Student working offline*
+  - *False positive indicator*
+  - *Not currently relevant*
+  - *Other*
+- **Reactivation Policy**: Dismissed signals remain suppressed for 14 days and will not recreate recommendations on subsequent page loads, unless the student's condition escalates to critical severity.
 
-### Step 6: Measure Outcomes (Before/After)
-1. When follow-up is due, click **`[Complete Intervention]`**.
-2. The system compares the **Before Snapshot** (captured on intervention start) against the **Current Metrics**:
-   - **IMPROVED 🎉**: Student logged in, submitted missing work, or improved their course grade.
-   - **NO CHANGE**: Metrics remain stable; prompts teacher to decide if further support is required.
-   - **DECLINED**: Alerts teacher that additional escalation or advisor referral is needed.
-3. Successful interventions are celebrated in the **Recent Success Stories** banner on the dashboard!
+### Step 6: Automated Follow-Up Reminders
+- Teachers do not need to track follow-up dates in external calendars.
+- The background task (`process_followups`) runs daily, transitions due interventions to `Follow-Up Due`, and sends a native Moodle notification reminder to the teacher.
+
+### Step 7: Evidence-Based Outcome Confirmation ("What Changed?")
+1. When follow-up is due, the teacher reviews student progress and clicks **`[Complete Intervention]`**.
+2. **"What Changed?"**: The system compares the canonical **Before Snapshot** against the **Current Metrics**:
+   - *Activity*: e.g. 0.8 visits/wk → 3.1 visits/wk (Improved)
+   - *Completion*: e.g. 45% → 72% (Improved)
+   - *Grade*: e.g. 50% → 65% (Improved)
+3. **System Evidence vs Teacher Outcome**:
+   - **System Evidence**: Reports neutral indicator movements (*"Indicators improved after the intervention"*). Does not make uncalibrated claims of direct causation.
+   - **Teacher-Confirmed Outcome**: The teacher selects the final verified outcome:
+     - `Improved`
+     - `No Change`
+     - `Declined`
+     - `Unable to Contact`
+     - `Not Applicable`
+4. Completed interventions with indicator recovery are presented in the **Recent Improvements & Outcomes** card on the dashboard.
 
 ---
 
-## Key Features
+## Core Architecture & Technical Plan
 
-| Feature | Description |
-| :--- | :--- |
-| **Risk Provider Abstraction** | Consumes core Moodle Analytics models safely, with automatic fallback to observable activity/performance signals when models are not trained. |
-| **Modular Signals & Explanations** | Independent signal evaluators (`inactivity`, `overdue`, `grade_decline`, `completion`, `analytics_risk`) that sort evidence by severity without coupling to recommendations. |
-| **Deterministic Recommendation Engine** | Action-oriented rules mapping signals to empathetic check-ins, remedial resources, deadline extensions, or advisor referrals. |
-| **1-Click Moodle Messaging** | Dispatches instant messages and email notifications using Moodle's core message subsystem without leaving the dashboard. |
-| **Private Teacher Notes** | Multiple internal notes can be attached to any intervention record for longitudinal tracking (`local_ls_note`). |
-| **Follow-Up Tracking Task** | Automated cron job (`process_followups`) scanning due dates and notifying teachers via Moodle Core Notifications. |
-| **Non-Causal Outcome Measurement** | Captures before/after snapshots (`local_ls_snapshot`) and reports observable metric recovery while strictly avoiding uncalibrated causal claims. |
-| **Group & Cohort Isolation** | Full support for `SEPARATEGROUPS` mode, ensuring teachers only view and intervene on students within their permitted groups. |
+The plugin is structured according to clean domain-driven architecture and conforms to the 10 Architecture Rules in [`technical.md`](technical.md):
+
+### 1. Actionability Engine vs Risk Scoring
+- Pure risk calculation (`risk_provider`) computes mathematical struggle.
+- The **Actionability Engine** (`classes/local/actionability/actionability_engine.php`) factors in current intervention status, follow-up deadlines, and recency to answer: *"What should the teacher do right now?"*
+- Prevents duplicate check-ins when an intervention is already in progress.
+
+### 2. Unified Single & Bulk Risk Provider
+- Single-student profile (`get_risk($userid, $courseid)`) and bulk course pulse (`get_risks($userids, $courseid)`) use identical underlying evaluation logic via `classes/local/risk/risk_provider.php`.
+- Guarantees 100% mathematical consistency across course summary views and individual student details.
+
+### 3. Normalized Intervention Lifecycle State Machine
+Strict state machine enforced through `classes/local/intervention/intervention_manager.php`:
+
+```text
+OPEN  ──►  CONTACTED  ──►  WAITING  ──►  FOLLOW_UP  ──►  COMPLETED
+ │              │              │             │
+ └──────────────┴──────────────┴─────────────┴────────►  DISMISSED / UNABLE_TO_CONTACT
+```
+
+Direct arbitrary status mutations are rejected; all updates pass through transition validation.
+
+### 4. Recommendation-Specific Follow-Up Windows
+- Replaces universal 7-day timers with context-aware defaults:
+  - Check-in: **3 days**
+  - Meeting: **3 days**
+  - Assignment Support: **7 days**
+  - Learning Resource: **7 days**
+
+### 5. System Evidence vs Teacher-Confirmed Outcome
+- Automated metric changes are reported as **System Evidence** with neutral phrasing (*"Indicators improved after intervention"*).
+- The teacher confirms the final pedagogical outcome (`Improved`, `No Change`, `Declined`, `Unable to Contact`, `Not Applicable`).
+
+### 6. Canonical Before/After Snapshots
+- `local_ls_snapshot` is the single canonical source of metrics before and after an intervention.
+- The intervention record references snapshots, eliminating duplicate JSON data storage.
+
+### 7. Privacy & Data Minimisation
+- Student email addresses are omitted from dashboard overviews and student cards to prevent unnecessary exposure.
+- Provides student full names, profile avatars, Moodle profile links, and direct messaging actions.
 
 ---
 
 ## Screens & Navigation
 
 ### 1. Today's Priorities & Class Pulse (`dashboard.php`)
-- **URL**: `/local/learningsuccess/dashboard.php?courseid=COURSE_ID`
-- Displays aggregated health metrics, group selector, urgent student priorities, and recent comeback celebrations.
+- **Route**: `/local/learningsuccess/dashboard.php?courseid=COURSE_ID`
+- Features:
+  - **Class Pulse**: Cohort breakdown across Healthy, Monitor, At Risk, and Critical.
+  - **Actionability Work-Queue**: Ranked list of students requiring immediate attention.
+  - **Group Filter**: Cohort filtering for courses using separate groups.
+  - **Recent Improvements**: Completed interventions with documented recovery.
 
-### 2. Student Success View (`student.php`)
-- **URL**: `/local/learningsuccess/student.php?courseid=COURSE_ID&userid=USER_ID`
-- Detailed pedagogical drill-down showing:
-  - Full contributing signal breakdown (*Why is this student at risk?*).
-  - Recommended actions with 1-click apply buttons.
-  - Complete intervention history, outcome badges, follow-up dates, and private teacher notes.
-
----
-
-## Architecture & Design Rules
-
-The plugin strictly adheres to the 10 Golden Rules defined in [`technical.md`](technical.md):
-
-1. **Do not recreate Moodle Analytics**: Consume Moodle Analytics via the `risk_provider` interface; never re-implement competing machine learning pipelines.
-2. **Do not store Moodle data unnecessarily**: Read Moodle core tables on demand. Only persist intervention records, teacher notes, and evaluation snapshots.
-3. **Keep risk detection separate from intervention**: Detecting that a student is struggling is distinct from deciding what action the teacher should take.
-4. **Every recommendation should have an explanation**: Recommendations are always accompanied by observable evidence.
-5. **Every intervention should optionally have a follow-up**: Default 7-day follow-up with automated reminders.
-6. **Every completed intervention records an outcome**: Measurable evaluation (Improved, No Change, Declined).
-7. **Do not claim causation**: Say *"Student indicators improved after the intervention"*, not *"The intervention caused a 40% improvement"*.
-8. **Use Moodle APIs instead of replacing them**: Use Moodle Messaging, Moodle Groups, MUC Caching, and Moodle Tasks.
-9. **Business logic belongs in PHP services, not JavaScript**: AMD modules only handle UI state and AJAX triggers.
-10. **Teacher UI answers: "What should I do next?"**: Practical, clear, and actionable.
+### 2. Student Success Details (`student.php`)
+- **Route**: `/local/learningsuccess/student.php?courseid=COURSE_ID&userid=USER_ID`
+- Features:
+  - **Why Now?**: Bullet-point explanations of observable struggle signals.
+  - **Recommendations**: Primary action and alternative options.
+  - **Intervention History**: Longitudinal record of teacher actions, notes, follow-up dates, and outcomes.
 
 ---
 
@@ -166,10 +221,10 @@ cd /path/to/moodle/local
 git clone https://github.com/vuvanhieu143/local_learningsuccess.git learningsuccess
 ```
 
-### Method 2: ZIP Download
-1. Download the latest release from the [GitHub Releases](https://github.com/vuvanhieu143/local_learningsuccess/releases) page.
-2. Extract the archive into your Moodle root at `local/learningsuccess`.
-3. Log in to Moodle as an administrator and visit **Site administration -> Notifications** to complete the database upgrade.
+### Method 2: ZIP Package
+1. Download the latest release from [GitHub Releases](https://github.com/vuvanhieu143/local_learningsuccess/releases).
+2. Extract the archive into your Moodle installation at `local/learningsuccess`.
+3. Visit **Site administration -> Notifications** to run the database installation/upgrade.
 
 ---
 
@@ -180,29 +235,29 @@ Site administrators can configure plugin policies in **Site administration -> Pl
 | Setting | Default | Description |
 | :--- | :--- | :--- |
 | **Enable Plugin** | `Yes` | Globally enables or disables Learning Success features. |
-| **Inactivity Threshold** | `7` days | Number of days without course access before triggering an inactivity warning (14 days for critical). |
+| **Inactivity Threshold** | `7` days | Days of inactivity before triggering a warning (critical threshold at 14 days). |
 | **Grade Decline Threshold** | `20%` | Assessment score drop percentage triggering academic performance warnings. |
 
 ---
 
 ## Scheduled Tasks
 
-The plugin registers two automated background tasks in **Site administration -> Server -> Tasks -> Scheduled tasks**:
+The plugin registers two automated tasks in **Site administration -> Server -> Tasks -> Scheduled tasks**:
 
 1. **`Refresh student learning success cache and signals`** (`\local_learningsuccess\task\refresh_student_data`):
    - Runs every 30 minutes.
-   - Pre-warms MUC caches for active courses, auto-resolves stagnant interventions after 7 days, and runs garbage collection to prevent memory leaks.
+   - Refreshes MUC caches for active courses and ensures smooth performance.
 2. **`Process due intervention follow-ups and notify teachers`** (`\local_learningsuccess\task\process_followups`):
    - Runs daily at 08:00 AM.
-   - Scans active interventions where follow-up date is due and sends Moodle Core Notifications to teachers.
+   - Transitions due interventions to `FOLLOW_UP` and sends Moodle Core Notification reminders to teachers.
 
 ---
 
 ## Capabilities & Permissions
 
-Permissions are defined in `db/access.php` with default assignments for Teacher, Editing Teacher, and Manager archetypes:
+Permissions are defined in `db/access.php`:
 
-- `local/learningsuccess:viewcourse`: Access the course Learning Success dashboard and Class Pulse.
+- `local/learningsuccess:viewcourse`: Access the course dashboard and Class Pulse.
 - `local/learningsuccess:viewstudent`: View detailed student explanations and timeline history.
 - `local/learningsuccess:createintervention`: Create new interventions, send check-in messages, and add notes.
 - `local/learningsuccess:manageintervention`: Complete, update, or dismiss intervention records.
@@ -213,44 +268,53 @@ Permissions are defined in `db/access.php` with default assignments for Teacher,
 
 ## Security & Performance
 
-- **Zero SQL Injections**: 100% of database queries use `$DB` parameterized methods.
-- **IDOR & Group Isolation**: Strict validation on every web controller and External Web Service endpoint. Teachers in `SEPARATEGROUPS` mode cannot view or intervene on students outside their assigned groups.
-- **XSS Prevention**: 100% of Mustache template variables are auto-escaped using `{{var}}`.
-- **$O(1)$ Bulk Aggregation**: Batch course analytics load grades, completion, and quiz attempts in 4–5 bulk queries rather than per-student loops, delivering sub-150ms page renders for classes of 300+ students.
+- **Zero Raw SQL**: 100% of database queries use `$DB` parameterized calls (`get_records`, `insert_record`, `update_record`).
+- **IDOR & Group Protection**: Enforced on every controller and web service endpoint. Teachers in `SEPARATEGROUPS` mode cannot view or intervene on students outside their allocated groups.
+- **XSS Prevention**: All Mustache template variables are auto-escaped using `{{var}}`.
+- **$O(1)$ Bulk Aggregation**: Batch course analytics load completion, grades, and access records in 4–5 bulk SQL queries rather than per-student loops, delivering sub-150ms page renders for large cohorts.
 - **Two-Tier MUC Caching**: Configured with 30-minute TTL and static acceleration in `db/caches.php`.
 
 ---
 
 ## Privacy & GDPR
 
-Learning Success fully implements Moodle's Privacy API (`classes/privacy/provider.php`):
+Learning Success complies with Moodle's Privacy API (`classes/privacy/provider.php`):
 - Implements `metadata_provider` documenting stored tables (`local_ls_intervention`, `local_ls_signal`, `local_ls_note`, `local_ls_snapshot`).
 - Implements `plugin_provider` supporting:
   - **User Data Export**: Exports all interventions, notes, and snapshots associated with a user in standard Moodle format.
   - **User Data Deletion**: Deletes personal intervention history when a student or context erasure request is processed.
+- Adheres to **Data Minimisation**: Omits raw email addresses from teacher dashboard listings.
 
 ---
 
-## Contributing & Testing
+## Testing & Quality Assurance
 
-We welcome issues, feedback, and pull requests!
-
-### Running Unit Tests (PHPUnit)
+### Running PHPUnit Tests
 ```bash
 vendor/bin/phpunit --filter local_learningsuccess
 ```
 
-### Running Acceptance Tests (Behat)
+### Running Specific Test Suites
 ```bash
-vendor/bin/behat --tags @local_learningsuccess
+# Risk Provider consistency test
+vendor/bin/phpunit local/learningsuccess/tests/risk_provider_test.php
+
+# Actionability Engine & Work-Queue test
+vendor/bin/phpunit local/learningsuccess/tests/actionability_test.php
+
+# Normalized Lifecycle test
+vendor/bin/phpunit local/learningsuccess/tests/intervention_lifecycle_test.php
+
+# Signal Dismissal & Message Templates test
+vendor/bin/phpunit local/learningsuccess/tests/signal_dismissal_test.php
+
+# Outcome Evaluation & Snapshots test
+vendor/bin/phpunit local/learningsuccess/tests/outcome_evaluator_test.php
 ```
 
-### Code Standards Validation
+### Code Standards Audit
 ```bash
-# PHP CodeSniffer with Moodle Coding Style
-phpcs --standard=.phpcs.xml.dist local/learningsuccess
-
-# PHP File Standards Audit
+# Verify 100% compliance with Moodle 5.x standards
 node scratch/audit.js
 ```
 
