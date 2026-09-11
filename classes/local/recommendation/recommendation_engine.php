@@ -157,5 +157,27 @@ class recommendation_engine {
             'alternatives' => array_values($alternatives),
         ];
     }
+
+    /**
+     * Get default follow-up window in seconds for a given intervention type.
+     *
+     * Check-in: 3 days
+     * Meeting requested: 3 days
+     * Assignment support: 7 days
+     * Learning resource / default: 7 days
+     *
+     * @param string $type Intervention type
+     * @return int Duration in seconds
+     */
+    public static function get_default_followup_duration(string $type): int {
+        return match (strtolower($type)) {
+            'checkin', 'contact', 'direct_message' => 3 * DAYSECS,
+            'meeting', 'advisor_referral' => 3 * DAYSECS,
+            'extension', 'assignment_support', 'missed_activity' => 7 * DAYSECS,
+            'learning_resource', 'resource', 'progress_monitoring' => 7 * DAYSECS,
+            default => 7 * DAYSECS,
+        };
+    }
 }
+
 

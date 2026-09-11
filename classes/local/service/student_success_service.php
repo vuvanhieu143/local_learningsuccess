@@ -227,13 +227,13 @@ class student_success_service {
     }
 
     /**
-     * Retrieve recent successful interventions where the student improved.
+     * Retrieve recent interventions where student indicators improved.
      *
      * @param int $courseid
      * @param int $limit
      * @return array
      */
-    public function get_recent_success_stories(int $courseid, int $limit = 5): array {
+    public function get_recent_improvements(int $courseid, int $limit = 5): array {
         global $DB;
 
         $sql = "SELECT i.id, i.userid, i.type, i.actual_action, i.completed_at, i.timemodified,
@@ -248,14 +248,14 @@ class student_success_service {
         $records = $DB->get_records_sql($sql, [
             'courseid' => $courseid,
             'completed' => intervention_manager::STATUS_COMPLETED,
-            'improved' => 'IMPROVED',
+            'improved' => outcome::IMPROVED,
         ], 0, $limit);
 
-        $stories = [];
+        $improvements = [];
         foreach ($records as $r) {
             $completedtime = $r->completed_at ? (int) $r->completed_at : (int) $r->timemodified;
             $typekey = 'type_' . strtolower($r->type);
-            $stories[] = [
+            $improvements[] = [
                 'id' => (int) $r->id,
                 'userid' => (int) $r->userid,
                 'fullname' => fullname($r),
@@ -263,10 +263,22 @@ class student_success_service {
                 'type_label' => get_string($typekey, 'local_learningsuccess'),
                 'action_note' => $r->actual_action,
                 'completed_date' => userdate($completedtime, get_string('strftimedatemonthabbr', 'langconfig')),
+                'evidence_summary' => get_string('indicators_improved_desc', 'local_learningsuccess'),
             ];
         }
 
-        return $stories;
+        return $improvements;
+    }
+
+    /**
+     * Backward-compatible alias for get_recent_improvements.
+     *
+     * @param int $courseid
+     * @param int $limit
+     * @return array
+     */
+    public function get_recent_success_stories(int $courseid, int $limit = 5): array {
+        return $this->get_recent_improvements($courseid, $limit);
     }
 
     /**

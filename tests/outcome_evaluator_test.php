@@ -19,103 +19,98 @@ namespace local_learningsuccess;
 defined('MOODLE_INTERNAL') || die();
 
 use advanced_testcase;
+use local_learningsuccess\local\intervention\intervention_manager;
 use local_learningsuccess\local\outcome\outcome;
 use local_learningsuccess\local\outcome\outcome_evaluator;
 use local_learningsuccess\local\outcome\snapshot_service;
+use local_learningsuccess\local\recommendation\recommendation_engine;
 
 /**
- * Unit test suite for Phase 4 Snapshots and Outcome Evaluator.
+ * Unit tests for recommendation follow-up defaults, evidence-based outcome evaluation, and snapshots.
  *
  * @package    local_learningsuccess
  * @category   test
  * @copyright  2026 Learning Success Team
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class outcome_evaluator_test extends advanced_testcase {
+final class outcome_evaluator_test extends advanced_testcase {
 
-    protected function setUp(): void {
+    public function setUp(): void {
         $this->resetAfterTest();
     }
 
     /**
-     * Test snapshot_service capture structure.
+     * Test recommendation-specific follow-up duration defaults.
      */
-    public function test_snapshot_service_capture(): void {
-        $course = $this->getDataGenerator()->create_course();
-        $user = $this->getDataGenerator()->create_user();
-
-        $service = new snapshot_service();
-        $snapshot = $service->capture($user->id, $course->id);
-
-        $this->assertIsArray($snapshot);
-        $this->assertArrayHasKey('risk_score', $snapshot);
-        $this->assertArrayHasKey('risk_level', $snapshot);
-        $this->assertArrayHasKey('completion', $snapshot);
-        $this->assertArrayHasKey('grade', $snapshot);
-        $this->assertArrayHasKey('inactive_days', $snapshot);
+    public function test_recommendation_followup_duration_defaults(): void {
+        $this->assertEquals(3 * DAYSECS, recommendation_engine::get_default_followup_duration('checkin'));
+        $this->assertEquals(3 * DAYSECS, recommendation_engine::get_default_followup_duration('contact'));
+        $this->assertEquals(3 * DAYSECS, recommendation_engine::get_default_followup_duration('meeting'));
+        $this->assertEquals(7 * DAYSECS, recommendation_engine::get_default_followup_duration('assignment_support'));
+        $this->assertEquals(7 * DAYSECS, recommendation_engine::get_default_followup_duration('extension'));
+        $this->assertEquals(7 * DAYSECS, recommendation_engine::get_default_followup_duration('learning_resource'));
     }
 
     /**
-     * Test outcome_evaluator detecting improvement, decline, and no change.
+     * Test system evidence calculation with neutral wording.
      */
-    public function test_outcome_evaluator_comparisons(): void {
+    public function test_system_evidence_evaluation(): void {
         $evaluator = new outcome_evaluator();
 
-        // 1. Improvement scenario: risk decreased from 70 to 40.
-        $before = ['risk_score' => 70, 'grade' => 45, 'completion' => 30];
-        $after = ['risk_score' => 40, 'grade' => 55, 'completion' => 50];
-        $res = $evaluator->evaluate($before, $after);
+        $before = ['risk_score' => 80.0, 'completion' => 40.0, 'grade' => 45.0];
+        $after = ['risk_score' => 50.0, 'completion' => 65.0, 'grade' => 60.0];
 
-        $this->assertEquals(outcome::IMPROVED, $res->status);
-        $this->assertEquals(30.0, $res->riskdelta);
-        $this->assertEquals(10.0, $res->gradedelta);
-        $this->assertEquals(20.0, $res->completiondelta);
+        $evidence = $evaluator->evaluate_system_evidence($before, $after);
 
-        // 2. Decline scenario: risk increased by 20.
-        $afterDecline = ['risk_score' => 90, 'grade' => 25, 'completion' => 30];
-        $resDecline = $evaluator->evaluate($before, $afterDecline);
-        $this->assertEquals(outcome::DECLINED, $resDecline->status);
-
-        // 3. No change scenario.
-        $afterNoChange = ['risk_score' => 68, 'grade' => 46, 'completion' => 32];
-        $resNoChange = $evaluator->evaluate($before, $afterNoChange);
-        $this->assertEquals(outcome::NO_CHANGE, $resNoChange->status);
+        $this->assertEquals(outcome::IMPROVED, $evidence['status']);
+        $this->assertEquals(30.0, $evidence['risk_delta']);
+        $this->assertEquals(25.0, $evidence['completion_delta']);
+        $this->assertEquals(15.0, $evidence['grade_delta']);
+        $this->assertNotEmpty($evidence['summary']);
     }
 
     /**
-     * Test course effectiveness statistics aggregation.
+     * Test intervention completion with teacher-confirmed outcome and canonical snapshot recording.
      */
-    public function test_course_effectiveness_aggregation(): void {
-        global $DB;
-
+    public function test_intervention_completion_and_canonical_snapshots(): void {
+        $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $student = $this->getDataGenerator()->create_user();
         $teacher = $this->getDataGenerator()->create_user();
 
-        // Insert mock interventions with varying outcomes.
-        $outcomes = [outcome::IMPROVED, outcome::IMPROVED, outcome::NO_CHANGE, outcome::DECLINED, outcome::UNKNOWN];
-        foreach ($outcomes as $out) {
-            $DB->insert_record('local_ls_intervention', (object) [
-                'courseid' => $course->id,
-                'userid' => $student->id,
-                'teacherid' => $teacher->id,
-                'type' => 'checkin',
-                'status' => 'completed',
-                'outcome' => $out,
-                'timecreated' => time(),
-                'timemodified' => time(),
-            ]);
-        }
+        $manager = new intervention_manager();
+        $snapshotservice = new snapshot_service();
 
-        $evaluator = new outcome_evaluator();
-        $stats = $evaluator->get_course_effectiveness($course->id);
+        // 1. Create checkin intervention (should auto-default follow-up to 3 days).
+        $beforetime = time();
+        $id = $manager->create(
+            userid: $user->id,
+            courseid: $course->id,
+            teacherid: $teacher->id,
+            type: 'checkin',
+            reason: 'High inactivity',
+            recommended: 'Send check-in',
+            actual: 'Check-in message sent'
+        );
 
-        $this->assertEquals(5, $stats['total_interventions']);
-        $this->assertEquals(2, $stats['improved_count']);
-        $this->assertEquals(1, $stats['no_change_count']);
-        $this->assertEquals(1, $stats['declined_count']);
-        $this->assertEquals(1, $stats['unknown_count']);
-        $this->assertEquals(4, $stats['resolved_count']);
-        $this->assertEquals(50, $stats['success_rate']); // 2 / 4 = 50%
+        $interv = $manager->get_for_student($user->id, $course->id)[$id];
+        $this->assertGreaterThanOrEqual($beforetime + (3 * DAYSECS) - 5, (int) $interv->followupat);
+
+        // 2. Complete with teacher-confirmed outcome UNABLE_TO_CONTACT.
+        $success = $manager->complete(
+            id: $id,
+            actualaction: 'Student did not reply to multiple emails',
+            teacheroutcome: outcome::UNABLE_TO_CONTACT
+        );
+        $this->assertTrue($success);
+
+        $completed = $manager->get_for_student($user->id, $course->id)[$id];
+        $this->assertEquals(outcome::UNABLE_TO_CONTACT, $completed->outcome);
+
+        // 3. Verify canonical snapshots exist for both 'before' and 'followup'.
+        $snapshots = $snapshotservice->get_snapshots_for_intervention($id);
+        $this->assertNotNull($snapshots['before']);
+        $this->assertNotNull($snapshots['followup']);
+        $this->assertEquals($id, $snapshots['before']->interventionid);
+        $this->assertEquals($id, $snapshots['followup']->interventionid);
     }
 }

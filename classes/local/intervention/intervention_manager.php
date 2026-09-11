@@ -22,6 +22,7 @@ use local_learningsuccess\local\helper\cache_helper;
 use local_learningsuccess\local\outcome\outcome;
 use local_learningsuccess\local\outcome\outcome_evaluator;
 use local_learningsuccess\local\outcome\snapshot_service;
+use local_learningsuccess\local\recommendation\recommendation_engine;
 
 /**
  * Domain manager managing student intervention lifecycle and state transitions.
@@ -81,6 +82,11 @@ class intervention_manager {
             ? intervention_status::CONTACTED
             : intervention_status::OPEN;
 
+        if ($followupat === null) {
+            $duration = recommendation_engine::get_default_followup_duration($type);
+            $followupat = $now + $duration;
+        }
+
         $record = (object) [
             'userid' => $userid,
             'courseid' => $courseid,
@@ -96,7 +102,7 @@ class intervention_manager {
             'timecreated' => $now,
             'timemodified' => $now,
             'completed_at' => null,
-            'followupat' => $followupat ?? ($now + (7 * DAYSECS)),
+            'followupat' => $followupat,
             'resolvedat' => null,
         ];
 
@@ -119,10 +125,17 @@ class intervention_manager {
      * @param string $newstatus Target status constant from intervention_status.
      * @param string|null $note Optional teacher note explaining transition.
      * @param int|null $actorid Optional teacher user ID performing transition.
+     * @param string|null $teacheroutcome Optional teacher-confirmed outcome.
      * @return bool
      * @throws \moodle_exception If transition is invalid.
      */
-    public function transition_to(int $id, string $newstatus, ?string $note = null, ?int $actorid = null): bool {
+    public function transition_to(
+        int $id,
+        string $newstatus,
+        ?string $note = null,
+        ?int $actorid = null,
+        ?string $teacheroutcome = null
+    ): bool {
         global $DB, $USER;
 
         $record = $DB->get_record('local_ls_intervention', ['id' => $id], '*', MUST_EXIST);
@@ -139,7 +152,7 @@ class intervention_manager {
         }
 
         if ($tostatus === intervention_status::COMPLETED) {
-            return $this->complete($id, $note);
+            return $this->complete($id, $note, $teacheroutcome);
         }
 
         if ($tostatus === intervention_status::DISMISSED) {
@@ -235,13 +248,16 @@ class intervention_manager {
     }
 
     /**
-     * Mark an intervention as completed, capture after-snapshot, and compute outcome.
+     * Mark an intervention as completed, capture after-snapshot, and record outcome.
      *
-     * @param int $id
-     * @param string|null $actualaction
+     * Distinguishes teacher-confirmed outcome from automated system evidence.
+     *
+     * @param int $id Intervention ID
+     * @param string|null $actualaction Action notes recorded by teacher
+     * @param string|null $teacheroutcome Teacher-confirmed outcome status constant
      * @return bool
      */
-    public function complete(int $id, ?string $actualaction = null): bool {
+    public function complete(int $id, ?string $actualaction = null, ?string $teacheroutcome = null): bool {
         global $DB;
 
         $record = $DB->get_record('local_ls_intervention', ['id' => $id], '*', MUST_EXIST);
@@ -251,7 +267,21 @@ class intervention_manager {
         $outcomeobj = $this->outcomeevaluator->evaluate($record->before_snapshot, $aftersnapshot);
 
         $record->status = self::STATUS_COMPLETED;
-        $record->outcome = $outcomeobj->get_status();
+
+        if ($teacheroutcome !== null) {
+            $allowedoutcomes = [
+                outcome::IMPROVED,
+                outcome::NO_CHANGE,
+                outcome::DECLINED,
+                outcome::UNABLE_TO_CONTACT,
+                outcome::NOT_APPLICABLE,
+            ];
+            $upper = strtoupper(trim($teacheroutcome));
+            $record->outcome = in_array($upper, $allowedoutcomes, true) ? $upper : $outcomeobj->get_status();
+        } else {
+            $record->outcome = $outcomeobj->get_status();
+        }
+
         $record->after_snapshot = json_encode($aftersnapshot);
         $record->completed_at = $now;
         $record->resolvedat = $now;

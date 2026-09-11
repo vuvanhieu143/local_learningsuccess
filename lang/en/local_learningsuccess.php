@@ -154,10 +154,24 @@ $string['message_subject'] = 'Check-in from your teacher regarding course progre
 $string['default_checkin_message'] = 'Hi, I noticed you have not been active in our course recently. Please let me know if you need any help!';
 $string['auto_evaluated_note'] = 'Auto-evaluated after {$a} days of intervention.';
 
-// Success Stories & Celebrations.
-$string['recent_success_stories'] = 'Recent Success Stories & Comebacks';
-$string['no_success_stories_yet'] = 'No resolved interventions yet. Start reaching out to students to see their progress celebrated here!';
-$string['success_story_desc'] = 'Improved after receiving support from teacher.';
+// Recent Improvements & Evidence.
+$string['recent_improvements'] = 'Recent Improvements & Outcomes';
+$string['no_recent_improvements'] = 'No completed interventions recorded yet.';
+$string['indicators_improved_desc'] = 'Indicators improved after the intervention.';
+$string['indicators_no_change_desc'] = 'Indicators showed no significant change.';
+$string['indicators_declined_desc'] = 'Indicators declined following intervention.';
+$string['system_evidence'] = 'System Evidence';
+$string['teacher_outcome'] = 'Teacher-Confirmed Outcome';
+$string['teacher_outcome_improved'] = 'Confirmed Improved';
+$string['teacher_outcome_no_change'] = 'Confirmed No Change';
+$string['teacher_outcome_declined'] = 'Confirmed Declined';
+$string['teacher_outcome_unable_to_contact'] = 'Unable to Contact';
+$string['teacher_outcome_not_applicable'] = 'Not Applicable';
+
+// Backward-compatibility aliases.
+$string['recent_success_stories'] = 'Recent Improvements & Outcomes';
+$string['no_success_stories_yet'] = 'No completed interventions recorded yet.';
+$string['success_story_desc'] = 'Indicators improved after the intervention.';
 
 // Empathetic Message Presets.
 $string['click_preset_to_fill'] = 'Click a preset to quickly fill a warm message:';

@@ -93,4 +93,37 @@ class snapshot_service {
 
         return $DB->insert_record('local_ls_snapshot', $record);
     }
+
+    /**
+     * Retrieve canonical snapshots for an intervention record.
+     *
+     * @param int $interventionid
+     * @return array{before: ?\stdClass, followup: ?\stdClass}
+     */
+    public function get_snapshots_for_intervention(int $interventionid): array {
+        global $DB;
+
+        $records = $DB->get_records(
+            'local_ls_snapshot',
+            ['interventionid' => $interventionid],
+            'timecreated ASC'
+        );
+
+        $result = [
+            'before' => null,
+            'followup' => null,
+        ];
+
+        foreach ($records as $rec) {
+            $phase = strtolower($rec->phase);
+            if ($phase === 'before') {
+                $result['before'] = $rec;
+            } else if ($phase === 'followup' || $phase === 'after') {
+                $result['followup'] = $rec;
+            }
+        }
+
+        return $result;
+    }
 }
+

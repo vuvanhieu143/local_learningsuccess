@@ -65,13 +65,13 @@ class outcome_evaluator {
 
         if ($riskdelta >= 10.0 || $completiondelta >= 15.0 || $gradedelta >= 10.0) {
             $status = outcome::IMPROVED;
-            $summary = get_string('success_story_desc', 'local_learningsuccess');
+            $summary = get_string('indicators_improved_desc', 'local_learningsuccess');
         } else if ($riskdelta <= -15.0 || $gradedelta <= -15.0) {
             $status = outcome::DECLINED;
-            $summary = get_string('outcome_declined', 'local_learningsuccess');
+            $summary = get_string('indicators_declined_desc', 'local_learningsuccess');
         } else {
             $status = outcome::NO_CHANGE;
-            $summary = get_string('outcome_no_change', 'local_learningsuccess');
+            $summary = get_string('indicators_no_change_desc', 'local_learningsuccess');
         }
 
         return new outcome(
@@ -81,6 +81,56 @@ class outcome_evaluator {
             completiondelta: round($completiondelta, 1),
             summary: $summary
         );
+    }
+
+    /**
+     * Compute detailed indicator evidence between snapshots.
+     *
+     * Keeps automatic metric movement (System Evidence) strictly separated from Teacher-Confirmed Outcome.
+     *
+     * @param mixed $before
+     * @param mixed $after
+     * @return array{status: string, summary: string, risk_delta: float, grade_delta: float, completion_delta: float, indicators: array}
+     */
+    public function evaluate_system_evidence(mixed $before, mixed $after): array {
+        $outcome = $this->evaluate($before, $after);
+
+        $b = is_string($before) ? json_decode($before, true) : (array) $before;
+        $a = is_string($after) ? json_decode($after, true) : (array) $after;
+
+        $indicators = [];
+        if (!empty($b) && !empty($a)) {
+            $indicators[] = [
+                'name' => 'risk_score',
+                'label' => 'Risk Score',
+                'before' => $b['risk_score'] ?? null,
+                'after' => $a['risk_score'] ?? null,
+                'delta' => $outcome->riskdelta,
+            ];
+            $indicators[] = [
+                'name' => 'completion',
+                'label' => 'Completion Rate (%)',
+                'before' => $b['completion'] ?? null,
+                'after' => $a['completion'] ?? null,
+                'delta' => $outcome->completiondelta,
+            ];
+            $indicators[] = [
+                'name' => 'grade',
+                'label' => 'Grade (%)',
+                'before' => $b['grade'] ?? null,
+                'after' => $a['grade'] ?? null,
+                'delta' => $outcome->gradedelta,
+            ];
+        }
+
+        return [
+            'status' => $outcome->get_status(),
+            'summary' => $outcome->summary,
+            'risk_delta' => $outcome->riskdelta,
+            'grade_delta' => $outcome->gradedelta,
+            'completion_delta' => $outcome->completiondelta,
+            'indicators' => $indicators,
+        ];
     }
 
     /**
