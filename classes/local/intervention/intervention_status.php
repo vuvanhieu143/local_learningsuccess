@@ -51,9 +51,6 @@ class intervention_status {
     private const TRANSITIONS = [
         self::OPEN => [
             self::CONTACTED,
-            self::WAITING,
-            self::FOLLOW_UP,
-            self::COMPLETED,
             self::DISMISSED,
         ],
         self::CONTACTED => [

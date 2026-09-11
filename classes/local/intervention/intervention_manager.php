@@ -97,6 +97,10 @@ class intervention_manager {
             'actual_action' => $actual,
             'status' => $initialstatus,
             'outcome' => outcome::UNKNOWN,
+            'before_snapshot_id' => null,
+            'after_snapshot_id' => null,
+            'system_outcome' => null,
+            'teacher_outcome' => null,
             'before_snapshot' => json_encode($snapshot),
             'after_snapshot' => null,
             'timecreated' => $now,
@@ -107,7 +111,8 @@ class intervention_manager {
         ];
 
         $id = $DB->insert_record('local_ls_intervention', $record);
-        $this->snapshotservice->record_snapshot($id, $userid, $courseid, 'before');
+        $beforeid = $this->snapshotservice->record_snapshot($id, $userid, $courseid, 'before');
+        $DB->set_field('local_ls_intervention', 'before_snapshot_id', $beforeid, ['id' => $id]);
 
         if ($sendmessage && !empty($actual)) {
             $this->send_direct_message($teacherid, $userid, $actual, $courseid);
@@ -151,15 +156,71 @@ class intervention_manager {
             );
         }
 
+        $now = time();
+
         if ($tostatus === intervention_status::COMPLETED) {
-            return $this->complete($id, $note, $teacheroutcome);
+            $aftersnapshot = $this->snapshotservice->capture($record->userid, $record->courseid);
+            $outcomeobj = $this->outcomeevaluator->evaluate($record->before_snapshot, $aftersnapshot);
+
+            $record->status = self::STATUS_COMPLETED;
+            $record->system_outcome = $outcomeobj->get_status();
+
+            if ($teacheroutcome !== null) {
+                $allowedoutcomes = [
+                    outcome::IMPROVED,
+                    outcome::NO_CHANGE,
+                    outcome::DECLINED,
+                    outcome::UNABLE_TO_CONTACT,
+                    outcome::NOT_APPLICABLE,
+                ];
+                $upper = strtoupper(trim($teacheroutcome));
+                $record->teacher_outcome = in_array($upper, $allowedoutcomes, true) ? $upper : null;
+            } else {
+                $record->teacher_outcome = null;
+            }
+
+            $record->outcome = $record->teacher_outcome ?? $record->system_outcome;
+            $record->after_snapshot = json_encode($aftersnapshot);
+            $record->completed_at = $now;
+            $record->resolvedat = $now;
+            $record->timemodified = $now;
+
+            if ($note !== null) {
+                $record->actual_action = $note;
+            }
+
+            $success = $DB->update_record('local_ls_intervention', $record);
+            if ($success) {
+                $afterid = $this->snapshotservice->record_snapshot($id, $record->userid, $record->courseid, 'followup');
+                $DB->set_field('local_ls_intervention', 'after_snapshot_id', $afterid, ['id' => $id]);
+                if (!empty($note) && $actorid !== null) {
+                    $this->add_note($id, $actorid, $note);
+                }
+                $this->invalidate_cache($record->courseid, $record->userid);
+            }
+
+            return $success;
         }
 
         if ($tostatus === intervention_status::DISMISSED) {
-            return $this->dismiss($id);
+            $record->status = self::STATUS_DISMISSED;
+            $record->timemodified = $now;
+
+            if ($note !== null) {
+                $record->actual_action = $note;
+            }
+
+            $success = $DB->update_record('local_ls_intervention', $record);
+            if ($success) {
+                if (!empty($note) && $actorid !== null) {
+                    $this->add_note($id, $actorid, $note);
+                }
+                $this->invalidate_cache($record->courseid, $record->userid);
+            }
+
+            return $success;
         }
 
-        $now = time();
         $record->status = $tostatus;
         $record->timemodified = $now;
 
@@ -249,76 +310,28 @@ class intervention_manager {
 
     /**
      * Mark an intervention as completed, capture after-snapshot, and record outcome.
-     *
-     * Distinguishes teacher-confirmed outcome from automated system evidence.
+     * Enforces the state machine via transition_to().
      *
      * @param int $id Intervention ID
      * @param string|null $actualaction Action notes recorded by teacher
      * @param string|null $teacheroutcome Teacher-confirmed outcome status constant
      * @return bool
+     * @throws \moodle_exception If transition to completed is illegal from current state.
      */
     public function complete(int $id, ?string $actualaction = null, ?string $teacheroutcome = null): bool {
-        global $DB;
-
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id], '*', MUST_EXIST);
-
-        $now = time();
-        $aftersnapshot = $this->snapshotservice->capture($record->userid, $record->courseid);
-        $outcomeobj = $this->outcomeevaluator->evaluate($record->before_snapshot, $aftersnapshot);
-
-        $record->status = self::STATUS_COMPLETED;
-
-        if ($teacheroutcome !== null) {
-            $allowedoutcomes = [
-                outcome::IMPROVED,
-                outcome::NO_CHANGE,
-                outcome::DECLINED,
-                outcome::UNABLE_TO_CONTACT,
-                outcome::NOT_APPLICABLE,
-            ];
-            $upper = strtoupper(trim($teacheroutcome));
-            $record->outcome = in_array($upper, $allowedoutcomes, true) ? $upper : $outcomeobj->get_status();
-        } else {
-            $record->outcome = $outcomeobj->get_status();
-        }
-
-        $record->after_snapshot = json_encode($aftersnapshot);
-        $record->completed_at = $now;
-        $record->resolvedat = $now;
-        $record->timemodified = $now;
-
-        if ($actualaction !== null) {
-            $record->actual_action = $actualaction;
-        }
-
-        $success = $DB->update_record('local_ls_intervention', $record);
-        if ($success) {
-            $this->snapshotservice->record_snapshot($id, $record->userid, $record->courseid, 'followup');
-            $this->invalidate_cache($record->courseid, $record->userid);
-        }
-
-        return $success;
+        return $this->transition_to($id, intervention_status::COMPLETED, $actualaction, null, $teacheroutcome);
     }
 
     /**
      * Dismiss an intervention record.
+     * Enforces the state machine via transition_to().
      *
      * @param int $id
      * @return bool
+     * @throws \moodle_exception If transition to dismissed is illegal from current state.
      */
     public function dismiss(int $id): bool {
-        global $DB;
-
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id], '*', MUST_EXIST);
-        $record->status = self::STATUS_DISMISSED;
-        $record->timemodified = time();
-
-        $success = $DB->update_record('local_ls_intervention', $record);
-        if ($success) {
-            $this->invalidate_cache($record->courseid, $record->userid);
-        }
-
-        return $success;
+        return $this->transition_to($id, intervention_status::DISMISSED);
     }
 
     /**
