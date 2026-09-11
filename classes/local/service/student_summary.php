@@ -36,7 +36,7 @@ class student_summary {
      *
      * @param int $userid
      * @param int $courseid
-     * @param array $user User metadata (id, fullname, email)
+     * @param array $user User metadata (id, fullname)
      * @param risk_result|array $risk
      * @param array $signals
      * @param array $explanations

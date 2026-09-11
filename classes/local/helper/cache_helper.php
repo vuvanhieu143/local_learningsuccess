@@ -30,13 +30,22 @@ use cache;
 class cache_helper {
 
     /**
-     * Invalidate course summary cache.
+     * Invalidate course summary cache, including all group-specific views.
      *
      * @param int $courseid
      */
     public static function invalidate_course(int $courseid): void {
         $cache = cache::make('local_learningsuccess', 'course_summary');
         $cache->delete($courseid);
+
+        // Invalidate all group-specific cached views for this course.
+        if (function_exists('groups_get_all_groups')) {
+            $groups = groups_get_all_groups($courseid);
+            if (!empty($groups)) {
+                $keys = array_map(fn($g) => "{$courseid}_{$g->id}", array_values($groups));
+                $cache->delete_many($keys);
+            }
+        }
     }
 
     /**

@@ -105,7 +105,7 @@ class student_exporter extends external_api {
             'userid' => new external_value(PARAM_INT, 'Student user ID'),
             'courseid' => new external_value(PARAM_INT, 'Course ID'),
             'fullname' => new external_value(PARAM_TEXT, 'Full student name'),
-            'email' => new external_value(PARAM_EMAIL, 'Student email'),
+            'email' => new external_value(PARAM_RAW, 'Student email (omitted for data minimisation)', VALUE_DEFAULT, ''),
             'status' => new external_value(PARAM_ALPHA, 'Status key'),
             'status_label' => new external_value(PARAM_TEXT, 'Localized status label'),
             'risk_score' => new external_value(PARAM_INT, 'Calculated risk score'),
