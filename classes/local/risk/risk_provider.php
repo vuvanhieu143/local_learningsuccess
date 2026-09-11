@@ -35,4 +35,15 @@ interface risk_provider {
      * @return risk_result|null Normalized risk result, or null if unresolvable.
      */
     public function get_risk(int $userid, int $courseid): ?risk_result;
+
+    /**
+     * Bulk evaluate and retrieve risk information for multiple students in a course.
+     *
+     * Must use the exact same calculation logic as get_risk().
+     *
+     * @param int[] $userids Array of target student user IDs.
+     * @param int $courseid Target course ID.
+     * @return array<int, risk_result> Map of userid => risk_result.
+     */
+    public function get_risks(array $userids, int $courseid): array;
 }

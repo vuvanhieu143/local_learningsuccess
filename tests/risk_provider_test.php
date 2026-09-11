@@ -178,4 +178,72 @@ class risk_provider_test extends advanced_testcase {
         $this->assertArrayHasKey('risk_score', $explanationdata);
         $this->assertArrayHasKey('signals', $explanationdata);
     }
+
+    /**
+     * Test single get_risk and bulk get_risks produce identical results.
+     */
+    public function test_bulk_and_single_risk_consistency(): void {
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course();
+        $student1 = $this->getDataGenerator()->create_user();
+        $student2 = $this->getDataGenerator()->create_user();
+        $now = time();
+
+        // Student 1: Inactive 10 days, grade 50%.
+        $DB->insert_record('user_lastaccess', [
+            'userid' => $student1->id,
+            'courseid' => $course->id,
+            'timeaccess' => $now - (10 * DAYSECS),
+        ]);
+        $gi = $DB->insert_record('grade_items', (object) [
+            'courseid' => $course->id,
+            'itemtype' => 'course',
+            'grademax' => 100.0,
+        ]);
+        $DB->insert_record('grade_grades', (object) [
+            'itemid' => $gi,
+            'userid' => $student1->id,
+            'finalgrade' => 50.0,
+        ]);
+
+        // Student 2: Active yesterday, grade 95%.
+        $DB->insert_record('user_lastaccess', [
+            'userid' => $student2->id,
+            'courseid' => $course->id,
+            'timeaccess' => $now - DAYSECS,
+        ]);
+        $DB->insert_record('grade_grades', (object) [
+            'itemid' => $gi,
+            'userid' => $student2->id,
+            'finalgrade' => 95.0,
+        ]);
+
+        $providers = [
+            new fallback_provider(),
+            new moodle_analytics_provider(),
+        ];
+
+        foreach ($providers as $provider) {
+            $single1 = $provider->get_risk($student1->id, $course->id);
+            $single2 = $provider->get_risk($student2->id, $course->id);
+
+            $bulk = $provider->get_risks([$student1->id, $student2->id], $course->id);
+
+            $this->assertArrayHasKey($student1->id, $bulk);
+            $this->assertArrayHasKey($student2->id, $bulk);
+
+            // Single and bulk results must be strictly identical.
+            $this->assertEquals($single1->get_score(), $bulk[$student1->id]->get_score());
+            $this->assertEquals($single1->get_level(), $bulk[$student1->id]->get_level());
+            $this->assertEquals($single1->get_source(), $bulk[$student1->id]->get_source());
+
+            $this->assertEquals($single2->get_score(), $bulk[$student2->id]->get_score());
+            $this->assertEquals($single2->get_level(), $bulk[$student2->id]->get_level());
+            $this->assertEquals($single2->get_source(), $bulk[$student2->id]->get_source());
+
+            // Empty userids returns empty array.
+            $this->assertEmpty($provider->get_risks([], $course->id));
+        }
+    }
 }

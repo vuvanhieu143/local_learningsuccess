@@ -23,6 +23,8 @@ use local_learningsuccess\local\explanation\explanation_engine;
 use local_learningsuccess\local\intervention\intervention_manager;
 use local_learningsuccess\local\outcome\outcome;
 use local_learningsuccess\local\recommendation\recommendation_engine;
+use local_learningsuccess\local\risk\moodle_analytics_provider;
+use local_learningsuccess\local\risk\risk_provider;
 use local_learningsuccess\local\risk\risk_result;
 
 /**
@@ -34,16 +36,19 @@ use local_learningsuccess\local\risk\risk_result;
  */
 class student_success_service {
 
+    protected risk_provider $riskprovider;
     protected explanation_engine $explanationengine;
     protected recommendation_engine $recommendationengine;
     protected intervention_manager $interventionmanager;
 
     public function __construct(
+        ?risk_provider $riskprovider = null,
         ?explanation_engine $explanationengine = null,
         ?recommendation_engine $recommendationengine = null,
         ?intervention_manager $interventionmanager = null
     ) {
-        $this->explanationengine = $explanationengine ?? new explanation_engine();
+        $this->riskprovider = $riskprovider ?? new moodle_analytics_provider();
+        $this->explanationengine = $explanationengine ?? new explanation_engine($this->riskprovider);
         $this->recommendationengine = $recommendationengine ?? new recommendation_engine();
         $this->interventionmanager = $interventionmanager ?? new intervention_manager();
     }
@@ -346,12 +351,19 @@ class student_success_service {
             $submittedrecords = $DB->get_records_sql($submitsql, $baseparams);
         }
 
+        // 6. Bulk evaluate risks using unified risk_provider.
+        $userids = array_map(fn($u) => (int) $u->id, $enrolledusers);
+        $risks = $this->riskprovider->get_risks($userids, $courseid);
+
         $results = [];
 
         foreach ($enrolledusers as $user) {
             $uid = (int) $user->id;
+            $risk = $risks[$uid] ?? new risk_result(0.0, risk_result::LEVEL_HEALTHY, 'course_activity_signals');
+            $riskscore = (int) round($risk->get_score());
+            $status = $risk->get_level();
+
             $signals = [];
-            $riskscore = 0;
             $percent = null;
             $rate = 100;
 
@@ -365,7 +377,6 @@ class student_success_service {
                     'message' => get_string('signal_inactivity_critical', 'local_learningsuccess', '14+'),
                     'value' => 14,
                 ];
-                $riskscore += 40;
             } else {
                 $daysinactive = (int) floor(($now - $lastaccess) / DAYSECS);
                 if ($daysinactive >= $inactivitycritical) {
@@ -375,7 +386,6 @@ class student_success_service {
                         'message' => get_string('signal_inactivity_critical', 'local_learningsuccess', $daysinactive),
                         'value' => $daysinactive,
                     ];
-                    $riskscore += 40;
                 } else if ($daysinactive >= $inactivitywarning) {
                     $signals[] = [
                         'rule' => 'inactivity',
@@ -383,7 +393,6 @@ class student_success_service {
                         'message' => get_string('signal_inactivity_warning', 'local_learningsuccess', $daysinactive),
                         'value' => $daysinactive,
                     ];
-                    $riskscore += 25;
                 }
             }
 
@@ -398,7 +407,6 @@ class student_success_service {
                         'message' => get_string('signal_completion_low', 'local_learningsuccess', $rate),
                         'value' => $rate,
                     ];
-                    $riskscore += 35;
                 } else if ($rate < 60) {
                     $signals[] = [
                         'rule' => 'completion',
@@ -406,7 +414,6 @@ class student_success_service {
                         'message' => get_string('signal_completion_low', 'local_learningsuccess', $rate),
                         'value' => $rate,
                     ];
-                    $riskscore += 20;
                 }
             }
 
@@ -420,7 +427,6 @@ class student_success_service {
                         'message' => get_string('signal_quiz_low', 'local_learningsuccess', $percent),
                         'value' => $percent,
                     ];
-                    $riskscore += 30;
                 } else if ($percent < 50) {
                     $signals[] = [
                         'rule' => 'grade_performance',
@@ -428,7 +434,6 @@ class student_success_service {
                         'message' => get_string('signal_quiz_low', 'local_learningsuccess', $percent),
                         'value' => $percent,
                     ];
-                    $riskscore += 15;
                 }
             }
 
@@ -441,7 +446,6 @@ class student_success_service {
                     'message' => get_string('signal_quiz_retries', 'local_learningsuccess', $maxattempt),
                     'value' => $maxattempt,
                 ];
-                $riskscore += 20;
             }
 
             // Overdue assignments.
@@ -456,7 +460,6 @@ class student_success_service {
                         'message' => get_string('signal_missed_activities', 'local_learningsuccess', $missedassigns),
                         'value' => $missedassigns,
                     ];
-                    $riskscore += ($missedassigns * 15);
                 }
             }
 
@@ -491,19 +494,6 @@ class student_success_service {
                 ];
             } else {
                 $struggletag = null;
-            }
-
-            $riskscore = min(100, $riskscore);
-
-            // Determine status.
-            if ($riskscore >= 70) {
-                $status = risk_result::LEVEL_CRITICAL;
-            } else if ($riskscore >= 45) {
-                $status = risk_result::LEVEL_ATRISK;
-            } else if ($riskscore >= 20) {
-                $status = risk_result::LEVEL_MONITOR;
-            } else {
-                $status = risk_result::LEVEL_HEALTHY;
             }
 
             $results[] = [
