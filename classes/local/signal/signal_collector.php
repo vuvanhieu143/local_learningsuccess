@@ -221,6 +221,7 @@ class signal_collector {
                 ]);
 
                 if ($existing) {
+                    $existing->firstseen = $existing->firstseen ?: ($existing->timecreated ?: $now);
                     $existing->lastseen = $now;
                     $existing->severity = $severity;
                     $existing->value = is_numeric($item->get_value()) ? (float) $item->get_value() : 0.0;
@@ -249,6 +250,27 @@ class signal_collector {
                     ];
                     $DB->insert_record('local_ls_signal', $record);
                 }
+            }
+        }
+
+        if ($persist) {
+            $observedtypes = array_map(fn($item) => $item->get_type(), $rawexplanations);
+            if (!empty($observedtypes)) {
+                list($notinsql, $notinparams) = $DB->get_in_or_equal($observedtypes, SQL_PARAMS_NAMED, 'st', false);
+                $params = array_merge(['userid' => $userid, 'courseid' => $courseid], $notinparams);
+                $DB->execute(
+                    "UPDATE {local_ls_signal}
+                        SET active = 0
+                      WHERE userid = :userid AND courseid = :courseid AND active = 1 AND signal_type $notinsql",
+                    $params
+                );
+            } else {
+                $DB->execute(
+                    "UPDATE {local_ls_signal}
+                        SET active = 0
+                      WHERE userid = :userid AND courseid = :courseid AND active = 1",
+                    ['userid' => $userid, 'courseid' => $courseid]
+                );
             }
         }
 

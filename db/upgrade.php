@@ -68,5 +68,35 @@ function xmldb_local_learningsuccess_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026091100, 'local', 'learningsuccess');
     }
 
+    if ($oldversion < 2026091101) {
+        $table = new xmldb_table('local_ls_intervention');
+
+        $fields = [
+            new xmldb_field('before_snapshot_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'outcome'),
+            new xmldb_field('after_snapshot_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'before_snapshot_id'),
+            new xmldb_field('system_outcome', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'after_snapshot_id'),
+            new xmldb_field('teacher_outcome', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'system_outcome'),
+        ];
+
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        $indexes = [
+            new xmldb_index('before_snapshot_idx', XMLDB_INDEX_NOTUNIQUE, ['before_snapshot_id']),
+            new xmldb_index('after_snapshot_idx', XMLDB_INDEX_NOTUNIQUE, ['after_snapshot_id']),
+        ];
+
+        foreach ($indexes as $index) {
+            if (!$dbman->index_exists($table, $index)) {
+                $dbman->add_index($table, $index);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026091101, 'local', 'learningsuccess');
+    }
+
     return true;
 }
