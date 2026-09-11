@@ -164,7 +164,7 @@ class student_success_service {
             }
         }
 
-        $user = $DB->get_record('user', ['id' => $userid], 'id, firstname, lastname, email', MUST_EXIST);
+        $user = $DB->get_record('user', ['id' => $userid], 'id, firstname, lastname', MUST_EXIST);
         $explained = $this->explanationengine->explain_student($userid, $courseid);
         $recommendations = $this->recommendationengine->recommend($explained['signals']);
         $interventions = $this->interventionmanager->get_for_student($userid, $courseid);
@@ -174,7 +174,8 @@ class student_success_service {
         $riskobj = new risk_result(
             score: (float) $explained['risk_score'],
             level: $explained['status'],
-            source: $explained['source'] ?? 'course_activity_signals'
+            source: $explained['source'] ?? 'course_activity_signals',
+            model: $explained['model'] ?? null
         );
         $actionability = $this->actionabilityengine->evaluate(
             userid: $userid,
@@ -203,12 +204,12 @@ class student_success_service {
             user: [
                 'id' => $user->id,
                 'fullname' => fullname($user),
-                'email' => $user->email,
             ],
             risk: [
                 'score' => $explained['risk_score'],
                 'level' => $explained['status'],
                 'source' => $explained['source'] ?? 'course_activity_signals',
+                'model' => $explained['model'] ?? null,
             ],
             signals: $explained['signals'],
             explanations: $explained['signals'],
@@ -339,245 +340,20 @@ class student_success_service {
 
     /**
      * Batch process and explain multiple students using high-performance bulk SQL queries.
-     * Reduces O(N) database queries down to O(1).
+     * Delegates domain metric extraction and explanation calculations to explanation_engine::batch_explain().
      *
      * @param array $enrolledusers Array of enrolled user records
      * @param int $courseid Target course ID
      * @return array Array of explained student profiles
      */
     public function batch_explain_students(array $enrolledusers, int $courseid): array {
-        global $DB;
-
         if (empty($enrolledusers)) {
             return [];
         }
 
         $userids = array_map(fn($u) => (int) $u->id, array_values($enrolledusers));
-        $now = time();
-        $inactivitywarning = (int) get_config('local_learningsuccess', 'inactivity_threshold') ?: 7;
-        $inactivitycritical = $inactivitywarning * 2;
-
-        list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'uid');
-        $baseparams = array_merge(['courseid' => $courseid], $inparams);
-
-        // 1. Bulk query last access.
-        $lastaccesssql = "SELECT userid, timeaccess FROM {user_lastaccess} WHERE courseid = :courseid AND userid $insql";
-        $lastaccessrecords = $DB->get_records_sql($lastaccesssql, $baseparams);
-
-        // 2. Bulk query module completion count.
-        $totalmodules = (int) $DB->count_records_select(
-            'course_modules',
-            'course = :courseid AND completion > 0 AND deletioninprogress = 0',
-            ['courseid' => $courseid]
-        );
-
-        $completionrecords = [];
-        if ($totalmodules > 0) {
-            $cmcsql = "SELECT cmc.userid, COUNT(cmc.id) AS completed_count
-                         FROM {course_modules_completion} cmc
-                         JOIN {course_modules} cm ON cm.id = cmc.coursemoduleid
-                        WHERE cm.course = :courseid AND cmc.completionstate IN (1, 2)
-                          AND cmc.userid $insql
-                     GROUP BY cmc.userid";
-            $completionrecords = $DB->get_records_sql($cmcsql, $baseparams);
-        }
-
-        // 3. Bulk query course final grades.
-        $gradesql = "SELECT gg.userid, gg.finalgrade, gi.grademax
-                       FROM {grade_grades} gg
-                       JOIN {grade_items} gi ON gi.id = gg.itemid
-                      WHERE gi.courseid = :courseid AND gi.itemtype = 'course'
-                        AND gg.userid $insql";
-        $graderecords = $DB->get_records_sql($gradesql, $baseparams);
-
-        // 4. Bulk query quiz attempts (find repeated attempts / struggles).
-        $quizattemptsrecords = [];
-        if ($DB->record_exists('quiz', ['course' => $courseid])) {
-            $quizsql = "SELECT qa.userid, COUNT(qa.id) AS total_attempts, MAX(qa.attempt) AS max_attempt
-                          FROM {quiz_attempts} qa
-                          JOIN {quiz} q ON q.id = qa.quiz
-                         WHERE q.course = :courseid AND qa.state = 'finished'
-                           AND qa.userid $insql
-                      GROUP BY qa.userid";
-            $quizattemptsrecords = $DB->get_records_sql($quizsql, $baseparams);
-        }
-
-        // 5. Bulk query submitted assignments for overdue evaluation.
-        $totaloverdueassigns = (int) $DB->count_records_select(
-            'assign',
-            'course = :courseid AND duedate > 0 AND duedate < :now',
-            ['courseid' => $courseid, 'now' => $now]
-        );
-        $submittedrecords = [];
-        if ($totaloverdueassigns > 0) {
-            $submitsql = "SELECT s.userid, COUNT(s.id) AS submitted_count
-                            FROM {assign_submission} s
-                            JOIN {assign} a ON a.id = s.assignment
-                           WHERE a.course = :courseid AND a.duedate > 0 AND a.duedate < :now
-                             AND s.status = 'submitted' AND s.userid $insql
-                        GROUP BY s.userid";
-            $submittedrecords = $DB->get_records_sql($submitsql, $baseparams);
-        }
-
-        // 6. Bulk evaluate risks using unified risk_provider.
-        $userids = array_map(fn($u) => (int) $u->id, $enrolledusers);
         $risks = $this->riskprovider->get_risks($userids, $courseid);
 
-        $results = [];
-
-        foreach ($enrolledusers as $user) {
-            $uid = (int) $user->id;
-            $risk = $risks[$uid] ?? new risk_result(0.0, risk_result::LEVEL_HEALTHY, 'course_activity_signals');
-            $riskscore = (int) round($risk->get_score());
-            $status = $risk->get_level();
-
-            $signals = [];
-            $percent = null;
-            $rate = 100;
-
-            // Inactivity rule.
-            $lastaccess = isset($lastaccessrecords[$uid]) ? (int) $lastaccessrecords[$uid]->timeaccess : 0;
-            if ($lastaccess === 0) {
-                $daysinactive = 999;
-                $signals[] = [
-                    'rule' => 'inactivity',
-                    'severity' => 'critical',
-                    'message' => get_string('signal_inactivity_critical', 'local_learningsuccess', '14+'),
-                    'value' => 14,
-                ];
-            } else {
-                $daysinactive = (int) floor(($now - $lastaccess) / DAYSECS);
-                if ($daysinactive >= $inactivitycritical) {
-                    $signals[] = [
-                        'rule' => 'inactivity',
-                        'severity' => 'critical',
-                        'message' => get_string('signal_inactivity_critical', 'local_learningsuccess', $daysinactive),
-                        'value' => $daysinactive,
-                    ];
-                } else if ($daysinactive >= $inactivitywarning) {
-                    $signals[] = [
-                        'rule' => 'inactivity',
-                        'severity' => 'warning',
-                        'message' => get_string('signal_inactivity_warning', 'local_learningsuccess', $daysinactive),
-                        'value' => $daysinactive,
-                    ];
-                }
-            }
-
-            // Completion rule.
-            if ($totalmodules > 0) {
-                $completed = isset($completionrecords[$uid]) ? (int) $completionrecords[$uid]->completed_count : 0;
-                $rate = (int) round(($completed / $totalmodules) * 100);
-                if ($rate < 30) {
-                    $signals[] = [
-                        'rule' => 'completion',
-                        'severity' => 'critical',
-                        'message' => get_string('signal_completion_low', 'local_learningsuccess', $rate),
-                        'value' => $rate,
-                    ];
-                } else if ($rate < 60) {
-                    $signals[] = [
-                        'rule' => 'completion',
-                        'severity' => 'warning',
-                        'message' => get_string('signal_completion_low', 'local_learningsuccess', $rate),
-                        'value' => $rate,
-                    ];
-                }
-            }
-
-            // Grade performance rule.
-            if (isset($graderecords[$uid]) && $graderecords[$uid]->grademax > 0 && $graderecords[$uid]->finalgrade !== null) {
-                $percent = (int) round(($graderecords[$uid]->finalgrade / $graderecords[$uid]->grademax) * 100);
-                if ($percent < 40) {
-                    $signals[] = [
-                        'rule' => 'grade_performance',
-                        'severity' => 'critical',
-                        'message' => get_string('signal_quiz_low', 'local_learningsuccess', $percent),
-                        'value' => $percent,
-                    ];
-                } else if ($percent < 50) {
-                    $signals[] = [
-                        'rule' => 'grade_performance',
-                        'severity' => 'warning',
-                        'message' => get_string('signal_quiz_low', 'local_learningsuccess', $percent),
-                        'value' => $percent,
-                    ];
-                }
-            }
-
-            // Quiz Struggle (repeated retries).
-            $maxattempt = isset($quizattemptsrecords[$uid]) ? (int) $quizattemptsrecords[$uid]->max_attempt : 0;
-            if ($maxattempt >= 2) {
-                $signals[] = [
-                    'rule' => 'quiz_retries',
-                    'severity' => 'warning',
-                    'message' => get_string('signal_quiz_retries', 'local_learningsuccess', $maxattempt),
-                    'value' => $maxattempt,
-                ];
-            }
-
-            // Overdue assignments.
-            $missedassigns = 0;
-            if ($totaloverdueassigns > 0) {
-                $submitted = isset($submittedrecords[$uid]) ? (int) $submittedrecords[$uid]->submitted_count : 0;
-                $missedassigns = max(0, $totaloverdueassigns - $submitted);
-                if ($missedassigns > 0) {
-                    $signals[] = [
-                        'rule' => 'missed_assignments',
-                        'severity' => $missedassigns >= 2 ? 'critical' : 'warning',
-                        'message' => get_string('signal_missed_activities', 'local_learningsuccess', $missedassigns),
-                        'value' => $missedassigns,
-                    ];
-                }
-            }
-
-            // Determine Struggle Archetype Tag.
-            if ($daysinactive >= $inactivitywarning) {
-                $struggletag = [
-                    'code' => 'disengaged',
-                    'label' => get_string('struggle_disengaged', 'local_learningsuccess'),
-                    'class' => 'badge-danger',
-                    'icon' => 'fa-user-times',
-                ];
-            } else if ($maxattempt >= 2 && $percent !== null && $percent < 60) {
-                $struggletag = [
-                    'code' => 'repeated_attempts',
-                    'label' => get_string('struggle_repeated_attempts', 'local_learningsuccess', $maxattempt),
-                    'class' => 'badge-warning text-dark',
-                    'icon' => 'fa-repeat',
-                ];
-            } else if ($missedassigns > 0) {
-                $struggletag = [
-                    'code' => 'overdue',
-                    'label' => get_string('struggle_overdue', 'local_learningsuccess', $missedassigns),
-                    'class' => 'badge-info',
-                    'icon' => 'fa-clock-o',
-                ];
-            } else if ($rate < 50) {
-                $struggletag = [
-                    'code' => 'pacing',
-                    'label' => get_string('struggle_pacing', 'local_learningsuccess'),
-                    'class' => 'badge-secondary',
-                    'icon' => 'fa-hourglass-half',
-                ];
-            } else {
-                $struggletag = null;
-            }
-
-            $results[] = [
-                'userid' => $uid,
-                'courseid' => $courseid,
-                'fullname' => fullname($user),
-                'status' => $status,
-                'status_label' => get_string("status_{$status}", 'local_learningsuccess'),
-                'risk_score' => $riskscore,
-                'signals' => $signals,
-                'signal_count' => count($signals),
-                'struggle_tag' => $struggletag,
-            ];
-        }
-
-        return $results;
+        return $this->explanationengine->batch_explain($enrolledusers, $courseid, $risks);
     }
 }
-

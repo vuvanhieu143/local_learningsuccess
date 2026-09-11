@@ -253,7 +253,8 @@ class actionability_engine {
             $risk = new risk_result(
                 score: (float) ($profile['risk_score'] ?? 0.0),
                 level: $profile['status'] ?? risk_result::LEVEL_HEALTHY,
-                source: 'course_activity_signals'
+                source: $profile['source'] ?? 'course_activity_signals',
+                model: $profile['model'] ?? null
             );
             $signals = $profile['signals'] ?? [];
             $activeinv = $activeinterventionsbyuser[$uid] ?? null;
