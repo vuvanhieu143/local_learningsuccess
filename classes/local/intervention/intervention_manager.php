@@ -77,6 +77,10 @@ class intervention_manager {
         $now = time();
         $snapshot = $this->snapshotservice->capture($userid, $courseid);
 
+        $initialstatus = ($sendmessage && !empty($actual))
+            ? intervention_status::CONTACTED
+            : intervention_status::OPEN;
+
         $record = (object) [
             'userid' => $userid,
             'courseid' => $courseid,
@@ -85,7 +89,7 @@ class intervention_manager {
             'reason' => $reason,
             'recommended_action' => $recommended,
             'actual_action' => $actual,
-            'status' => self::STATUS_OPEN,
+            'status' => $initialstatus,
             'outcome' => outcome::UNKNOWN,
             'before_snapshot' => json_encode($snapshot),
             'after_snapshot' => null,
@@ -109,6 +113,61 @@ class intervention_manager {
     }
 
     /**
+     * Transition an intervention to a new status, validating state-machine rules.
+     *
+     * @param int $id Intervention ID.
+     * @param string $newstatus Target status constant from intervention_status.
+     * @param string|null $note Optional teacher note explaining transition.
+     * @param int|null $actorid Optional teacher user ID performing transition.
+     * @return bool
+     * @throws \moodle_exception If transition is invalid.
+     */
+    public function transition_to(int $id, string $newstatus, ?string $note = null, ?int $actorid = null): bool {
+        global $DB, $USER;
+
+        $record = $DB->get_record('local_ls_intervention', ['id' => $id], '*', MUST_EXIST);
+        $fromstatus = strtolower($record->status);
+        $tostatus = strtolower($newstatus);
+
+        if (!intervention_status::can_transition($fromstatus, $tostatus)) {
+            throw new \moodle_exception(
+                'invalid_intervention_transition',
+                'local_learningsuccess',
+                '',
+                "Cannot transition intervention #{$id} from '{$fromstatus}' to '{$tostatus}'"
+            );
+        }
+
+        if ($tostatus === intervention_status::COMPLETED) {
+            return $this->complete($id, $note);
+        }
+
+        if ($tostatus === intervention_status::DISMISSED) {
+            return $this->dismiss($id);
+        }
+
+        $now = time();
+        $record->status = $tostatus;
+        $record->timemodified = $now;
+
+        if ($tostatus === intervention_status::FOLLOW_UP && empty($record->followupat)) {
+            $record->followupat = $now;
+        }
+
+        $success = $DB->update_record('local_ls_intervention', $record);
+
+        if ($success) {
+            if (!empty($note)) {
+                $author = $actorid ?? $USER->id;
+                $this->add_note($id, $author, $note);
+            }
+            $this->invalidate_cache($record->courseid, $record->userid);
+        }
+
+        return $success;
+    }
+
+    /**
      * Update an intervention in progress.
      *
      * @param int $id
@@ -120,7 +179,13 @@ class intervention_manager {
 
         $record = $DB->get_record('local_ls_intervention', ['id' => $id], '*', MUST_EXIST);
 
-        $allowedfields = ['type', 'reason', 'actual_action', 'status', 'followupat', 'resolvedat'];
+        // If status transition is requested, validate it strictly.
+        if (isset($data['status']) && strtolower($data['status']) !== strtolower($record->status)) {
+            $this->transition_to($id, $data['status'], $data['actual_action'] ?? null);
+            unset($data['status']);
+        }
+
+        $allowedfields = ['type', 'reason', 'actual_action', 'followupat', 'resolvedat'];
         foreach ($allowedfields as $field) {
             if (array_key_exists($field, $data)) {
                 $record->$field = $data[$field];

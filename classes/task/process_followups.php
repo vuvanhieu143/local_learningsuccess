@@ -58,14 +58,17 @@ class process_followups extends scheduled_task {
 
         $due = $DB->get_records_select('local_ls_intervention', $sql, $params);
         $count = 0;
+        $manager = new \local_learningsuccess\local\intervention\intervention_manager();
 
         foreach ($due as $record) {
-            $record->status = intervention_status::FOLLOW_UP;
-            $record->timemodified = $now;
-            $DB->update_record('local_ls_intervention', $record);
-
-            $this->notify_teacher($record);
-            $count++;
+            try {
+                $manager->transition_to((int) $record->id, intervention_status::FOLLOW_UP, 'Follow-up date reached (automated task)');
+                $this->notify_teacher($record);
+                $count++;
+            } catch (\Throwable $e) {
+                // Safeguard against invalid state during scheduled task execution.
+                continue;
+            }
         }
 
         mtrace("Processed {$count} student follow-ups due.");

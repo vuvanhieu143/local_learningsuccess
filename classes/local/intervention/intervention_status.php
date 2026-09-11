@@ -32,16 +32,58 @@ class intervention_status {
     public const CONTACTED          = 'contacted';
     public const WAITING            = 'waiting';
     public const FOLLOW_UP          = 'follow_up';
-    public const RESOLVED           = 'resolved';
+    public const COMPLETED          = 'completed';
 
     // Terminal / Alternative states.
+    public const DISMISSED          = 'dismissed';
     public const UNABLE_TO_CONTACT  = 'unable_to_contact';
     public const NOT_APPLICABLE     = 'not_applicable';
 
     // Legacy compatibility aliases.
-    public const IN_PROGRESS        = 'in_progress';
-    public const COMPLETED          = 'completed';
-    public const DISMISSED          = 'dismissed';
+    public const RESOLVED           = self::COMPLETED;
+    public const IN_PROGRESS        = self::CONTACTED;
+
+    /**
+     * Allowed state transition graph.
+     *
+     * @var array<string, string[]>
+     */
+    private const TRANSITIONS = [
+        self::OPEN => [
+            self::CONTACTED,
+            self::WAITING,
+            self::FOLLOW_UP,
+            self::COMPLETED,
+            self::DISMISSED,
+        ],
+        self::CONTACTED => [
+            self::WAITING,
+            self::FOLLOW_UP,
+            self::UNABLE_TO_CONTACT,
+            self::COMPLETED,
+            self::DISMISSED,
+        ],
+        self::WAITING => [
+            self::FOLLOW_UP,
+            self::CONTACTED,
+            self::COMPLETED,
+            self::DISMISSED,
+        ],
+        self::FOLLOW_UP => [
+            self::CONTACTED,
+            self::WAITING,
+            self::COMPLETED,
+            self::DISMISSED,
+            self::NOT_APPLICABLE,
+        ],
+        self::UNABLE_TO_CONTACT => [
+            self::CONTACTED,
+            self::DISMISSED,
+        ],
+        self::COMPLETED => [],
+        self::DISMISSED => [],
+        self::NOT_APPLICABLE => [],
+    ];
 
     /**
      * Determine if a status is considered active / unresolved.
@@ -66,11 +108,20 @@ class intervention_status {
      * @return bool
      */
     public static function is_closed(string $status): bool {
+        return self::is_terminal($status);
+    }
+
+    /**
+     * Determine if a status is terminal.
+     *
+     * @param string $status
+     * @return bool
+     */
+    public static function is_terminal(string $status): bool {
         return in_array(strtolower($status), [
-            self::RESOLVED,
             self::COMPLETED,
+            self::RESOLVED,
             self::DISMISSED,
-            self::UNABLE_TO_CONTACT,
             self::NOT_APPLICABLE,
         ], true);
     }
@@ -82,19 +133,89 @@ class intervention_status {
      * @param string $to Target status.
      * @return bool
      */
-    public static function is_valid_transition(string $from, string $to): bool {
+    public static function can_transition(string $from, string $to): bool {
         $from = strtolower($from);
         $to = strtolower($to);
+
+        // Alias resolution.
+        if ($from === 'resolved') {
+            $from = self::COMPLETED;
+        } else if ($from === 'in_progress') {
+            $from = self::CONTACTED;
+        }
+
+        if ($to === 'resolved') {
+            $to = self::COMPLETED;
+        } else if ($to === 'in_progress') {
+            $to = self::CONTACTED;
+        }
 
         if ($from === $to) {
             return true;
         }
 
-        // Terminal states cannot transition to open states without reopening.
-        if (self::is_closed($from) && self::is_active($to)) {
-            return false;
+        $allowed = self::TRANSITIONS[$from] ?? [];
+        return in_array($to, $allowed, true);
+    }
+
+    /**
+     * Compatibility wrapper for is_valid_transition.
+     *
+     * @param string $from
+     * @param string $to
+     * @return bool
+     */
+    public static function is_valid_transition(string $from, string $to): bool {
+        return self::can_transition($from, $to);
+    }
+
+    /**
+     * Get all permitted next statuses from a current status.
+     *
+     * @param string $from
+     * @return string[]
+     */
+    public static function get_valid_transitions(string $from): array {
+        $from = strtolower($from);
+        if ($from === 'resolved') {
+            $from = self::COMPLETED;
+        } else if ($from === 'in_progress') {
+            $from = self::CONTACTED;
         }
 
-        return true;
+        return self::TRANSITIONS[$from] ?? [];
+    }
+
+    /**
+     * Get all valid statuses.
+     *
+     * @return string[]
+     */
+    public static function get_all_statuses(): array {
+        return [
+            self::OPEN,
+            self::CONTACTED,
+            self::WAITING,
+            self::FOLLOW_UP,
+            self::COMPLETED,
+            self::DISMISSED,
+            self::UNABLE_TO_CONTACT,
+            self::NOT_APPLICABLE,
+        ];
+    }
+
+    /**
+     * Get localized label for status.
+     *
+     * @param string $status
+     * @return string
+     */
+    public static function get_label(string $status): string {
+        $status = strtolower($status);
+        $stringkey = 'status_' . $status;
+        if (get_string_manager()->string_exists($stringkey, 'local_learningsuccess')) {
+            return get_string($stringkey, 'local_learningsuccess');
+        }
+        return ucfirst(str_replace('_', ' ', $status));
     }
 }
