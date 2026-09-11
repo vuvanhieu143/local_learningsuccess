@@ -169,6 +169,26 @@ $string['preset_resource_text'] = 'Hello! This week\'s module and assignment are
 $string['preset_extension_title'] = '⏱ Gentle Extension Offer';
 $string['preset_extension_text'] = 'Hello! I noticed you have not been able to submit the recent assignment yet. If you are experiencing unexpected personal or health issues, please reply and I can grant you a 2-day extension.';
 
+// Signal-driven Message Templates (Teacher editable drafts).
+$string['template_inactivity_title'] = 'Course Inactivity Check-in';
+$string['template_inactivity_body'] = "Hi {firstname},\n\nI noticed you haven't been active in {coursename} recently.\nIs everything going okay? Let me know if you need any help getting back on track.";
+$string['template_overdue_title'] = 'Overdue Activity Support';
+$string['template_overdue_body'] = "Hi {firstname},\n\nI noticed you have some overdue activities in {coursename}.\nIf you're having trouble completing them, I can help you work out what to tackle first.";
+$string['template_grade_decline_title'] = 'Assessment Support';
+$string['template_grade_decline_body'] = "Hi {firstname},\n\nI noticed your recent assessment results have dropped in {coursename}.\nWould you like to discuss any areas where you're finding the course difficult?";
+$string['template_general_title'] = 'General Progress Check-in';
+$string['template_general_body'] = "Hi {firstname},\n\nI wanted to check in with you regarding your progress in {coursename}.\nPlease feel free to reply if there is anything I can do to support your learning.";
+
+// Signal Dismissal & Teacher Overrides.
+$string['dismiss_signal'] = 'Dismiss Signal';
+$string['dismiss_reason_approved_leave'] = 'Student on approved leave';
+$string['dismiss_reason_working_offline'] = 'Student working offline';
+$string['dismiss_reason_false_positive'] = 'False positive indicator';
+$string['dismiss_reason_not_relevant'] = 'Not currently relevant';
+$string['dismiss_reason_other'] = 'Other reason';
+$string['signal_dismissed_notice'] = 'Signal dismissed by teacher. It will remain suppressed unless conditions worsen.';
+
+
 // Dashboard Metrics.
 $string['metric_total_students'] = 'Enrolled Students';
 $string['metric_avg_completion'] = 'Avg Completion';
