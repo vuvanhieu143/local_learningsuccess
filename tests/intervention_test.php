@@ -121,12 +121,15 @@ class intervention_test extends advanced_testcase {
         $manager = new intervention_manager();
         $id = $manager->create($student->id, $course->id, $teacher->id, 'EXTENSION');
 
+        $manager->transition_to($id, intervention_status::CONTACTED);
         $manager->complete($id, 'Student submitted assignment');
 
         $record = $DB->get_record('local_ls_intervention', ['id' => $id]);
         $this->assertEquals(intervention_manager::STATUS_COMPLETED, $record->status);
         $this->assertNotEmpty($record->after_snapshot);
         $this->assertNotNull($record->completed_at);
+        $this->assertNotNull($record->before_snapshot_id);
+        $this->assertNotNull($record->after_snapshot_id);
         $this->assertEquals('Student submitted assignment', $record->actual_action);
 
         // Verify after_snapshot serialization structure.

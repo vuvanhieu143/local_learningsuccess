@@ -95,7 +95,8 @@ final class outcome_evaluator_test extends advanced_testcase {
         $interv = $manager->get_for_student($user->id, $course->id)[$id];
         $this->assertGreaterThanOrEqual($beforetime + (3 * DAYSECS) - 5, (int) $interv->followupat);
 
-        // 2. Complete with teacher-confirmed outcome UNABLE_TO_CONTACT.
+        // 2. Transition to CONTACTED first, then complete with teacher-confirmed outcome UNABLE_TO_CONTACT.
+        $manager->transition_to($id, intervention_status::CONTACTED);
         $success = $manager->complete(
             id: $id,
             actualaction: 'Student did not reply to multiple emails',
@@ -105,6 +106,10 @@ final class outcome_evaluator_test extends advanced_testcase {
 
         $completed = $manager->get_for_student($user->id, $course->id)[$id];
         $this->assertEquals(outcome::UNABLE_TO_CONTACT, $completed->outcome);
+        $this->assertEquals(outcome::UNABLE_TO_CONTACT, $completed->teacher_outcome);
+        $this->assertNotNull($completed->system_outcome);
+        $this->assertNotNull($completed->before_snapshot_id);
+        $this->assertNotNull($completed->after_snapshot_id);
 
         // 3. Verify canonical snapshots exist for both 'before' and 'followup'.
         $snapshots = $snapshotservice->get_snapshots_for_intervention($id);
@@ -112,5 +117,7 @@ final class outcome_evaluator_test extends advanced_testcase {
         $this->assertNotNull($snapshots['followup']);
         $this->assertEquals($id, $snapshots['before']->interventionid);
         $this->assertEquals($id, $snapshots['followup']->interventionid);
+        $this->assertEquals($completed->before_snapshot_id, $snapshots['before']->id);
+        $this->assertEquals($completed->after_snapshot_id, $snapshots['followup']->id);
     }
 }

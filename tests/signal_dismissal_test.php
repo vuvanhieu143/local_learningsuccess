@@ -184,4 +184,65 @@ final class signal_dismissal_test extends advanced_testcase {
         $activitymetric = array_values(array_filter($diff['metrics'], fn($m) => $m['metric'] === 'activity'))[0];
         $this->assertEquals('improved', $activitymetric['direction']);
     }
+
+    /**
+     * Test that signal history accurately updates firstseen vs lastseen and deactivates resolved signals.
+     */
+    public function test_signal_history_firstseen_and_lastseen_preserved(): void {
+        global $DB;
+
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+
+        // 1. Manually insert initial signal record representing an earlier observation.
+        $initialtime = time() - (5 * DAYSECS);
+        $record = (object) [
+            'userid' => $user->id,
+            'courseid' => $course->id,
+            'signal_type' => 'inactivity',
+            'severity' => 'warning',
+            'value' => 7.0,
+            'metadata' => json_encode(['days' => 7]),
+            'firstseen' => $initialtime,
+            'lastseen' => $initialtime,
+            'active' => 1,
+            'dismissed' => 0,
+            'timecreated' => $initialtime,
+        ];
+        $id = $DB->insert_record('local_ls_signal', $record);
+
+        // 2. Run signal_collector with a mock signal to simulate current observation.
+        $mockexplanation = new explanation(
+            type: 'inactivity',
+            severity: explanation::SEVERITY_CRITICAL,
+            title: 'Inactivity',
+            description: 'Inactive for 14 days',
+            value: 14.0
+        );
+
+        $mocksignal = new class($mockexplanation) implements \local_learningsuccess\local\signal\signal {
+            public function __construct(private explanation $exp) {}
+            public function get_type(): string { return 'inactivity'; }
+            public function evaluate(int $userid, int $courseid): ?explanation { return $this->exp; }
+        };
+
+        $collector = new signal_collector([$mocksignal]);
+        $collector->collect($user->id, $course->id, persist: true);
+
+        // 3. Verify firstseen remained initialtime, lastseen was bumped to recent.
+        $updated = $DB->get_record('local_ls_signal', ['id' => $id]);
+        $this->assertEquals($initialtime, (int) $updated->firstseen);
+        $this->assertGreaterThan($initialtime, (int) $updated->lastseen);
+        $this->assertEquals('critical', $updated->severity);
+        $this->assertEquals(1, $updated->active);
+
+        // 4. Now simulate resolved signal (no signals triggered).
+        $emptycollector = new signal_collector([]);
+        $emptycollector->collect($user->id, $course->id, persist: true);
+
+        // 5. Verify the previously active signal was marked inactive.
+        $deactivated = $DB->get_record('local_ls_signal', ['id' => $id]);
+        $this->assertEquals(0, (int) $deactivated->active);
+        $this->assertEquals($initialtime, (int) $deactivated->firstseen);
+    }
 }

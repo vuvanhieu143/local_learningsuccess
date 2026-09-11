@@ -176,4 +176,74 @@ final class actionability_test extends advanced_testcase {
             $this->assertNotEquals('checkin', $part2['primary']['type']);
         }
     }
+
+    /**
+     * Test that healthy student evaluates to LEVEL_NO_ACTION.
+     */
+    public function test_healthy_student_evaluates_to_no_action(): void {
+        $engine = new actionability_engine();
+        $risk = new risk_result(score: 5.0, level: risk_result::LEVEL_HEALTHY, source: 'course_activity_signals');
+        $signals = [];
+
+        $res = $engine->evaluate(userid: 12, courseid: 3, risk: $risk, signals: $signals, activeintervention: null);
+
+        $this->assertEquals(actionability_result::LEVEL_NO_ACTION, $res->get_level());
+        $this->assertEquals(0.0, $res->get_priority_score());
+        $this->assertNull($res->get_primary_action());
+        $this->assertContains('Student is progressing healthily on track.', $res->get_reasons());
+    }
+
+    /**
+     * Test that student with monitor risk and observable signals evaluates to LEVEL_RECOMMEND.
+     */
+    public function test_monitor_risk_with_signals_evaluates_to_recommend(): void {
+        $engine = new actionability_engine();
+        $risk = new risk_result(score: 42.0, level: risk_result::LEVEL_MONITOR, source: 'moodle_analytics', model: 'core_dropout');
+        $signals = [
+            ['rule' => 'completion', 'severity' => 'warning', 'message' => 'Module completion rate is low (45%)', 'value' => 45],
+        ];
+
+        $res = $engine->evaluate(userid: 15, courseid: 3, risk: $risk, signals: $signals, activeintervention: null);
+
+        $this->assertEquals(actionability_result::LEVEL_RECOMMEND, $res->get_level());
+        $this->assertGreaterThan(1000.0, $res->get_priority_score());
+        $this->assertNotNull($res->get_primary_action());
+    }
+
+    /**
+     * Test that batch_evaluate preserves source and model from student profiles.
+     */
+    public function test_batch_evaluate_preserves_source_and_model(): void {
+        $engine = new actionability_engine();
+
+        $profiles = [
+            [
+                'userid' => 101,
+                'courseid' => 5,
+                'status' => risk_result::LEVEL_CRITICAL,
+                'risk_score' => 88,
+                'source' => 'moodle_analytics',
+                'model' => 'dropout_v2',
+                'signals' => [
+                    ['rule' => 'inactivity', 'severity' => 'critical', 'message' => 'No activity 14+ days'],
+                ],
+            ],
+            [
+                'userid' => 102,
+                'courseid' => 5,
+                'status' => risk_result::LEVEL_HEALTHY,
+                'risk_score' => 10,
+                'source' => 'course_activity_signals',
+                'model' => null,
+                'signals' => [],
+            ],
+        ];
+
+        $results = $engine->batch_evaluate($profiles, 5, []);
+
+        $this->assertArrayHasKey(101, $results);
+        $this->assertArrayHasKey(102, $results);
+        $this->assertEquals(actionability_result::LEVEL_URGENT, $results[101]->get_level());
+        $this->assertEquals(actionability_result::LEVEL_NO_ACTION, $results[102]->get_level());
+    }
 }

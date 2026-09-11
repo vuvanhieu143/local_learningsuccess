@@ -97,13 +97,51 @@ class intervention_lifecycle_test extends advanced_testcase {
         $manager = new intervention_manager();
         $id = $manager->create($student->id, $course->id, $teacher->id, 'meeting');
 
-        // Transition to COMPLETED.
+        // Transition through CONTACTED to COMPLETED.
+        $manager->transition_to($id, intervention_status::CONTACTED);
         $manager->transition_to($id, intervention_status::COMPLETED);
 
         // Attempt invalid COMPLETED -> OPEN transition.
         $this->assertFalse(intervention_status::can_transition(intervention_status::COMPLETED, intervention_status::OPEN));
         $this->expectException(moodle_exception::class);
         $manager->transition_to($id, intervention_status::OPEN);
+    }
+
+    /**
+     * Test that direct illegal transition OPEN -> COMPLETED is strictly rejected.
+     */
+    public function test_direct_open_to_completed_is_rejected(): void {
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_user();
+        $student = $this->getDataGenerator()->create_user();
+
+        $manager = new intervention_manager();
+        $id = $manager->create($student->id, $course->id, $teacher->id, 'checkin');
+
+        // Verify state machine can_transition rejects OPEN -> COMPLETED.
+        $this->assertFalse(intervention_status::can_transition(intervention_status::OPEN, intervention_status::COMPLETED));
+
+        // Verify manager->complete() routes through transition_to and throws exception.
+        $this->expectException(moodle_exception::class);
+        $manager->complete($id, 'Attempting completion without prior contact');
+    }
+
+    /**
+     * Test that OPEN -> WAITING and OPEN -> FOLLOW_UP are strictly rejected.
+     */
+    public function test_direct_open_to_waiting_or_followup_is_rejected(): void {
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_user();
+        $student = $this->getDataGenerator()->create_user();
+
+        $manager = new intervention_manager();
+        $id = $manager->create($student->id, $course->id, $teacher->id, 'checkin');
+
+        $this->assertFalse(intervention_status::can_transition(intervention_status::OPEN, intervention_status::WAITING));
+        $this->assertFalse(intervention_status::can_transition(intervention_status::OPEN, intervention_status::FOLLOW_UP));
+
+        $this->expectException(moodle_exception::class);
+        $manager->transition_to($id, intervention_status::WAITING);
     }
 
     /**

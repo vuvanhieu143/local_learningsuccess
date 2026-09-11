@@ -46,7 +46,7 @@ class student_summary_test extends advanced_testcase {
         $dto = new student_summary(
             userid: 10,
             courseid: 20,
-            user: ['id' => 10, 'fullname' => 'Alice Test', 'email' => 'alice@example.com'],
+            user: ['id' => 10, 'fullname' => 'Alice Test'],
             risk: $risk,
             signals: [['type' => 'inactivity', 'value' => 8]],
             explanations: [['type' => 'inactivity', 'title' => 'Inactive']],

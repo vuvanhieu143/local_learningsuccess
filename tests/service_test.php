@@ -88,10 +88,10 @@ class service_test extends advanced_testcase {
         $student = $this->getDataGenerator()->create_user(['email' => 'learner@example.com']);
         $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
 
-        $service = new student_success_service();
         $details = $service->get_student_summary($student->id, $course->id);
 
-        $this->assertEquals('learner@example.com', $details['user']['email']);
+        $this->assertEquals($student->id, $details['user']['id']);
+        $this->assertArrayNotHasKey('email', $details['user']);
         $this->assertArrayHasKey('status', $details);
         $this->assertArrayHasKey('risk_score', $details);
         $this->assertArrayHasKey('signals', $details);
