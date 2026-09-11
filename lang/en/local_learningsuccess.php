@@ -60,6 +60,19 @@ $string['status_monitor'] = 'Monitor';
 $string['status_atrisk'] = 'At Risk';
 $string['status_critical'] = 'Critical';
 
+// Actionability & Priority Work-Queue.
+$string['priority_urgent'] = 'Urgent Action';
+$string['priority_follow_up'] = 'Follow-up Due';
+$string['priority_recommend'] = 'Recommended';
+$string['priority_monitor'] = 'Monitor';
+$string['priority_no_action'] = 'No Action Needed';
+$string['action_review_followup'] = 'Review Follow-up';
+$string['action_checkin'] = 'Check in';
+$string['why_now'] = 'Why now?';
+$string['primary_recommendation'] = 'Primary Recommendation';
+$string['alternative_options'] = 'Other Options';
+
+
 // Intervention types.
 $string['type_contact'] = 'Direct Message';
 $string['type_learning_resource'] = 'Recommend Learning Resource';

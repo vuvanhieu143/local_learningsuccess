@@ -57,7 +57,8 @@ class student_summary {
         public readonly array $interventions,
         public readonly array $pendingfollowups = [],
         public readonly array $notes = [],
-        public readonly array $recentoutcomes = []
+        public readonly array $recentoutcomes = [],
+        public readonly ?array $actionability = null
     ) {
     }
 
@@ -108,6 +109,7 @@ class student_summary {
             'pending_followups' => $this->pendingfollowups,
             'notes' => $this->notes,
             'recent_outcomes' => $this->recentoutcomes,
+            'actionability' => $this->actionability,
             'timestamp' => time(),
         ];
     }

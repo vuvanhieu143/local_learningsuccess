@@ -19,8 +19,11 @@ namespace local_learningsuccess\local\service;
 defined('MOODLE_INTERNAL') || die();
 
 use cache;
+use local_learningsuccess\local\actionability\actionability_engine;
+use local_learningsuccess\local\actionability\actionability_result;
 use local_learningsuccess\local\explanation\explanation_engine;
 use local_learningsuccess\local\intervention\intervention_manager;
+use local_learningsuccess\local\intervention\intervention_status;
 use local_learningsuccess\local\outcome\outcome;
 use local_learningsuccess\local\recommendation\recommendation_engine;
 use local_learningsuccess\local\risk\moodle_analytics_provider;
@@ -40,17 +43,23 @@ class student_success_service {
     protected explanation_engine $explanationengine;
     protected recommendation_engine $recommendationengine;
     protected intervention_manager $interventionmanager;
+    protected actionability_engine $actionabilityengine;
 
     public function __construct(
         ?risk_provider $riskprovider = null,
         ?explanation_engine $explanationengine = null,
         ?recommendation_engine $recommendationengine = null,
-        ?intervention_manager $interventionmanager = null
+        ?intervention_manager $interventionmanager = null,
+        ?actionability_engine $actionabilityengine = null
     ) {
         $this->riskprovider = $riskprovider ?? new moodle_analytics_provider();
         $this->explanationengine = $explanationengine ?? new explanation_engine($this->riskprovider);
         $this->recommendationengine = $recommendationengine ?? new recommendation_engine();
         $this->interventionmanager = $interventionmanager ?? new intervention_manager();
+        $this->actionabilityengine = $actionabilityengine ?? new actionability_engine(
+            $this->recommendationengine,
+            $this->interventionmanager
+        );
     }
 
     /**
@@ -97,11 +106,14 @@ class student_success_service {
         // Active and resolved interventions.
         $activeinterventions = $DB->count_records_select(
             'local_ls_intervention',
-            'courseid = :courseid AND status IN (:open, :inprogress)',
+            'courseid = :courseid AND status IN (:open, :contacted, :waiting, :followup, :inprogress)',
             [
                 'courseid' => $courseid,
-                'open' => intervention_manager::STATUS_OPEN,
-                'inprogress' => intervention_manager::STATUS_IN_PROGRESS,
+                'open' => intervention_status::OPEN,
+                'contacted' => intervention_status::CONTACTED,
+                'waiting' => intervention_status::WAITING,
+                'followup' => intervention_status::FOLLOW_UP,
+                'inprogress' => intervention_status::IN_PROGRESS,
             ]
         );
 
@@ -156,6 +168,21 @@ class student_success_service {
         $explained = $this->explanationengine->explain_student($userid, $courseid);
         $recommendations = $this->recommendationengine->recommend($explained['signals']);
         $interventions = $this->interventionmanager->get_for_student($userid, $courseid);
+        $activeintervention = $this->interventionmanager->get_active_for_student($userid, $courseid);
+
+        // Evaluate actionability and work-queue prioritization.
+        $riskobj = new risk_result(
+            score: (float) $explained['risk_score'],
+            level: $explained['status'],
+            source: $explained['source'] ?? 'course_activity_signals'
+        );
+        $actionability = $this->actionabilityengine->evaluate(
+            userid: $userid,
+            courseid: $courseid,
+            risk: $riskobj,
+            signals: $explained['signals'],
+            activeintervention: $activeintervention
+        );
 
         // Fetch notes and due follow-ups for student interventions.
         $allnotes = [];
@@ -188,7 +215,9 @@ class student_success_service {
             recommendations: $recommendations,
             interventions: array_values($interventions),
             pendingfollowups: $pendingfollowups,
-            notes: $allnotes
+            notes: $allnotes,
+            recentoutcomes: [],
+            actionability: $actionability->to_array()
         );
 
         $result = $summary->to_array();
@@ -252,21 +281,48 @@ class student_success_service {
         $summary = $this->get_course_summary($courseid, $groupid);
         $students = $summary['students'];
 
-        // Filter for students who are not healthy.
-        $needsattention = array_filter(
-            $students,
-            fn($s) => in_array($s['status'], [risk_result::LEVEL_CRITICAL, risk_result::LEVEL_ATRISK, risk_result::LEVEL_MONITOR])
-        );
+        if (empty($students)) {
+            return [];
+        }
 
-        // Sort descending by risk score, then signal count.
-        usort($needsattention, function ($a, $b) {
-            if ($a['risk_score'] === $b['risk_score']) {
-                return $b['signal_count'] <=> $a['signal_count'];
+        $activeinterventions = $this->interventionmanager->get_active_for_course_by_user($courseid);
+        $actionabilities = $this->actionabilityengine->batch_evaluate($students, $courseid, $activeinterventions);
+
+        $workqueue = [];
+        foreach ($students as $s) {
+            $uid = (int) $s['userid'];
+            $act = $actionabilities[$uid] ?? null;
+            if ($act === null) {
+                continue;
             }
-            return $b['risk_score'] <=> $a['risk_score'];
+
+            // Exclude healthy students needing no action.
+            if ($act->get_level() === actionability_result::LEVEL_NO_ACTION) {
+                continue;
+            }
+
+            $s['actionability'] = $act->to_array();
+            $s['actionability_level'] = $act->get_level();
+            $s['actionability_level_label'] = $act->get_level_label();
+            $s['priority_score'] = $act->get_priority_score();
+            $s['summary_reason'] = $act->get_summary_reason();
+            $s['why_now_reasons'] = $act->get_reasons();
+            $s['primary_action'] = $act->get_primary_action();
+            $s['alternative_actions'] = $act->get_alternatives();
+            $s['has_active_intervention'] = $act->get_active_intervention() !== null;
+
+            $workqueue[] = $s;
+        }
+
+        // Sort descending by priority score (Urgent -> Follow-up -> Recommend -> Monitor).
+        usort($workqueue, function ($a, $b) {
+            if ($a['priority_score'] === $b['priority_score']) {
+                return $b['risk_score'] <=> $a['risk_score'];
+            }
+            return $b['priority_score'] <=> $a['priority_score'];
         });
 
-        return array_values(array_slice($needsattention, 0, $limit));
+        return array_values(array_slice($workqueue, 0, $limit));
     }
 
     /**

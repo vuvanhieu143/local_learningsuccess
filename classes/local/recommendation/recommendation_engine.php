@@ -104,4 +104,58 @@ class recommendation_engine {
     public function get_recommendations(array $signals): array {
         return $this->build($signals);
     }
+
+    /**
+     * Build and partition recommendations into one primary recommendation and alternative options.
+     * Prevents duplicate recommendations if an active intervention of the same type is already in progress.
+     *
+     * @param array $signals
+     * @param \stdClass|null $activeintervention
+     * @return array{primary: ?array, alternatives: array}
+     */
+    public function get_primary_and_alternatives(array $signals, ?\stdClass $activeintervention = null): array {
+        $all = $this->build($signals);
+
+        if (empty($all)) {
+            return [
+                'primary' => null,
+                'alternatives' => [],
+            ];
+        }
+
+        // If an intervention is currently active, avoid proposing an identical intervention as primary.
+        if ($activeintervention !== null) {
+            $activetype = strtolower($activeintervention->type ?? '');
+            $filtered = [];
+            $deferred = [];
+
+            foreach ($all as $rec) {
+                $rectype = strtolower($rec['type'] ?? '');
+                // Normalize checkin / contact type equivalence.
+                $isduplicate = ($rectype === $activetype)
+                    || ($rectype === 'checkin' && in_array($activetype, ['contact', 'direct_message', 'checkin'], true));
+
+                if ($isduplicate) {
+                    $rec['is_active_duplicate'] = true;
+                    $deferred[] = $rec;
+                } else {
+                    $filtered[] = $rec;
+                }
+            }
+
+            // If non-duplicate recommendations exist, prioritize them.
+            if (!empty($filtered)) {
+                $all = array_merge($filtered, $deferred);
+            }
+        }
+
+        $primary = $all[0] ?? null;
+        $alternatives = array_slice($all, 1);
+
+        return [
+            'primary' => $primary,
+            'alternatives' => array_values($alternatives),
+        ];
+    }
 }
+

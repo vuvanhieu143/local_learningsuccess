@@ -331,6 +331,69 @@ class intervention_manager {
     }
 
     /**
+     * Retrieve the current active intervention for a student in a course, if any.
+     *
+     * @param int $userid
+     * @param int $courseid
+     * @return \stdClass|null
+     */
+    public function get_active_for_student(int $userid, int $courseid): ?\stdClass {
+        global $DB;
+
+        $sql = "SELECT * FROM {local_ls_intervention}
+                 WHERE courseid = :courseid
+                   AND userid = :userid
+                   AND status IN (:open, :contacted, :waiting, :follow_up, :in_progress)
+              ORDER BY timecreated DESC";
+
+        $records = $DB->get_records_sql($sql, [
+            'courseid' => $courseid,
+            'userid' => $userid,
+            'open' => intervention_status::OPEN,
+            'contacted' => intervention_status::CONTACTED,
+            'waiting' => intervention_status::WAITING,
+            'follow_up' => intervention_status::FOLLOW_UP,
+            'in_progress' => intervention_status::IN_PROGRESS,
+        ], 0, 1);
+
+        return !empty($records) ? reset($records) : null;
+    }
+
+    /**
+     * Retrieve current active interventions for all students in a course, keyed by userid.
+     *
+     * @param int $courseid
+     * @return array<int, \stdClass>
+     */
+    public function get_active_for_course_by_user(int $courseid): array {
+        global $DB;
+
+        $sql = "SELECT * FROM {local_ls_intervention}
+                 WHERE courseid = :courseid
+                   AND status IN (:open, :contacted, :waiting, :follow_up, :in_progress)
+              ORDER BY timecreated DESC";
+
+        $records = $DB->get_records_sql($sql, [
+            'courseid' => $courseid,
+            'open' => intervention_status::OPEN,
+            'contacted' => intervention_status::CONTACTED,
+            'waiting' => intervention_status::WAITING,
+            'follow_up' => intervention_status::FOLLOW_UP,
+            'in_progress' => intervention_status::IN_PROGRESS,
+        ]);
+
+        $byuser = [];
+        foreach ($records as $r) {
+            $uid = (int) $r->userid;
+            if (!isset($byuser[$uid])) {
+                $byuser[$uid] = $r;
+            }
+        }
+        return $byuser;
+    }
+
+
+    /**
      * Send a direct Moodle message to the student.
      *
      * @param int $fromuserid
