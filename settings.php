@@ -18,7 +18,7 @@
  * Admin settings for local_learningsuccess.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -73,6 +73,15 @@ if ($hassiteconfig) {
             get_string('setting_grade_decline_threshold_desc', 'local_learningsuccess'),
             20,
             PARAM_INT
+        ));
+
+        // Preferred Moodle Analytics model target.
+        $settings->add(new admin_setting_configtext(
+            'local_learningsuccess/analytics_model',
+            get_string('setting_analytics_model', 'local_learningsuccess'),
+            get_string('setting_analytics_model_desc', 'local_learningsuccess'),
+            '\core\analytics\target\course_dropout',
+            PARAM_RAW_TRIMMED
         ));
     }
 }

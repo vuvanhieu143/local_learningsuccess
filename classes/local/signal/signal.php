@@ -24,7 +24,7 @@ use local_learningsuccess\local\explanation\explanation;
  * Interface contract for discrete student learning signals.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 interface signal {

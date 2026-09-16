@@ -22,7 +22,7 @@ defined('MOODLE_INTERNAL') || die();
  * Normalized value object encapsulating student risk evaluation details.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class risk_result {
@@ -31,6 +31,7 @@ class risk_result {
     public const LEVEL_MONITOR  = 'monitor';
     public const LEVEL_ATRISK   = 'atrisk';
     public const LEVEL_CRITICAL = 'critical';
+    public const LEVEL_NO_DATA  = 'nodata';
 
     /**
      * Constructor.

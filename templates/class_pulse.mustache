@@ -1,6 +1,8 @@
 {{!
     This file is part of Moodle - http://moodle.org/
 
+    Copyright (C) 2026 vuvanhieu143
+
     Moodle is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -18,59 +20,77 @@
     @template local_learningsuccess/class_pulse
 
     Class Pulse course overview widget.
+
+    Example context (json):
+    {
+        "healthy_count": 25,
+        "monitor_count": 8,
+        "atrisk_count": 3,
+        "critical_count": 1,
+        "total_students": 37,
+        "active_interventions": 2
+    }
 }}
 <div class="card mb-4 shadow-sm border-0 bg-light" role="region" aria-labelledby="class-pulse-heading" data-region="pulse-cards">
     <div class="card-body">
         <h2 id="class-pulse-heading" class="h4 card-title text-primary d-flex align-items-center mb-3">
-            <i class="fa fa-heartbeat mr-2 text-danger" aria-hidden="true"></i>
+            <i class="fa fa-heartbeat me-2 text-danger" aria-hidden="true"></i>
             {{#str}}classpulse, local_learningsuccess{{/str}}
         </h2>
 
         <div class="row text-center g-3">
             <div class="col-6 col-md-3">
                 <div class="p-3 bg-white rounded border">
-                    <span class="d-block text-muted small text-uppercase font-weight-bold">
-                        <i class="fa fa-check-circle text-success mr-1" aria-hidden="true"></i>{{#str}}status_healthy, local_learningsuccess{{/str}}
+                    <span class="d-block text-muted small text-uppercase fw-bold">
+                        <i class="fa fa-check-circle text-success me-1" aria-hidden="true"></i>{{#str}}status_healthy, local_learningsuccess{{/str}}
                     </span>
-                    <span class="h3 font-weight-bold text-success" aria-label="{{healthy_count}} {{#str}}status_healthy, local_learningsuccess{{/str}}">{{healthy_count}}</span>
+                    <span class="h3 fw-bold text-success">{{healthy_count}}</span>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="p-3 bg-white rounded border">
-                    <span class="d-block text-muted small text-uppercase font-weight-bold">
-                        <i class="fa fa-info-circle text-info mr-1" aria-hidden="true"></i>{{#str}}status_monitor, local_learningsuccess{{/str}}
+                    <span class="d-block text-muted small text-uppercase fw-bold">
+                        <i class="fa fa-info-circle text-info me-1" aria-hidden="true"></i>{{#str}}status_monitor, local_learningsuccess{{/str}}
                     </span>
-                    <span class="h3 font-weight-bold text-info" aria-label="{{monitor_count}} {{#str}}status_monitor, local_learningsuccess{{/str}}">{{monitor_count}}</span>
+                    <span class="h3 fw-bold text-info">{{monitor_count}}</span>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="p-3 bg-white rounded border">
-                    <span class="d-block text-muted small text-uppercase font-weight-bold">
-                        <i class="fa fa-exclamation-triangle text-warning mr-1" aria-hidden="true"></i>{{#str}}status_atrisk, local_learningsuccess{{/str}}
+                    <span class="d-block text-muted small text-uppercase fw-bold">
+                        <i class="fa fa-exclamation-triangle text-warning me-1" aria-hidden="true"></i>{{#str}}status_atrisk, local_learningsuccess{{/str}}
                     </span>
-                    <span class="h3 font-weight-bold text-warning" aria-label="{{atrisk_count}} {{#str}}status_atrisk, local_learningsuccess{{/str}}">{{atrisk_count}}</span>
+                    <span class="h3 fw-bold text-warning">{{atrisk_count}}</span>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="p-3 bg-white rounded border">
-                    <span class="d-block text-muted small text-uppercase font-weight-bold">
-                        <i class="fa fa-exclamation-circle text-danger mr-1" aria-hidden="true"></i>{{#str}}status_critical, local_learningsuccess{{/str}}
+                    <span class="d-block text-muted small text-uppercase fw-bold">
+                        <i class="fa fa-exclamation-circle text-danger me-1" aria-hidden="true"></i>{{#str}}status_critical, local_learningsuccess{{/str}}
                     </span>
-                    <span class="h3 font-weight-bold text-danger" aria-label="{{critical_count}} {{#str}}status_critical, local_learningsuccess{{/str}}">{{critical_count}}</span>
+                    <span class="h3 fw-bold text-danger">{{critical_count}}</span>
                 </div>
             </div>
         </div>
 
         <div class="row mt-3 text-muted small">
-            <div class="col-md-6 d-flex align-items-center">
-                <i class="fa fa-users mr-2" aria-hidden="true"></i>
+            <div class="col-md-4 d-flex align-items-center">
+                <i class="fa fa-users me-2" aria-hidden="true"></i>
                 <span>{{#str}}metric_total_students, local_learningsuccess{{/str}}: <strong>{{total_students}}</strong></span>
+                {{#nodata_count}}
+                    <span class="badge text-bg-secondary ms-2" title="{{#str}}status_nodata, local_learningsuccess{{/str}}">
+                        {{nodata_count}} {{#str}}status_nodata, local_learningsuccess{{/str}}
+                    </span>
+                {{/nodata_count}}
             </div>
-            <div class="col-md-6 d-flex align-items-center justify-content-md-end mt-2 mt-md-0">
-                <i class="fa fa-handshake-o mr-2 text-primary" aria-hidden="true"></i>
+            <div class="col-md-4 d-flex align-items-center justify-content-md-center mt-2 mt-md-0">
+                <i class="fa fa-handshake-o me-2 text-primary" aria-hidden="true"></i>
                 <span>{{#str}}metric_active_interventions, local_learningsuccess{{/str}}: <strong>{{active_interventions}}</strong></span>
+            </div>
+            <div class="col-md-4 d-flex align-items-center justify-content-md-end mt-2 mt-md-0">
+                <i class="fa fa-clock-o me-2 text-secondary" aria-hidden="true"></i>
+                <span>{{last_updated_label}}</span>
             </div>
         </div>
     </div>
 </div>
-

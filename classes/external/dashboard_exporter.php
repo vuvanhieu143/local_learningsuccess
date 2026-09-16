@@ -30,7 +30,7 @@ use local_learningsuccess\local\service\student_success_service;
  * External Web Service API for Learning Success dashboard and interventions.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dashboard_exporter extends external_api {
@@ -225,13 +225,16 @@ class dashboard_exporter extends external_api {
         list($record, $course, $context) = \local_learningsuccess\local\helper\access_helper::validate_intervention_access($params['id']);
 
         $manager = new intervention_manager();
+        if (strtolower($record->status) === \local_learningsuccess\local\intervention\intervention_status::OPEN) {
+            $manager->transition_to($params['id'], \local_learningsuccess\local\intervention\intervention_status::CONTACTED, 'Contact established');
+        }
         $success = $manager->complete($params['id'], $params['actual_action']);
 
-        $updated = $DB->get_record('local_ls_intervention', ['id' => $params['id']], '*', MUST_EXIST);
+        $updated = $DB->get_record('local_learningsuccess_int', ['id' => $params['id']], '*', MUST_EXIST);
 
         return [
             'id' => $updated->id,
-            'status' => $updated->status,
+            'status' => strtoupper($updated->status),
             'outcome' => $updated->outcome,
             'success' => $success,
         ];
@@ -276,11 +279,11 @@ class dashboard_exporter extends external_api {
         $manager = new intervention_manager();
         $success = $manager->dismiss($params['id']);
 
-        $updated = $DB->get_record('local_ls_intervention', ['id' => $params['id']], '*', MUST_EXIST);
+        $updated = $DB->get_record('local_learningsuccess_int', ['id' => $params['id']], '*', MUST_EXIST);
 
         return [
             'id' => $updated->id,
-            'status' => $updated->status,
+            'status' => strtoupper($updated->status),
             'success' => $success,
         ];
     }
@@ -293,6 +296,72 @@ class dashboard_exporter extends external_api {
             'id' => new external_value(PARAM_INT, 'Intervention ID'),
             'status' => new external_value(PARAM_ALPHA, 'Status string'),
             'success' => new external_value(PARAM_BOOL, 'Operation success status'),
+        ]);
+    }
+
+    /**
+     * Parameters for dismiss_signal.
+     */
+    public static function dismiss_signal_parameters(): external_function_parameters {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
+            'userid' => new external_value(PARAM_INT, 'Student user ID'),
+            'signal_type' => new external_value(PARAM_ALPHANUMEXT, 'Signal type to dismiss'),
+            'reason' => new external_value(PARAM_ALPHAEXT, 'Reason for dismissal', VALUE_DEFAULT, 'other'),
+        ]);
+    }
+
+    /**
+     * Dismiss a risk signal for a student for 14 days.
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @param string $signal_type
+     * @param string $reason
+     * @return array
+     */
+    public static function dismiss_signal(int $courseid, int $userid, string $signal_type, string $reason = 'other'): array {
+        global $USER;
+
+        $params = self::validate_parameters(self::dismiss_signal_parameters(), [
+            'courseid' => $courseid,
+            'userid' => $userid,
+            'signal_type' => $signal_type,
+            'reason' => $reason,
+        ]);
+
+        $context = \context_course::instance($params['courseid']);
+        self::validate_context($context);
+        require_capability('local/learningsuccess:manageintervention', $context);
+
+        \local_learningsuccess\local\helper\access_helper::validate_student_access(
+            $params['courseid'],
+            $context,
+            (int) $params['userid']
+        );
+
+        $collector = new \local_learningsuccess\local\signal\signal_collector();
+        $success = $collector->dismiss_signal(
+            (int) $params['userid'],
+            (int) $params['courseid'],
+            $params['signal_type'],
+            $USER->id,
+            $params['reason']
+        );
+
+        return [
+            'success' => $success,
+            'message' => get_string('signal_dismissed', 'local_learningsuccess'),
+        ];
+    }
+
+    /**
+     * Return value for dismiss_signal.
+     */
+    public static function dismiss_signal_returns(): external_single_structure {
+        return new external_single_structure([
+            'success' => new external_value(PARAM_BOOL, 'Success flag'),
+            'message' => new external_value(PARAM_TEXT, 'Result message'),
         ]);
     }
 }

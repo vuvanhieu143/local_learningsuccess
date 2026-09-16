@@ -27,10 +27,14 @@ use local_learningsuccess\local\recommendation\rules\completion_rule;
  * Domain engine mapping student risk evidence into practical, explainable teacher recommendations.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class recommendation_engine {
+    public const ACTION_CONTACT         = 'checkin';
+    public const ACTION_MISSED_ACTIVITY = 'assignment_support';
+    public const ACTION_EXTENSION       = 'assignment_support';
+    public const ACTION_RESOURCE        = 'resource_recommendation';
 
     /** @var recommendation_rule[] */
     private array $rules = [];

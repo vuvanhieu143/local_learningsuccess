@@ -18,12 +18,11 @@ namespace local_learningsuccess\external;
 
 defined('MOODLE_INTERNAL') || die();
 
-use context_course;
-use external_api;
-use external_function_parameters;
-use external_single_structure;
-use external_multiple_structure;
-use external_value;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
 use local_learningsuccess\local\helper\access_helper;
 use local_learningsuccess\local\service\student_success_service;
 
@@ -31,7 +30,7 @@ use local_learningsuccess\local\service\student_success_service;
  * External Web Service exporter providing student detail breakdown and explanation summary.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class student_exporter extends external_api {
@@ -59,7 +58,7 @@ class student_exporter extends external_api {
             'userid' => $userid,
         ]);
 
-        $context = context_course::instance($params['courseid']);
+        $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/learningsuccess:viewstudent', $context);
 
@@ -105,7 +104,7 @@ class student_exporter extends external_api {
             'userid' => new external_value(PARAM_INT, 'Student user ID'),
             'courseid' => new external_value(PARAM_INT, 'Course ID'),
             'fullname' => new external_value(PARAM_TEXT, 'Full student name'),
-            'email' => new external_value(PARAM_RAW, 'Student email (omitted for data minimisation)', VALUE_DEFAULT, ''),
+            'email' => new external_value(PARAM_RAW_TRIMMED, 'Student email (omitted for data minimisation)', VALUE_DEFAULT, ''),
             'status' => new external_value(PARAM_ALPHA, 'Status key'),
             'status_label' => new external_value(PARAM_TEXT, 'Localized status label'),
             'risk_score' => new external_value(PARAM_INT, 'Calculated risk score'),

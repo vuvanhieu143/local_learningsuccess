@@ -17,7 +17,7 @@
  * Modern ES6 module managing intervention modals and AJAX actions for Moodle 5.x.
  *
  * @module     local_learningsuccess/intervention
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,7 +26,7 @@ import Notification from 'core/notification';
 import ModalSaveCancel from 'core/modal_save_cancel';
 import ModalEvents from 'core/modal_events';
 import Templates from 'core/templates';
-import { get_string as getString } from 'core/str';
+import {get_string as getString} from 'core/str';
 import Selectors from 'local_learningsuccess/selectors';
 
 let activeCourseId = null;
@@ -44,12 +44,90 @@ const completeIntervention = (btn) => {
         methodname: 'local_learningsuccess_complete_intervention',
         args: {
             id: parseInt(id, 10),
-            actual_action: 'Intervention completed by teacher.'
+            'actual_action': 'Intervention completed by teacher.',
         }
     }])[0].then(result => {
         if (result.success) {
             window.location.reload();
         }
+        return null;
+    }).catch(err => {
+        btn.disabled = false;
+        Notification.exception(err);
+    });
+};
+
+/**
+ * Dismiss an active intervention via AJAX.
+ *
+ * @param {HTMLElement} btn
+ */
+const dismissIntervention = (btn) => {
+    const id = btn.getAttribute('data-id');
+    btn.disabled = true;
+
+    Ajax.call([{
+        methodname: 'local_learningsuccess_dismiss_intervention',
+        args: {
+            id: parseInt(id, 10),
+        }
+    }])[0].then(result => {
+        if (result.success) {
+            window.location.reload();
+        }
+        return null;
+    }).catch(err => {
+        btn.disabled = false;
+        Notification.exception(err);
+    });
+};
+
+/**
+ * Dismiss an observable signal via AJAX.
+ *
+ * @param {HTMLElement} btn
+ */
+const dismissSignal = (btn) => {
+    const signalItem = btn.closest(Selectors.regions.signalItem) || btn.closest('.signal-item-container');
+    const reasonSelect = signalItem ? signalItem.querySelector('.dismiss-reason-select') : null;
+    const reason = reasonSelect ? reasonSelect.value : 'other';
+
+    const courseId = parseInt(
+        btn.getAttribute('data-courseid') ||
+        document.querySelector('[data-region="dashboard"], [data-courseid]')?.getAttribute('data-courseid') ||
+        activeCourseId,
+        10
+    );
+    const userId = parseInt(btn.getAttribute('data-userid'), 10);
+    const signalType = btn.getAttribute('data-signal');
+
+    btn.disabled = true;
+
+    Ajax.call([{
+        methodname: 'local_learningsuccess_dismiss_signal',
+        args: {
+            courseid: courseId,
+            userid: userId,
+            'signal_type': signalType,
+            reason: reason,
+        }
+    }])[0].then(result => {
+        if (result.success) {
+            if (signalItem) {
+                signalItem.style.opacity = '0.5';
+                signalItem.style.pointerEvents = 'none';
+            }
+            Notification.addNotification({
+                message: result.message,
+                type: 'success',
+            });
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
+        } else {
+            btn.disabled = false;
+        }
+        return null;
     }).catch(err => {
         btn.disabled = false;
         Notification.exception(err);
@@ -62,12 +140,29 @@ const completeIntervention = (btn) => {
  * @param {HTMLElement} btn
  */
 const openInterventionModal = async(btn) => {
-    const userId = btn.getAttribute('data-userid');
+    const userId = btn.getAttribute('data-userid') ||
+        btn.closest('[data-userid]')?.getAttribute('data-userid');
     const fullname = btn.getAttribute('data-fullname') || '';
-    const initialType = btn.getAttribute('data-type') || 'CONTACT';
     const recommended = btn.getAttribute('data-recommended') || '';
 
-    const isQuickContact = btn.classList.contains('btn-quick-contact') || initialType === 'CONTACT';
+    let courseId = parseInt(
+        btn.getAttribute('data-courseid') ||
+        btn.closest('[data-courseid]')?.getAttribute('data-courseid') ||
+        document.querySelector('[data-region="dashboard"], [data-courseid]')?.getAttribute('data-courseid') ||
+        activeCourseId,
+        10
+    );
+
+    if ((isNaN(courseId) || courseId <= 0) && activeCourseId) {
+        courseId = parseInt(activeCourseId, 10);
+    }
+
+    const isQuickContact = btn.classList.contains('btn-quick-contact');
+
+    const hasActive = btn.getAttribute('data-has-active') === 'true' ||
+        btn.closest('[data-has-active]')?.getAttribute('data-has-active') === 'true';
+    const activeStatus = btn.getAttribute('data-active-status') ||
+        btn.closest('[data-active-status]')?.getAttribute('data-active-status') || '';
 
     let defaultActualAction = '';
     if (isQuickContact) {
@@ -79,12 +174,14 @@ const openInterventionModal = async(btn) => {
     }
 
     const contextData = {
-        courseid: activeCourseId,
+        courseid: courseId,
         userid: userId,
-        recommended_action: recommended,
-        actual_action: defaultActualAction,
+        'recommended_action': recommended,
+        'actual_action': defaultActualAction,
         reason: isQuickContact ? 'Periodic teacher check-in' : '',
-        send_message_default: isQuickContact,
+        'send_message_default': isQuickContact,
+        'has_active_intervention': hasActive,
+        'active_status': activeStatus,
     };
 
     try {
@@ -137,22 +234,34 @@ const openInterventionModal = async(btn) => {
             const actualAction = form.querySelector(Selectors.fields.actualAction).value;
             const sendMessage = form.querySelector(Selectors.fields.sendMessage)?.checked ? true : false;
 
+            const courseIdInput = form.querySelector('[name="courseid"]')?.value;
+            const userIdInput = form.querySelector('[name="userid"]')?.value;
+
+            const finalCourseId = parseInt(courseIdInput || courseId || activeCourseId, 10);
+            const finalUserId = parseInt(userIdInput || userId, 10);
+
+            if (isNaN(finalCourseId) || finalCourseId <= 0) {
+                Notification.exception(new Error('Invalid course ID'));
+                return;
+            }
+
             Ajax.call([{
                 methodname: 'local_learningsuccess_create_intervention',
                 args: {
-                    courseid: parseInt(activeCourseId, 10),
-                    userid: parseInt(userId, 10),
+                    courseid: finalCourseId,
+                    userid: finalUserId,
                     type,
                     reason,
-                    recommended_action: recommendedAction,
-                    actual_action: actualAction,
-                    send_message: sendMessage,
+                    'recommended_action': recommendedAction,
+                    'actual_action': actualAction,
+                    'send_message': sendMessage,
                 }
             }])[0].then(response => {
                 if (response.success) {
                     modal.destroy();
                     window.location.reload();
                 }
+                return null;
             }).catch(Notification.exception);
         });
     } catch (error) {
@@ -182,7 +291,52 @@ const registerEventListeners = () => {
         const completeBtn = e.target.closest(Selectors.actions.completeInterventionButton);
         if (completeBtn) {
             e.preventDefault();
-            completeIntervention(completeBtn);
+            Notification.saveCancelPromise(
+                getString('confirm_complete_title', 'local_learningsuccess'),
+                getString('confirm_complete_body', 'local_learningsuccess'),
+                getString('action_complete', 'local_learningsuccess'),
+                {triggerElement: completeBtn}
+            ).then(() => {
+                completeIntervention(completeBtn);
+                return;
+            }).catch(() => {
+                // Cancelled by user.
+            });
+            return;
+        }
+
+        const dismissBtn = e.target.closest(Selectors.actions.dismissInterventionButton);
+        if (dismissBtn) {
+            e.preventDefault();
+            Notification.saveCancelPromise(
+                getString('confirm_dismiss_title', 'local_learningsuccess'),
+                getString('confirm_dismiss_body', 'local_learningsuccess'),
+                getString('action_dismiss', 'local_learningsuccess'),
+                {triggerElement: dismissBtn}
+            ).then(() => {
+                dismissIntervention(dismissBtn);
+                return;
+            }).catch(() => {
+                // Cancelled by user.
+            });
+            return;
+        }
+
+        const dismissSigBtn = e.target.closest(Selectors.actions.dismissSignalButton);
+        if (dismissSigBtn) {
+            e.preventDefault();
+            Notification.saveCancelPromise(
+                getString('dismiss_signal', 'local_learningsuccess'),
+                getString('dismiss_signal_confirm', 'local_learningsuccess'),
+                getString('dismiss_signal', 'local_learningsuccess'),
+                {triggerElement: dismissSigBtn}
+            ).then(() => {
+                dismissSignal(dismissSigBtn);
+                return;
+            }).catch(() => {
+                // Cancelled by user.
+            });
+            return;
         }
     });
 };
@@ -190,10 +344,24 @@ const registerEventListeners = () => {
 /**
  * Initialize intervention module.
  *
- * @param {Object} config
- * @param {number} config.courseid
+ * @param {Object|number} courseIdOrConfig
  */
-export const init = (config) => {
-    activeCourseId = parseInt(config.courseid, 10);
+export const init = (courseIdOrConfig) => {
+    let courseId;
+    if (typeof courseIdOrConfig === 'object' && courseIdOrConfig !== null) {
+        courseId = parseInt(courseIdOrConfig.courseid, 10);
+    } else {
+        courseId = parseInt(courseIdOrConfig, 10);
+    }
+
+    if (!isNaN(courseId) && courseId > 0) {
+        activeCourseId = courseId;
+    } else {
+        const rootEl = document.querySelector('[data-region="dashboard"], [data-region="student-detail"], [data-courseid]');
+        if (rootEl && rootEl.dataset.courseid) {
+            activeCourseId = parseInt(rootEl.dataset.courseid, 10);
+        }
+    }
+
     registerEventListeners();
 };

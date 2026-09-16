@@ -22,7 +22,7 @@ defined('MOODLE_INTERNAL') || die();
  * Centralized student learning metrics query helper.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class metrics_helper {
@@ -40,6 +40,7 @@ class metrics_helper {
         $now = time();
 
         // 1. Inactivity.
+
         $lastaccess = $DB->get_field('user_lastaccess', 'timeaccess', [
             'userid' => $userid,
             'courseid' => $courseid,

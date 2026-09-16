@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <XMLDB PATH="local/learningsuccess/db" VERSION="20260830" COMMENT="XMLDB file for local_learningsuccess">
   <TABLES>
-    <TABLE NAME="local_ls_intervention" COMMENT="Tracks student intervention records and outcomes">
+    <TABLE NAME="local_learningsuccess_int" COMMENT="Tracks student intervention records and outcomes">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Target student ID"/>
@@ -41,7 +41,7 @@
       </INDEXES>
     </TABLE>
 
-    <TABLE NAME="local_ls_note" COMMENT="Stores teacher notes and follow-up annotations on interventions">
+    <TABLE NAME="local_learningsuccess_note" COMMENT="Stores teacher notes and follow-up annotations on interventions">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="interventionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Associated intervention ID"/>
@@ -58,7 +58,7 @@
       </INDEXES>
     </TABLE>
 
-    <TABLE NAME="local_ls_snapshot" COMMENT="Before and followup metrics snapshots for intervention outcome evaluation">
+    <TABLE NAME="local_learningsuccess_snap" COMMENT="Before and followup metrics snapshots for intervention outcome evaluation">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="interventionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Associated intervention ID"/>
@@ -79,7 +79,7 @@
       </INDEXES>
     </TABLE>
 
-    <TABLE NAME="local_ls_signal" COMMENT="Stores derived risk explanation signals for students">
+    <TABLE NAME="local_learningsuccess_sign" COMMENT="Stores derived risk explanation signals for students">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

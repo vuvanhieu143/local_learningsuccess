@@ -24,7 +24,7 @@ use local_learningsuccess\local\explanation\explanation;
  * Signal evaluator detecting overdue assignment submissions.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class overdue_signal implements signal {
@@ -72,7 +72,7 @@ class overdue_signal implements signal {
         }
 
         $names = array_slice(array_map(fn($item) => $item->name, $overdue), 0, 3);
-        $severity = ($count >= 3) ? explanation::SEVERITY_CRITICAL : explanation::SEVERITY_WARNING;
+        $severity = ($count >= 2) ? explanation::SEVERITY_CRITICAL : explanation::SEVERITY_WARNING;
 
         return new explanation(
             type: self::TYPE,

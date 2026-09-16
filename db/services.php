@@ -18,7 +18,7 @@
  * External service definitions for local_learningsuccess.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -64,6 +64,14 @@ $functions = [
         'type' => 'read',
         'ajax' => true,
         'capabilities' => 'local/learningsuccess:viewstudent',
+    ],
+    'local_learningsuccess_dismiss_signal' => [
+        'classname' => 'local_learningsuccess\external\dashboard_exporter',
+        'methodname' => 'dismiss_signal',
+        'description' => 'Dismisses a student risk signal for 14 days',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/learningsuccess:manageintervention',
     ],
 ];
 

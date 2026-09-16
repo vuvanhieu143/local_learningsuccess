@@ -20,6 +20,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use advanced_testcase;
 use local_learningsuccess\local\intervention\intervention_manager;
+use local_learningsuccess\local\intervention\intervention_status;
 use local_learningsuccess\local\outcome\outcome;
 use local_learningsuccess\local\outcome\outcome_evaluator;
 
@@ -28,7 +29,7 @@ use local_learningsuccess\local\outcome\outcome_evaluator;
  *
  * @package    local_learningsuccess
  * @category   test
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class intervention_test extends advanced_testcase {
@@ -60,7 +61,7 @@ class intervention_test extends advanced_testcase {
 
         $this->assertGreaterThan(0, $id);
 
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id]);
+        $record = $DB->get_record('local_learningsuccess_int', ['id' => $id]);
         $this->assertNotEmpty($record);
         $this->assertEquals(intervention_manager::STATUS_OPEN, $record->status);
         $this->assertEquals(outcome::UNKNOWN, $record->outcome);
@@ -98,13 +99,13 @@ class intervention_test extends advanced_testcase {
             'status' => intervention_manager::STATUS_IN_PROGRESS,
         ]);
 
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id]);
+        $record = $DB->get_record('local_learningsuccess_int', ['id' => $id]);
         $this->assertEquals(intervention_manager::STATUS_IN_PROGRESS, $record->status);
         $this->assertEquals('Called student on phone', $record->actual_action);
 
         // Dismiss.
         $manager->dismiss($id);
-        $dismissed = $DB->get_record('local_ls_intervention', ['id' => $id]);
+        $dismissed = $DB->get_record('local_learningsuccess_int', ['id' => $id]);
         $this->assertEquals(intervention_manager::STATUS_DISMISSED, $dismissed->status);
     }
 
@@ -124,7 +125,7 @@ class intervention_test extends advanced_testcase {
         $manager->transition_to($id, intervention_status::CONTACTED);
         $manager->complete($id, 'Student submitted assignment');
 
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id]);
+        $record = $DB->get_record('local_learningsuccess_int', ['id' => $id]);
         $this->assertEquals(intervention_manager::STATUS_COMPLETED, $record->status);
         $this->assertNotEmpty($record->after_snapshot);
         $this->assertNotNull($record->completed_at);

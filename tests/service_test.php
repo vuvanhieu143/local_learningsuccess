@@ -28,7 +28,7 @@ use local_learningsuccess\local\intervention\intervention_manager;
  *
  * @package    local_learningsuccess
  * @category   test
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class service_test extends advanced_testcase {
@@ -88,6 +88,7 @@ class service_test extends advanced_testcase {
         $student = $this->getDataGenerator()->create_user(['email' => 'learner@example.com']);
         $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
 
+        $service = new student_success_service();
         $details = $service->get_student_summary($student->id, $course->id);
 
         $this->assertEquals($student->id, $details['user']['id']);

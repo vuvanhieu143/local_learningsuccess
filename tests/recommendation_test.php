@@ -30,7 +30,7 @@ use local_learningsuccess\local\intervention\intervention_manager;
  *
  * @package    local_learningsuccess
  * @category   test
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class recommendation_test extends advanced_testcase {
@@ -92,7 +92,7 @@ class recommendation_test extends advanced_testcase {
         $this->assertTrue(intervention_status::is_closed(intervention_status::RESOLVED));
         $this->assertTrue(intervention_status::is_closed(intervention_status::DISMISSED));
 
-        $this->assertTrue(intervention_status::is_valid_transition(intervention_status::OPEN, intervention_status::RESOLVED));
+        $this->assertTrue(intervention_status::is_valid_transition(intervention_status::CONTACTED, intervention_status::RESOLVED));
         $this->assertFalse(intervention_status::is_valid_transition(intervention_status::RESOLVED, intervention_status::OPEN));
     }
 

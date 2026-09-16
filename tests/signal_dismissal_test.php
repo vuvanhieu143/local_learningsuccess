@@ -30,7 +30,7 @@ use local_learningsuccess\local\signal\signal_collector;
  *
  * @package    local_learningsuccess
  * @category   test
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class signal_dismissal_test extends advanced_testcase {
@@ -103,7 +103,7 @@ final class signal_dismissal_test extends advanced_testcase {
         $this->assertTrue($collector->is_signal_dismissed($user->id, $course->id, 'inactivity', 'warning'));
 
         // Verify database record.
-        $record = $DB->get_record('local_ls_signal', [
+        $record = $DB->get_record('local_learningsuccess_sign', [
             'userid' => $user->id,
             'courseid' => $course->id,
             'signal_type' => 'inactivity',
@@ -209,7 +209,7 @@ final class signal_dismissal_test extends advanced_testcase {
             'dismissed' => 0,
             'timecreated' => $initialtime,
         ];
-        $id = $DB->insert_record('local_ls_signal', $record);
+        $id = $DB->insert_record('local_learningsuccess_sign', $record);
 
         // 2. Run signal_collector with a mock signal to simulate current observation.
         $mockexplanation = new explanation(
@@ -230,7 +230,7 @@ final class signal_dismissal_test extends advanced_testcase {
         $collector->collect($user->id, $course->id, persist: true);
 
         // 3. Verify firstseen remained initialtime, lastseen was bumped to recent.
-        $updated = $DB->get_record('local_ls_signal', ['id' => $id]);
+        $updated = $DB->get_record('local_learningsuccess_sign', ['id' => $id]);
         $this->assertEquals($initialtime, (int) $updated->firstseen);
         $this->assertGreaterThan($initialtime, (int) $updated->lastseen);
         $this->assertEquals('critical', $updated->severity);
@@ -241,7 +241,7 @@ final class signal_dismissal_test extends advanced_testcase {
         $emptycollector->collect($user->id, $course->id, persist: true);
 
         // 5. Verify the previously active signal was marked inactive.
-        $deactivated = $DB->get_record('local_ls_signal', ['id' => $id]);
+        $deactivated = $DB->get_record('local_learningsuccess_sign', ['id' => $id]);
         $this->assertEquals(0, (int) $deactivated->active);
         $this->assertEquals($initialtime, (int) $deactivated->firstseen);
     }

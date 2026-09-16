@@ -17,14 +17,14 @@
  * Modern ES6 module controlling Dashboard interactions for local_learningsuccess.
  *
  * @module     local_learningsuccess/dashboard
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 import Ajax from 'core/ajax';
 import Notification from 'core/notification';
 import Selectors from 'local_learningsuccess/selectors';
-import { init as initInterventions } from 'local_learningsuccess/intervention';
+import {init as initInterventions} from 'local_learningsuccess/intervention';
 
 /**
  * Register event listeners for the dashboard.
@@ -40,9 +40,10 @@ const registerEventListeners = (courseId) => {
 
             Ajax.call([{
                 methodname: 'local_learningsuccess_get_dashboard_data',
-                args: { courseid: courseId }
+                args: {courseid: courseId}
             }])[0].then(() => {
                 window.location.reload();
+                return null;
             }).catch(err => {
                 refreshBtn.disabled = false;
                 Notification.exception(err);
@@ -58,11 +59,21 @@ const registerEventListeners = (courseId) => {
  * @param {number} config.courseid
  */
 export const init = (config) => {
-    const courseId = parseInt(config.courseid, 10);
+    let courseId;
+    if (typeof config === 'object' && config !== null) {
+        courseId = parseInt(config.courseid, 10);
+    } else {
+        courseId = parseInt(config, 10);
+    }
 
-    initInterventions({
-        courseid: courseId
-    });
+    if (isNaN(courseId) || courseId <= 0) {
+        const rootEl = document.querySelector('[data-region="dashboard"], [data-courseid]');
+        if (rootEl && rootEl.dataset.courseid) {
+            courseId = parseInt(rootEl.dataset.courseid, 10);
+        }
+    }
+
+    initInterventions(courseId);
 
     registerEventListeners(courseId);
 };

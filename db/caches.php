@@ -18,7 +18,7 @@
  * Cache definitions for local_learningsuccess.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,14 +26,14 @@ defined('MOODLE_INTERNAL') || die();
 
 $definitions = [
     'course_summary' => [
-        'mode' => CACHE_STORE_MODE_APPLICATION,
+        'mode' => cache_store::MODE_APPLICATION,
         'simplekeys' => true,
         'simpledata' => false,
         'ttl' => 1800, // 30 minutes.
         'staticacceleration' => true,
     ],
     'student_summary' => [
-        'mode' => CACHE_STORE_MODE_APPLICATION,
+        'mode' => cache_store::MODE_APPLICATION,
         'simplekeys' => true,
         'simpledata' => false,
         'ttl' => 1800, // 30 minutes.

@@ -34,7 +34,7 @@ use core_privacy\local\request\writer;
  * Privacy API provider for local_learningsuccess.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
@@ -50,38 +50,38 @@ class provider implements
      */
     public static function get_metadata(collection $collection): collection {
         $collection->add_database_table(
-            'local_ls_intervention',
+            'local_learningsuccess_int',
             [
-                'userid' => 'privacy:metadata:local_ls_intervention:userid',
-                'courseid' => 'privacy:metadata:local_ls_intervention:courseid',
-                'teacherid' => 'privacy:metadata:local_ls_intervention:teacherid',
-                'type' => 'privacy:metadata:local_ls_intervention:type',
-                'reason' => 'privacy:metadata:local_ls_intervention:reason',
-                'recommended_action' => 'privacy:metadata:local_ls_intervention:recommended_action',
-                'actual_action' => 'privacy:metadata:local_ls_intervention:actual_action',
-                'status' => 'privacy:metadata:local_ls_intervention:status',
-                'outcome' => 'privacy:metadata:local_ls_intervention:outcome',
-                'before_snapshot' => 'privacy:metadata:local_ls_intervention:before_snapshot',
-                'after_snapshot' => 'privacy:metadata:local_ls_intervention:after_snapshot',
-                'timecreated' => 'privacy:metadata:local_ls_intervention:timecreated',
-                'timemodified' => 'privacy:metadata:local_ls_intervention:timemodified',
-                'completed_at' => 'privacy:metadata:local_ls_intervention:completed_at',
+                'userid' => 'privacy:metadata:local_learningsuccess_int:userid',
+                'courseid' => 'privacy:metadata:local_learningsuccess_int:courseid',
+                'teacherid' => 'privacy:metadata:local_learningsuccess_int:teacherid',
+                'type' => 'privacy:metadata:local_learningsuccess_int:type',
+                'reason' => 'privacy:metadata:local_learningsuccess_int:reason',
+                'recommended_action' => 'privacy:metadata:local_learningsuccess_int:recommended_action',
+                'actual_action' => 'privacy:metadata:local_learningsuccess_int:actual_action',
+                'status' => 'privacy:metadata:local_learningsuccess_int:status',
+                'outcome' => 'privacy:metadata:local_learningsuccess_int:outcome',
+                'before_snapshot' => 'privacy:metadata:local_learningsuccess_int:before_snapshot',
+                'after_snapshot' => 'privacy:metadata:local_learningsuccess_int:after_snapshot',
+                'timecreated' => 'privacy:metadata:local_learningsuccess_int:timecreated',
+                'timemodified' => 'privacy:metadata:local_learningsuccess_int:timemodified',
+                'completed_at' => 'privacy:metadata:local_learningsuccess_int:completed_at',
             ],
-            'privacy:metadata:local_ls_intervention'
+            'privacy:metadata:local_learningsuccess_int'
         );
 
         $collection->add_database_table(
-            'local_ls_signal',
+            'local_learningsuccess_sign',
             [
-                'userid' => 'privacy:metadata:local_ls_signal:userid',
-                'courseid' => 'privacy:metadata:local_ls_signal:courseid',
-                'signal_type' => 'privacy:metadata:local_ls_signal:signal_type',
-                'severity' => 'privacy:metadata:local_ls_signal:severity',
-                'value' => 'privacy:metadata:local_ls_signal:value',
-                'metadata' => 'privacy:metadata:local_ls_signal:metadata',
-                'timecreated' => 'privacy:metadata:local_ls_signal:timecreated',
+                'userid' => 'privacy:metadata:local_learningsuccess_sign:userid',
+                'courseid' => 'privacy:metadata:local_learningsuccess_sign:courseid',
+                'signal_type' => 'privacy:metadata:local_learningsuccess_sign:signal_type',
+                'severity' => 'privacy:metadata:local_learningsuccess_sign:severity',
+                'value' => 'privacy:metadata:local_learningsuccess_sign:value',
+                'metadata' => 'privacy:metadata:local_learningsuccess_sign:metadata',
+                'timecreated' => 'privacy:metadata:local_learningsuccess_sign:timecreated',
             ],
-            'privacy:metadata:local_ls_signal'
+            'privacy:metadata:local_learningsuccess_sign'
         );
 
         return $collection;
@@ -100,7 +100,7 @@ class provider implements
         $sql = "SELECT c.id
                   FROM {context} c
                   JOIN {course} cr ON c.instanceid = cr.id AND c.contextlevel = :contextlevel
-                  JOIN {local_ls_intervention} i ON i.courseid = cr.id
+                  JOIN {local_learningsuccess_int} i ON i.courseid = cr.id
                  WHERE i.userid = :userid1 OR i.teacherid = :teacherid";
 
         $params = [
@@ -114,7 +114,7 @@ class provider implements
         $sql2 = "SELECT c.id
                    FROM {context} c
                    JOIN {course} cr ON c.instanceid = cr.id AND c.contextlevel = :contextlevel
-                   JOIN {local_ls_signal} s ON s.courseid = cr.id
+                   JOIN {local_learningsuccess_sign} s ON s.courseid = cr.id
                   WHERE s.userid = :userid";
         $contextlist->add_from_sql($sql2, ['contextlevel' => CONTEXT_COURSE, 'userid' => $userid]);
 
@@ -134,13 +134,13 @@ class provider implements
 
         $params = ['courseid' => $context->instanceid];
 
-        $sql = "SELECT userid FROM {local_ls_intervention} WHERE courseid = :courseid";
+        $sql = "SELECT userid FROM {local_learningsuccess_int} WHERE courseid = :courseid";
         $userlist->add_from_sql('userid', $sql, $params);
 
-        $sqlTeacher = "SELECT teacherid AS userid FROM {local_ls_intervention} WHERE courseid = :courseid";
+        $sqlTeacher = "SELECT teacherid AS userid FROM {local_learningsuccess_int} WHERE courseid = :courseid";
         $userlist->add_from_sql('userid', $sqlTeacher, $params);
 
-        $sqlSignal = "SELECT userid FROM {local_ls_signal} WHERE courseid = :courseid";
+        $sqlSignal = "SELECT userid FROM {local_learningsuccess_sign} WHERE courseid = :courseid";
         $userlist->add_from_sql('userid', $sqlSignal, $params);
     }
 
@@ -162,7 +162,7 @@ class provider implements
             $courseid = $context->instanceid;
 
             $interventions = $DB->get_records_select(
-                'local_ls_intervention',
+                'local_learningsuccess_int',
                 'courseid = :courseid AND (userid = :userid OR teacherid = :teacherid)',
                 ['courseid' => $courseid, 'userid' => $userid, 'teacherid' => $userid]
             );
@@ -187,7 +187,7 @@ class provider implements
                 );
             }
 
-            $signals = $DB->get_records('local_ls_signal', ['courseid' => $courseid, 'userid' => $userid]);
+            $signals = $DB->get_records('local_learningsuccess_sign', ['courseid' => $courseid, 'userid' => $userid]);
             if (!empty($signals)) {
                 $signaldata = array_map(function ($record) {
                     return [
@@ -220,8 +220,8 @@ class provider implements
         }
 
         $courseid = $context->instanceid;
-        $DB->delete_records('local_ls_intervention', ['courseid' => $courseid]);
-        $DB->delete_records('local_ls_signal', ['courseid' => $courseid]);
+        $DB->delete_records('local_learningsuccess_int', ['courseid' => $courseid]);
+        $DB->delete_records('local_learningsuccess_sign', ['courseid' => $courseid]);
     }
 
     /**
@@ -239,8 +239,8 @@ class provider implements
                 continue;
             }
             $courseid = $context->instanceid;
-            $DB->delete_records('local_ls_intervention', ['courseid' => $courseid, 'userid' => $userid]);
-            $DB->delete_records('local_ls_signal', ['courseid' => $courseid, 'userid' => $userid]);
+            $DB->delete_records('local_learningsuccess_int', ['courseid' => $courseid, 'userid' => $userid]);
+            $DB->delete_records('local_learningsuccess_sign', ['courseid' => $courseid, 'userid' => $userid]);
         }
     }
 
@@ -267,8 +267,8 @@ class provider implements
         list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
         $params = array_merge(['courseid' => $courseid], $inparams);
 
-        $DB->delete_records_select('local_ls_intervention', "courseid = :courseid AND userid $insql", $params);
-        $DB->delete_records_select('local_ls_signal', "courseid = :courseid AND userid $insql", $params);
+        $DB->delete_records_select('local_learningsuccess_int', "courseid = :courseid AND userid $insql", $params);
+        $DB->delete_records_select('local_learningsuccess_sign', "courseid = :courseid AND userid $insql", $params);
     }
 }
 

@@ -29,7 +29,7 @@ use local_learningsuccess\local\intervention\intervention_status;
  * Distinguishes pure mathematical risk from teacher action urgency.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class actionability_engine {

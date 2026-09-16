@@ -30,7 +30,7 @@ use local_learningsuccess\local\risk\risk_result;
  *
  * @package    local_learningsuccess
  * @category   test
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class actionability_test extends advanced_testcase {

@@ -26,7 +26,7 @@ use stdClass;
  * Scheduled task scanning active interventions and alerting teachers when follow-up dates are reached.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class process_followups extends scheduled_task {
@@ -47,16 +47,15 @@ class process_followups extends scheduled_task {
         global $DB;
 
         $now = time();
-        $sql = "followupat > 0 AND followupat <= :now AND status IN (:open, :contacted, :waiting, :inprogress)";
+        $sql = "followupat > 0 AND followupat <= :now AND status IN (:contacted, :waiting, :inprogress)";
         $params = [
             'now' => $now,
-            'open' => intervention_status::OPEN,
             'contacted' => intervention_status::CONTACTED,
             'waiting' => intervention_status::WAITING,
             'inprogress' => intervention_status::IN_PROGRESS,
         ];
 
-        $due = $DB->get_records_select('local_ls_intervention', $sql, $params);
+        $due = $DB->get_records_select('local_learningsuccess_int', $sql, $params);
         $count = 0;
         $manager = new \local_learningsuccess\local\intervention\intervention_manager();
 
@@ -88,8 +87,19 @@ class process_followups extends scheduled_task {
             $student = $DB->get_record('user', ['id' => $intervention->userid], '*', IGNORE_MISSING);
             $course = $DB->get_record('course', ['id' => $intervention->courseid], '*', IGNORE_MISSING);
 
-            if (!$teacher || !$student || !$course) {
+            if (!$student || !$course) {
                 return false;
+            }
+
+            // Fallback if original teacher account has been suspended, deleted, or reassigned.
+            if (!$teacher || !empty($teacher->deleted) || !empty($teacher->suspended)) {
+                $context = \context_course::instance($course->id);
+                $courseadmins = get_enrolled_users($context, 'local/learningsuccess:manageintervention', 0, 'u.*', null, 0, 1, true);
+                if (!empty($courseadmins)) {
+                    $teacher = reset($courseadmins);
+                } else {
+                    return false;
+                }
             }
 
             $coursename = format_string($course->fullname);

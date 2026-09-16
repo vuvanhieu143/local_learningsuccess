@@ -25,7 +25,7 @@ use local_learningsuccess\local\recommendation\recommendation_rule;
  * Recommendation rule mapping inactivity signals to supportive check-in actions.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class inactivity_rule implements recommendation_rule {
@@ -38,7 +38,7 @@ class inactivity_rule implements recommendation_rule {
      */
     public function matches(array $signals): bool {
         foreach ($signals as $s) {
-            $type = is_array($s) ? ($s['type'] ?? '') : $s->get_type();
+            $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
             if ($type === 'inactivity') {
                 return true;
             }
@@ -57,7 +57,7 @@ class inactivity_rule implements recommendation_rule {
         $isCritical = false;
 
         foreach ($signals as $s) {
-            $type = is_array($s) ? ($s['type'] ?? '') : $s->get_type();
+            $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
             if ($type === 'inactivity') {
                 $days = is_array($s) ? ($s['value'] ?? 7) : $s->get_value();
                 $sev = is_array($s) ? ($s['severity'] ?? '') : $s->get_severity();

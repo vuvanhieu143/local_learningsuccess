@@ -34,7 +34,7 @@ use local_learningsuccess\local\signal\signal_collector;
  *
  * @package    local_learningsuccess
  * @category   test
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class privacy_test extends advanced_testcase {
@@ -57,8 +57,8 @@ class privacy_test extends advanced_testcase {
             $tablenames[] = $item->get_name();
         }
 
-        $this->assertContains('local_ls_intervention', $tablenames);
-        $this->assertContains('local_ls_signal', $tablenames);
+        $this->assertContains('local_learningsuccess_int', $tablenames);
+        $this->assertContains('local_learningsuccess_sign', $tablenames);
     }
 
     /**
@@ -75,10 +75,10 @@ class privacy_test extends advanced_testcase {
         $context = context_course::instance($course->id);
 
         $studentContexts = provider::get_contexts_for_userid($student->id);
-        $this->assertContains($context->id, $studentContexts->get_contextids());
+        $this->assertContainsEquals($context->id, $studentContexts->get_contextids());
 
         $teacherContexts = provider::get_contexts_for_userid($teacher->id);
-        $this->assertContains($context->id, $teacherContexts->get_contextids());
+        $this->assertContainsEquals($context->id, $teacherContexts->get_contextids());
     }
 
     /**
@@ -96,8 +96,8 @@ class privacy_test extends advanced_testcase {
         $userlist = new userlist($context, 'local_learningsuccess');
         provider::get_users_in_context($userlist);
 
-        $this->assertContains($student->id, $userlist->get_userids());
-        $this->assertContains($teacher->id, $userlist->get_userids());
+        $this->assertContainsEquals($student->id, $userlist->get_userids());
+        $this->assertContainsEquals($teacher->id, $userlist->get_userids());
     }
 
     /**
@@ -158,8 +158,8 @@ class privacy_test extends advanced_testcase {
         $approvedlist = new approved_contextlist($student, 'local_learningsuccess', [$context->id]);
         provider::delete_data_for_user($approvedlist);
 
-        $this->assertEquals(0, $DB->count_records('local_ls_intervention', ['userid' => $student->id]));
-        $this->assertEquals(0, $DB->count_records('local_ls_signal', ['userid' => $student->id]));
+        $this->assertEquals(0, $DB->count_records('local_learningsuccess_int', ['userid' => $student->id]));
+        $this->assertEquals(0, $DB->count_records('local_learningsuccess_sign', ['userid' => $student->id]));
     }
 
     /**
@@ -180,8 +180,8 @@ class privacy_test extends advanced_testcase {
         $context = context_course::instance($course->id);
         provider::delete_data_for_all_users_in_context($context);
 
-        $this->assertEquals(0, $DB->count_records('local_ls_intervention', ['courseid' => $course->id]));
-        $this->assertEquals(0, $DB->count_records('local_ls_signal', ['courseid' => $course->id]));
+        $this->assertEquals(0, $DB->count_records('local_learningsuccess_int', ['courseid' => $course->id]));
+        $this->assertEquals(0, $DB->count_records('local_learningsuccess_sign', ['courseid' => $course->id]));
     }
 
     /**
@@ -204,7 +204,7 @@ class privacy_test extends advanced_testcase {
         provider::delete_data_for_users($approveduserlist);
 
         // student1 data should be deleted, student2 should remain.
-        $this->assertEquals(0, $DB->count_records('local_ls_intervention', ['userid' => $student1->id]));
-        $this->assertEquals(1, $DB->count_records('local_ls_intervention', ['userid' => $student2->id]));
+        $this->assertEquals(0, $DB->count_records('local_learningsuccess_int', ['userid' => $student1->id]));
+        $this->assertEquals(1, $DB->count_records('local_learningsuccess_int', ['userid' => $student2->id]));
     }
 }

@@ -22,7 +22,7 @@ defined('MOODLE_INTERNAL') || die();
  * Normalized value object encapsulating an observable learning explanation / signal evidence.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class explanation {
@@ -122,9 +122,11 @@ class explanation {
     public function to_array(): array {
         return [
             'type' => $this->type,
+            'signal_type' => $this->type,
             'severity' => $this->severity,
             'title' => $this->title,
             'description' => $this->description,
+            'message' => $this->description,
             'value' => $this->value,
             'evidence' => $this->evidence,
         ];

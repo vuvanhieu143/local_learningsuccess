@@ -25,7 +25,7 @@ use local_learningsuccess\local\recommendation\recommendation_rule;
  * Recommendation rule mapping overdue assignment signals to assignment support.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class overdue_rule implements recommendation_rule {
@@ -38,7 +38,7 @@ class overdue_rule implements recommendation_rule {
      */
     public function matches(array $signals): bool {
         foreach ($signals as $s) {
-            $type = is_array($s) ? ($s['type'] ?? '') : $s->get_type();
+            $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
             if ($type === 'overdue' || $type === 'missed_activity') {
                 return true;
             }
@@ -57,7 +57,7 @@ class overdue_rule implements recommendation_rule {
         $isCritical = false;
 
         foreach ($signals as $s) {
-            $type = is_array($s) ? ($s['type'] ?? '') : $s->get_type();
+            $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
             if ($type === 'overdue' || $type === 'missed_activity') {
                 $count = is_array($s) ? ($s['value'] ?? 1) : $s->get_value();
                 $sev = is_array($s) ? ($s['severity'] ?? '') : $s->get_severity();

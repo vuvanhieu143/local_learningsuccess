@@ -28,7 +28,7 @@ use moodle_exception;
  *
  * @package    local_learningsuccess
  * @category   test
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class intervention_lifecycle_test extends advanced_testcase {
@@ -51,13 +51,13 @@ class intervention_lifecycle_test extends advanced_testcase {
 
         // 1. Create -> OPEN.
         $id = $manager->create($student->id, $course->id, $teacher->id, 'checkin', 'Needs checkin');
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id]);
+        $record = $DB->get_record('local_learningsuccess_int', ['id' => $id]);
         $this->assertEquals(intervention_status::OPEN, $record->status);
 
         // 2. Transition OPEN -> CONTACTED.
         $this->assertTrue(intervention_status::can_transition(intervention_status::OPEN, intervention_status::CONTACTED));
         $manager->transition_to($id, intervention_status::CONTACTED, 'Sent message to student', $teacher->id);
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id]);
+        $record = $DB->get_record('local_learningsuccess_int', ['id' => $id]);
         $this->assertEquals(intervention_status::CONTACTED, $record->status);
 
         // Verify note was attached.
@@ -68,19 +68,19 @@ class intervention_lifecycle_test extends advanced_testcase {
         // 3. Transition CONTACTED -> WAITING.
         $this->assertTrue(intervention_status::can_transition(intervention_status::CONTACTED, intervention_status::WAITING));
         $manager->transition_to($id, intervention_status::WAITING);
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id]);
+        $record = $DB->get_record('local_learningsuccess_int', ['id' => $id]);
         $this->assertEquals(intervention_status::WAITING, $record->status);
 
         // 4. Transition WAITING -> FOLLOW_UP.
         $this->assertTrue(intervention_status::can_transition(intervention_status::WAITING, intervention_status::FOLLOW_UP));
         $manager->transition_to($id, intervention_status::FOLLOW_UP);
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id]);
+        $record = $DB->get_record('local_learningsuccess_int', ['id' => $id]);
         $this->assertEquals(intervention_status::FOLLOW_UP, $record->status);
 
         // 5. Transition FOLLOW_UP -> COMPLETED.
         $this->assertTrue(intervention_status::can_transition(intervention_status::FOLLOW_UP, intervention_status::COMPLETED));
         $manager->transition_to($id, intervention_status::COMPLETED, 'Student completed catchup');
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id]);
+        $record = $DB->get_record('local_learningsuccess_int', ['id' => $id]);
         $this->assertEquals(intervention_status::COMPLETED, $record->status);
         $this->assertNotNull($record->completed_at);
         $this->assertNotEmpty($record->after_snapshot);
@@ -158,7 +158,7 @@ class intervention_lifecycle_test extends advanced_testcase {
         $id = $manager->create($student->id, $course->id, $teacher->id, 'resource');
 
         $manager->transition_to($id, intervention_status::DISMISSED);
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id]);
+        $record = $DB->get_record('local_learningsuccess_int', ['id' => $id]);
         $this->assertEquals(intervention_status::DISMISSED, $record->status);
 
         // Dismissed cannot transition to CONTACTED.

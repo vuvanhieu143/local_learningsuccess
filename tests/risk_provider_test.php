@@ -32,7 +32,7 @@ use local_learningsuccess\local\explanation\explanation_engine;
  *
  * @package    local_learningsuccess
  * @category   test
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class risk_provider_test extends advanced_testcase {
@@ -76,13 +76,20 @@ class risk_provider_test extends advanced_testcase {
 
         $provider = new fallback_provider();
 
-        // 1. Initial status: student has never logged in (default 14 days -> critical/at-risk).
+        // 1. Initial status: newly enrolled student without activity is in grace period (LEVEL_NO_DATA).
         $risk = $provider->get_risk($user->id, $course->id);
-        $this->assertGreaterThanOrEqual(45.0, $risk->get_score());
+        $this->assertEquals(0.0, $risk->get_score());
+        $this->assertEquals(risk_result::LEVEL_NO_DATA, $risk->get_level());
         $this->assertEquals(fallback_provider::SOURCE_NAME, $risk->get_source());
         $this->assertNull($risk->get_model());
 
-        // 2. Active learner with high grade and completion.
+        // 2. Student enrolled 20 days ago on started course with no access -> critical inactivity.
+        $oldstudent = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($oldstudent->id, $course->id, 'student', 'manual', $now - (20 * DAYSECS));
+        $riskold = $provider->get_risk($oldstudent->id, $course->id);
+        $this->assertGreaterThanOrEqual(45.0, $riskold->get_score());
+
+        // 3. Active learner with high grade and completion.
         $DB->insert_record('user_lastaccess', [
             'userid' => $user->id,
             'courseid' => $course->id,

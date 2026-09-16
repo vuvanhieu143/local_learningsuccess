@@ -25,7 +25,7 @@ use local_learningsuccess\local\helper\metrics_helper;
  * Signal evaluator detecting stalled module completion progress.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class completion_signal implements signal {

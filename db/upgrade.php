@@ -18,7 +18,7 @@
  * Upgrade steps for local_learningsuccess.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -36,7 +36,8 @@ function xmldb_local_learningsuccess_upgrade(int $oldversion): bool {
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2026091100) {
-        $table = new xmldb_table('local_ls_signal');
+        $tablename = $dbman->table_exists('local_learningsuccess_sign') ? 'local_learningsuccess_sign' : 'local_ls_signal';
+        $table = new xmldb_table($tablename);
 
         $fields = [
             new xmldb_field('firstseen', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'metadata'),
@@ -69,7 +70,8 @@ function xmldb_local_learningsuccess_upgrade(int $oldversion): bool {
     }
 
     if ($oldversion < 2026091101) {
-        $table = new xmldb_table('local_ls_intervention');
+        $tablename = $dbman->table_exists('local_learningsuccess_int') ? 'local_learningsuccess_int' : 'local_ls_intervention';
+        $table = new xmldb_table($tablename);
 
         $fields = [
             new xmldb_field('before_snapshot_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'outcome'),
@@ -96,6 +98,23 @@ function xmldb_local_learningsuccess_upgrade(int $oldversion): bool {
         }
 
         upgrade_plugin_savepoint(true, 2026091101, 'local', 'learningsuccess');
+    }
+
+    if ($oldversion < 2026091600) {
+        $renames = [
+            'local_ls_intervention' => 'local_learningsuccess_int',
+            'local_ls_note' => 'local_learningsuccess_note',
+            'local_ls_snapshot' => 'local_learningsuccess_snap',
+            'local_ls_signal' => 'local_learningsuccess_sign',
+        ];
+        foreach ($renames as $oldname => $newname) {
+            $table = new xmldb_table($oldname);
+            if ($dbman->table_exists($table)) {
+                $dbman->rename_table($table, $newname);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026091600, 'local', 'learningsuccess');
     }
 
     return true;

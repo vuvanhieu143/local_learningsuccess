@@ -17,7 +17,7 @@
  * Define UI selectors for the local_learningsuccess plugin.
  *
  * @module     local_learningsuccess/selectors
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,6 +27,7 @@ export default {
         quickContactButton: '.btn-quick-contact',
         completeInterventionButton: '.btn-complete-intervention',
         dismissInterventionButton: '.btn-dismiss-intervention',
+        dismissSignalButton: '.btn-dismiss-signal',
         refreshDashboardButton: '.btn-refresh-dashboard',
         presetMessageButton: '.btn-preset-msg',
     },
@@ -36,6 +37,7 @@ export default {
         interventionModalForm: '#intervention-modal-form',
         studentDetail: '.local-learningsuccess-student-detail',
         pulseCards: '[data-region="pulse-cards"]',
+        signalItem: '.signal-item-container',
     },
     fields: {
         type: '[name="type"]',

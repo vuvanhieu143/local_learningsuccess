@@ -18,7 +18,7 @@
  * Course Learning Success Dashboard.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -46,7 +46,7 @@ $PAGE->set_title(get_string('learningsuccess', 'local_learningsuccess') . ': ' .
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add(get_string('pluginname', 'local_learningsuccess'), $url);
 
-$PAGE->requires->js_call_amd('local_learningsuccess/dashboard', 'init', ['courseid' => $courseid]);
+$PAGE->requires->js_call_amd('local_learningsuccess/dashboard', 'init', [$courseid]);
 
 [$groupid, $groups] = \local_learningsuccess\local\helper\access_helper::resolve_group_scope($course, $context, $groupid);
 
@@ -54,9 +54,10 @@ $service = new student_success_service();
 $summary = $service->get_course_summary($courseid, $groupid);
 $priorities = $service->get_priority_students($courseid, $groupid);
 $successstories = $service->get_recent_success_stories($courseid, 4);
+$recentlyhandled = $service->get_recently_handled_students($courseid, 4);
 
 $output = $PAGE->get_renderer('local_learningsuccess');
-$dashboardrenderable = new dashboard($courseid, $summary, $priorities, $groupid, $groups, $successstories);
+$dashboardrenderable = new dashboard($courseid, $summary, $priorities, $groupid, $groups, $successstories, $recentlyhandled);
 
 echo $output->header();
 echo $output->render($dashboardrenderable);

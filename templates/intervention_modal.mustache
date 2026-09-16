@@ -1,6 +1,8 @@
 {{!
     This file is part of Moodle - http://moodle.org/
 
+    Copyright (C) 2026 vuvanhieu143
+
     Moodle is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -18,14 +20,33 @@
     @template local_learningsuccess/intervention_modal
 
     Accessible modal body for recording an intervention.
+
+    Example context (json):
+    {
+        "courseid": 2,
+        "userid": 3,
+        "reason": "Student inactive for 8 days",
+        "recommended_action": "Reach out to student via Moodle messaging",
+        "actual_action": "Hi, I wanted to check in to see how you are doing.",
+        "send_message_default": true
+    }
 }}
 <form id="intervention-modal-form" class="mform">
     <input type="hidden" name="courseid" value="{{courseid}}">
     <input type="hidden" name="userid" value="{{userid}}">
 
-    <div class="form-group mb-3">
-        <label for="intervention-type" class="font-weight-bold">{{#str}}field_type, local_learningsuccess{{/str}}</label>
-        <select id="intervention-type" name="type" class="custom-select form-control" required>
+    {{#has_active_intervention}}
+    <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+        <i class="fa fa-exclamation-triangle fa-lg me-2 text-warning" aria-hidden="true"></i>
+        <div class="small">
+            <strong>{{#str}}active_intervention_exists, local_learningsuccess, {{active_status}}{{/str}}</strong>
+        </div>
+    </div>
+    {{/has_active_intervention}}
+
+    <div class="mb-3">
+        <label for="intervention-type" class="fw-bold">{{#str}}field_type, local_learningsuccess{{/str}}</label>
+        <select id="intervention-type" name="type" class="form-select">
             <option value="CONTACT">{{#str}}type_contact, local_learningsuccess{{/str}}</option>
             <option value="LEARNING_RESOURCE">{{#str}}type_learning_resource, local_learningsuccess{{/str}}</option>
             <option value="MISSED_ACTIVITY">{{#str}}type_missed_activity, local_learningsuccess{{/str}}</option>
@@ -35,26 +56,26 @@
         </select>
     </div>
 
-    <div class="form-group mb-3">
-        <label for="intervention-reason" class="font-weight-bold">{{#str}}field_reason, local_learningsuccess{{/str}}</label>
+    <div class="mb-3">
+        <label for="intervention-reason" class="fw-bold">{{#str}}field_reason, local_learningsuccess{{/str}}</label>
         <textarea id="intervention-reason" name="reason" class="form-control" rows="2" placeholder="{{#str}}placeholder_reason, local_learningsuccess{{/str}}">{{reason}}</textarea>
     </div>
 
-    <div class="form-group mb-3">
-        <label for="intervention-recommended" class="font-weight-bold">{{#str}}field_recommended_action, local_learningsuccess{{/str}}</label>
+    <div class="mb-3">
+        <label for="intervention-recommended" class="fw-bold">{{#str}}field_recommended_action, local_learningsuccess{{/str}}</label>
         <input type="text" id="intervention-recommended" name="recommended_action" class="form-control" value="{{recommended_action}}" placeholder="{{#str}}placeholder_recommended, local_learningsuccess{{/str}}">
     </div>
 
-    <div class="form-group mb-3">
+    <div class="mb-3">
         <div class="d-flex justify-content-between align-items-center mb-1">
-            <label for="intervention-actual" class="font-weight-bold mb-0">{{#str}}field_actual_action, local_learningsuccess{{/str}}</label>
+            <label for="intervention-actual" class="fw-bold mb-0">{{#str}}field_actual_action, local_learningsuccess{{/str}}</label>
             <span class="small text-muted">{{#str}}click_preset_to_fill, local_learningsuccess{{/str}}</span>
         </div>
         <div class="btn-group btn-group-sm mb-2 w-100 flex-wrap" role="group" aria-label="{{#str}}message_presets, local_learningsuccess{{/str}}">
-            <button type="button" class="btn btn-outline-primary btn-preset-msg mb-1 mr-1" data-preset="empathy">
+            <button type="button" class="btn btn-outline-primary btn-preset-msg mb-1 me-1" data-preset="empathy">
                 {{#str}}preset_empathy_title, local_learningsuccess{{/str}}
             </button>
-            <button type="button" class="btn btn-outline-info btn-preset-msg mb-1 mr-1" data-preset="resource">
+            <button type="button" class="btn btn-outline-info btn-preset-msg mb-1 me-1" data-preset="resource">
                 {{#str}}preset_resource_title, local_learningsuccess{{/str}}
             </button>
             <button type="button" class="btn btn-outline-warning btn-preset-msg mb-1" data-preset="extension">
@@ -64,10 +85,10 @@
         <textarea id="intervention-actual" name="actual_action" class="form-control" rows="3" placeholder="{{#str}}placeholder_actual, local_learningsuccess{{/str}}">{{actual_action}}</textarea>
     </div>
 
-    <div class="form-group form-check mb-3">
+    <div class="form-check mb-3">
         <input type="checkbox" class="form-check-input" id="intervention-send-message" name="send_message" value="1" {{#send_message_default}}checked{{/send_message_default}}>
         <label class="form-check-label small" for="intervention-send-message">
-            <i class="fa fa-envelope-o mr-1" aria-hidden="true"></i>{{#str}}field_send_message, local_learningsuccess{{/str}}
+            <i class="fa fa-envelope-o me-1" aria-hidden="true"></i>{{#str}}field_send_message, local_learningsuccess{{/str}}
         </label>
     </div>
 </form>

@@ -22,7 +22,7 @@ defined('MOODLE_INTERNAL') || die();
  * Interface contract for student risk providers.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 interface risk_provider {

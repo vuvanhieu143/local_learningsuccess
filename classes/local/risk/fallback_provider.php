@@ -26,7 +26,7 @@ use local_learningsuccess\local\helper\metrics_helper;
  * Clearly labeled as deterministic prioritisation scoring, not calibrated machine learning probabilities.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class fallback_provider implements risk_provider {
@@ -106,25 +106,65 @@ class fallback_provider implements risk_provider {
             $completioncounts = $DB->get_records_sql($completionsql, $params);
         }
 
+        // Fetch course details for lifecycle checks.
+        $course = $DB->get_record('course', ['id' => $courseid], 'id, startdate', MUST_EXIST);
+        $coursestarted = ($course->startdate <= 0 || $course->startdate <= $now);
+
+        // Batch fetch student enrolment timestamps for grace period calculations.
+        $enrolsql = "SELECT ue.userid, MIN(COALESCE(NULLIF(ue.timestart, 0), ue.timecreated)) AS enroltime
+                       FROM {user_enrolments} ue
+                       JOIN {enrol} e ON e.id = ue.enrolid
+                      WHERE e.courseid = :courseid
+                        AND ue.userid $uinsql
+                   GROUP BY ue.userid";
+        $enrolrecords = $DB->get_records_sql($enrolsql, $params);
+
         // 4. Compute identical risk scoring for each student.
         $results = [];
+        $graceperiod = 5 * DAYSECS;
+
         foreach ($userids as $uid) {
             $riskscore = 0.0;
+            $hasmeaningfuldata = false;
 
-            // Inactivity.
+            $enroltime = isset($enrolrecords[$uid]) ? (int) $enrolrecords[$uid]->enroltime : $now;
+            $isrecentlyenrolled = ($now - $enroltime) < $graceperiod;
+
+            // Inactivity evaluation.
             $lastaccess = isset($lastaccessrecords[$uid]) ? (int) $lastaccessrecords[$uid]->timeaccess : 0;
-            $inactivedays = $lastaccess > 0 ? (int) floor(($now - $lastaccess) / DAYSECS) : 14;
-
-            if ($inactivedays >= 14) {
-                $riskscore += 45.0;
-            } else if ($inactivedays >= 7) {
-                $riskscore += 30.0;
-            } else if ($inactivedays >= 4) {
-                $riskscore += 15.0;
+            if ($lastaccess > 0) {
+                $hasmeaningfuldata = true;
+                $inactivedays = (int) floor(($now - $lastaccess) / DAYSECS);
+            } else if (!$coursestarted) {
+                // Course hasn't started yet: no inactivity penalty.
+                $inactivedays = 0;
+            } else if ($isrecentlyenrolled) {
+                // Student enrolled recently: calculate days since enrolment or startdate.
+                $effectivebaseline = max($enroltime, (int) $course->startdate);
+                $inactivedays = (int) floor(max(0, $now - $effectivebaseline) / DAYSECS);
+            } else {
+                // Enrolled well in the past on an active course without ever accessing.
+                $effectivebaseline = max($enroltime, (int) $course->startdate);
+                $inactivedays = (int) floor(max(0, $now - $effectivebaseline) / DAYSECS);
+                if ($inactivedays < 14) {
+                    $inactivedays = max(14, $inactivedays);
+                }
             }
 
-            // Grade.
+            // Inactivity score points (suppressed during first 3 days of enrolment).
+            if ($coursestarted && (!$isrecentlyenrolled || $inactivedays >= 3)) {
+                if ($inactivedays >= 14) {
+                    $riskscore += 45.0;
+                } else if ($inactivedays >= 7) {
+                    $riskscore += 30.0;
+                } else if ($inactivedays >= 4) {
+                    $riskscore += 15.0;
+                }
+            }
+
+            // Grade evaluation.
             if (isset($graderecords[$uid]) && $graderecords[$uid]->finalgrade !== null && (float) $graderecords[$uid]->grademax > 0) {
+                $hasmeaningfuldata = true;
                 $pct = round(((float) $graderecords[$uid]->finalgrade / (float) $graderecords[$uid]->grademax) * 100.0, 1);
                 if ($pct < 40.0) {
                     $riskscore += 40.0;
@@ -135,15 +175,32 @@ class fallback_provider implements risk_provider {
                 }
             }
 
-            // Completion.
+            // Completion evaluation (suppressed if course hasn't started or student is in grace period).
             if ($totalmodules > 0) {
                 $completed = isset($completioncounts[$uid]) ? (int) $completioncounts[$uid]->completedcount : 0;
-                $completionpct = round(($completed / $totalmodules) * 100.0, 1);
-                if ($completionpct < 25.0) {
-                    $riskscore += 20.0;
-                } else if ($completionpct < 50.0) {
-                    $riskscore += 10.0;
+                if ($completed > 0) {
+                    $hasmeaningfuldata = true;
                 }
+                if ($coursestarted && !$isrecentlyenrolled) {
+                    $completionpct = round(($completed / $totalmodules) * 100.0, 1);
+                    if ($completionpct < 25.0) {
+                        $riskscore += 20.0;
+                    } else if ($completionpct < 50.0) {
+                        $riskscore += 10.0;
+                    }
+                }
+            }
+
+            // Handle "No Data" state (Issue 5 & 11):
+            // When there is no course activity, no grades, and course hasn't started or student enrolled recently.
+            if (!$hasmeaningfuldata && (!$coursestarted || $isrecentlyenrolled)) {
+                $results[$uid] = new risk_result(
+                    score: 0.0,
+                    level: risk_result::LEVEL_NO_DATA,
+                    source: self::SOURCE_NAME,
+                    model: null
+                );
+                continue;
             }
 
             // Clamp priority score between 0 and 100.

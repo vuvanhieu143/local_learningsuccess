@@ -26,7 +26,7 @@ use stdClass;
  * Centralized access and group validation helper.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class access_helper {
@@ -118,7 +118,7 @@ class access_helper {
     ): array {
         global $DB;
 
-        $record = $DB->get_record('local_ls_intervention', ['id' => $interventionid], '*', MUST_EXIST);
+        $record = $DB->get_record('local_learningsuccess_int', ['id' => $interventionid], '*', MUST_EXIST);
         $course = $DB->get_record('course', ['id' => $record->courseid], '*', MUST_EXIST);
         $context = context_course::instance($course->id);
 

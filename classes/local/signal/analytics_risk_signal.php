@@ -26,7 +26,7 @@ use local_learningsuccess\local\risk\risk_result;
  * Signal evaluator surfacing Moodle Analytics machine learning predictions.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class analytics_risk_signal implements signal {

@@ -28,7 +28,7 @@ use local_learningsuccess\local\recommendation\recommendation_engine;
  * Domain manager managing student intervention lifecycle and state transitions.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class intervention_manager {
@@ -110,9 +110,9 @@ class intervention_manager {
             'resolvedat' => null,
         ];
 
-        $id = $DB->insert_record('local_ls_intervention', $record);
+        $id = $DB->insert_record('local_learningsuccess_int', $record);
         $beforeid = $this->snapshotservice->record_snapshot($id, $userid, $courseid, 'before');
-        $DB->set_field('local_ls_intervention', 'before_snapshot_id', $beforeid, ['id' => $id]);
+        $DB->set_field('local_learningsuccess_int', 'before_snapshot_id', $beforeid, ['id' => $id]);
 
         if ($sendmessage && !empty($actual)) {
             $this->send_direct_message($teacherid, $userid, $actual, $courseid);
@@ -143,7 +143,7 @@ class intervention_manager {
     ): bool {
         global $DB, $USER;
 
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id], '*', MUST_EXIST);
+        $record = $DB->get_record('local_learningsuccess_int', ['id' => $id], '*', MUST_EXIST);
         $fromstatus = strtolower($record->status);
         $tostatus = strtolower($newstatus);
 
@@ -189,10 +189,10 @@ class intervention_manager {
                 $record->actual_action = $note;
             }
 
-            $success = $DB->update_record('local_ls_intervention', $record);
+            $success = $DB->update_record('local_learningsuccess_int', $record);
             if ($success) {
                 $afterid = $this->snapshotservice->record_snapshot($id, $record->userid, $record->courseid, 'followup');
-                $DB->set_field('local_ls_intervention', 'after_snapshot_id', $afterid, ['id' => $id]);
+                $DB->set_field('local_learningsuccess_int', 'after_snapshot_id', $afterid, ['id' => $id]);
                 if (!empty($note) && $actorid !== null) {
                     $this->add_note($id, $actorid, $note);
                 }
@@ -210,7 +210,7 @@ class intervention_manager {
                 $record->actual_action = $note;
             }
 
-            $success = $DB->update_record('local_ls_intervention', $record);
+            $success = $DB->update_record('local_learningsuccess_int', $record);
             if ($success) {
                 if (!empty($note) && $actorid !== null) {
                     $this->add_note($id, $actorid, $note);
@@ -224,11 +224,14 @@ class intervention_manager {
         $record->status = $tostatus;
         $record->timemodified = $now;
 
-        if ($tostatus === intervention_status::FOLLOW_UP && empty($record->followupat)) {
+        if (in_array($tostatus, [intervention_status::CONTACTED, intervention_status::WAITING], true) && empty($record->followupat)) {
+            $duration = recommendation_engine::get_default_followup_duration($record->type);
+            $record->followupat = $now + $duration;
+        } else if ($tostatus === intervention_status::FOLLOW_UP && empty($record->followupat)) {
             $record->followupat = $now;
         }
 
-        $success = $DB->update_record('local_ls_intervention', $record);
+        $success = $DB->update_record('local_learningsuccess_int', $record);
 
         if ($success) {
             if (!empty($note)) {
@@ -251,12 +254,13 @@ class intervention_manager {
     public function update(int $id, array $data): bool {
         global $DB;
 
-        $record = $DB->get_record('local_ls_intervention', ['id' => $id], '*', MUST_EXIST);
+        $record = $DB->get_record('local_learningsuccess_int', ['id' => $id], '*', MUST_EXIST);
 
         // If status transition is requested, validate it strictly.
         if (isset($data['status']) && strtolower($data['status']) !== strtolower($record->status)) {
             $this->transition_to($id, $data['status'], $data['actual_action'] ?? null);
             unset($data['status']);
+            $record = $DB->get_record('local_learningsuccess_int', ['id' => $id], '*', MUST_EXIST);
         }
 
         $allowedfields = ['type', 'reason', 'actual_action', 'followupat', 'resolvedat'];
@@ -267,7 +271,7 @@ class intervention_manager {
         }
 
         $record->timemodified = time();
-        $success = $DB->update_record('local_ls_intervention', $record);
+        $success = $DB->update_record('local_learningsuccess_int', $record);
         if ($success) {
             $this->invalidate_cache($record->courseid, $record->userid);
         }
@@ -293,7 +297,7 @@ class intervention_manager {
             'timecreated' => time(),
         ];
 
-        return $DB->insert_record('local_ls_note', $record);
+        return $DB->insert_record('local_learningsuccess_note', $record);
     }
 
     /**
@@ -305,7 +309,7 @@ class intervention_manager {
     public function get_notes(int $interventionid): array {
         global $DB;
 
-        return $DB->get_records('local_ls_note', ['interventionid' => $interventionid], 'timecreated ASC');
+        return $DB->get_records('local_learningsuccess_note', ['interventionid' => $interventionid], 'timecreated ASC');
     }
 
     /**
@@ -353,7 +357,7 @@ class intervention_manager {
     public function get_for_course(int $courseid): array {
         global $DB;
 
-        return $DB->get_records('local_ls_intervention', ['courseid' => $courseid], 'timecreated DESC');
+        return $DB->get_records('local_learningsuccess_int', ['courseid' => $courseid], 'timecreated DESC');
     }
 
     /**
@@ -367,7 +371,7 @@ class intervention_manager {
         global $DB;
 
         return $DB->get_records(
-            'local_ls_intervention',
+            'local_learningsuccess_int',
             ['courseid' => $courseid, 'userid' => $userid],
             'timecreated DESC'
         );
@@ -383,7 +387,7 @@ class intervention_manager {
     public function get_active_for_student(int $userid, int $courseid): ?\stdClass {
         global $DB;
 
-        $sql = "SELECT * FROM {local_ls_intervention}
+        $sql = "SELECT * FROM {local_learningsuccess_int}
                  WHERE courseid = :courseid
                    AND userid = :userid
                    AND status IN (:open, :contacted, :waiting, :follow_up, :in_progress)
@@ -411,7 +415,7 @@ class intervention_manager {
     public function get_active_for_course_by_user(int $courseid): array {
         global $DB;
 
-        $sql = "SELECT * FROM {local_ls_intervention}
+        $sql = "SELECT * FROM {local_learningsuccess_int}
                  WHERE courseid = :courseid
                    AND status IN (:open, :contacted, :waiting, :follow_up, :in_progress)
               ORDER BY timecreated DESC";
@@ -490,7 +494,7 @@ class intervention_manager {
             'threshold' => $thresholdtime,
         ];
 
-        $pending = $DB->get_records_select('local_ls_intervention', $sql, $params);
+        $pending = $DB->get_records_select('local_learningsuccess_int', $sql, $params);
         $count = 0;
 
         foreach ($pending as $intervention) {

@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  *    query inside this provider keeps page renders strictly sub-150ms while insulating the rest of the plugin from Analytics internals.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class moodle_analytics_provider implements risk_provider {
@@ -93,8 +93,12 @@ class moodle_analytics_provider implements risk_provider {
                         list($uinsql, $params) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'uid');
                         $params['contextid'] = $context->id;
 
+                        $preferredtarget = get_config('local_learningsuccess', 'analytics_model') ?: '\core\analytics\target\course_dropout';
+                        $params['preferredtarget'] = $preferredtarget;
+
                         // Semantic Resolution:
                         // Join {user_enrolments} when sampleorigin = 'user_enrolments' to resolve actual student user ID.
+                        // Order by configured/default target priority first, then recency.
                         $sql = "SELECT COALESCE(ue.userid, aps.sampleid) AS resolved_userid,
                                        ap.prediction, ap.predictionscore, am.target
                                   FROM {analytics_predictions} ap
@@ -104,7 +108,8 @@ class moodle_analytics_provider implements risk_provider {
                                  WHERE ap.contextid = :contextid
                                    AND (COALESCE(ue.userid, aps.sampleid) $uinsql)
                                    AND am.enabled = 1
-                              ORDER BY ap.timecreated DESC";
+                              ORDER BY (CASE WHEN am.target = :preferredtarget THEN 0 ELSE 1 END) ASC,
+                                       ap.timecreated DESC";
 
                         $predictions = $DB->get_records_sql($sql, $params);
                         foreach ($predictions as $pred) {

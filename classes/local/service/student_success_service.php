@@ -34,7 +34,7 @@ use local_learningsuccess\local\risk\risk_result;
  * Application service assembling high-performance views for teachers and course dashboards.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class student_success_service {
@@ -66,12 +66,17 @@ class student_success_service {
      * Get aggregated course pulse and health summary.
      *
      * @param int $courseid
-     * @param int $groupid Optional group ID to filter by
+     * @param int|bool $groupid Optional group ID to filter by, or bool to skip cache
      * @param bool $skipcache
      * @return array
      */
-    public function get_course_summary(int $courseid, int $groupid = 0, bool $skipcache = false): array {
+    public function get_course_summary(int $courseid, int|bool $groupid = 0, bool $skipcache = false): array {
         global $DB;
+
+        if (is_bool($groupid)) {
+            $skipcache = $groupid;
+            $groupid = 0;
+        }
 
         $cache = cache::make('local_learningsuccess', 'course_summary');
         $cachekey = $groupid > 0 ? "{$courseid}_{$groupid}" : $courseid;
@@ -82,12 +87,14 @@ class student_success_service {
             }
         }
 
-        // Fetch enrolled students in course (or group).
+        // Fetch active enrolled students in course (or group), excluding suspended enrolments.
         $context = \context_course::instance($courseid);
-        $enrolledusers = get_enrolled_users($context, 'moodle/course:isincompletionreports', $groupid, 'u.id, u.firstname, u.lastname');
+        $userfieldsapi = \core_user\fields::for_name();
+        $userfields = 'u.id, ' . $userfieldsapi->get_sql('u', false, '', '', false)->selects;
+        $enrolledusers = get_enrolled_users($context, 'moodle/course:isincompletionreports', $groupid, $userfields, null, 0, 0, true);
         if (empty($enrolledusers)) {
-            // Fallback to all enrolled learners if completion capability is not explicitly assigned.
-            $enrolledusers = get_enrolled_users($context, '', $groupid, 'u.id, u.firstname, u.lastname');
+            // Fallback to active enrolled learners if completion capability is not explicitly assigned.
+            $enrolledusers = get_enrolled_users($context, '', $groupid, $userfields, null, 0, 0, true);
         }
 
         $total = count($enrolledusers);
@@ -96,16 +103,21 @@ class student_success_service {
             risk_result::LEVEL_MONITOR => 0,
             risk_result::LEVEL_ATRISK => 0,
             risk_result::LEVEL_CRITICAL => 0,
+            risk_result::LEVEL_NO_DATA => 0,
         ];
 
         $studentprofiles = $this->batch_explain_students($enrolledusers, $courseid);
         foreach ($studentprofiles as $profile) {
-            $counts[$profile['status']]++;
+            $st = $profile['status'] ?? risk_result::LEVEL_HEALTHY;
+            if (!isset($counts[$st])) {
+                $counts[$st] = 0;
+            }
+            $counts[$st]++;
         }
 
         // Active and resolved interventions.
         $activeinterventions = $DB->count_records_select(
-            'local_ls_intervention',
+            'local_learningsuccess_int',
             'courseid = :courseid AND status IN (:open, :contacted, :waiting, :followup, :inprogress)',
             [
                 'courseid' => $courseid,
@@ -118,7 +130,7 @@ class student_success_service {
         );
 
         $resolvedinterventions = $DB->count_records(
-            'local_ls_intervention',
+            'local_learningsuccess_int',
             [
                 'courseid' => $courseid,
                 'status' => intervention_manager::STATUS_COMPLETED,
@@ -133,6 +145,7 @@ class student_success_service {
             'monitor_count' => $counts[risk_result::LEVEL_MONITOR],
             'atrisk_count' => $counts[risk_result::LEVEL_ATRISK],
             'critical_count' => $counts[risk_result::LEVEL_CRITICAL],
+            'nodata_count' => $counts[risk_result::LEVEL_NO_DATA],
             'active_interventions' => $activeinterventions,
             'resolved_interventions' => $resolvedinterventions,
             'students' => $studentprofiles,
@@ -164,7 +177,7 @@ class student_success_service {
             }
         }
 
-        $user = $DB->get_record('user', ['id' => $userid], 'id, firstname, lastname', MUST_EXIST);
+        $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
         $explained = $this->explanationengine->explain_student($userid, $courseid);
         $recommendations = $this->recommendationengine->recommend($explained['signals']);
         $interventions = $this->interventionmanager->get_for_student($userid, $courseid);
@@ -237,9 +250,9 @@ class student_success_service {
     public function get_recent_improvements(int $courseid, int $limit = 5): array {
         global $DB;
 
-        $sql = "SELECT i.id, i.userid, i.type, i.actual_action, i.completed_at, i.timemodified,
-                       u.firstname, u.lastname
-                  FROM {local_ls_intervention} i
+        $namefields = \core_user\fields::for_name()->get_sql('u')->selects;
+        $sql = "SELECT i.id, i.userid, i.type, i.actual_action, i.completed_at, i.timemodified $namefields
+                  FROM {local_learningsuccess_int} i
                   JOIN {user} u ON u.id = i.userid
                  WHERE i.courseid = :courseid
                    AND i.status = :completed
@@ -355,5 +368,54 @@ class student_success_service {
         $risks = $this->riskprovider->get_risks($userids, $courseid);
 
         return $this->explanationengine->batch_explain($enrolledusers, $courseid, $risks);
+    }
+
+    /**
+     * Retrieve students recently handled via interventions (completed or contacted within the last 7 days).
+     *
+     * Provides transparency on why students recently transitioned out of the active priorities queue.
+     *
+     * @param int $courseid Target course ID
+     * @param int $limit Maximum records to return
+     * @return array Array of recently handled student records
+     */
+    public function get_recently_handled_students(int $courseid, int $limit = 5): array {
+        global $DB;
+
+        $userfieldsapi = \core_user\fields::for_name();
+        $userfields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
+
+        $sql = "SELECT i.id, i.userid, i.type, i.status, i.outcome, i.timemodified, i.completed_at, i.actual_action,
+                       $userfields
+                  FROM {local_learningsuccess_int} i
+                  JOIN {user} u ON u.id = i.userid
+                 WHERE i.courseid = :courseid
+                   AND i.status IN (:completed, :contacted, :dismissed)
+                   AND i.timemodified >= :since
+              ORDER BY i.timemodified DESC";
+
+        $records = $DB->get_records_sql($sql, [
+            'courseid' => $courseid,
+            'completed' => intervention_status::COMPLETED,
+            'contacted' => intervention_status::CONTACTED,
+            'dismissed' => intervention_status::DISMISSED,
+            'since' => time() - (7 * DAYSECS),
+        ], 0, $limit);
+
+        $results = [];
+        foreach ($records as $r) {
+            $results[] = [
+                'id' => (int) $r->id,
+                'userid' => (int) $r->userid,
+                'fullname' => fullname($r),
+                'type' => $r->type,
+                'status' => $r->status,
+                'status_label' => ucfirst($r->status),
+                'action_note' => $r->actual_action ?? '',
+                'handled_date' => userdate($r->timemodified, get_string('strftimedateshort', 'langconfig')),
+            ];
+        }
+
+        return $results;
     }
 }

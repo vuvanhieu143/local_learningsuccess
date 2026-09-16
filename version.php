@@ -18,14 +18,14 @@
  * Version details for local_learningsuccess.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_learningsuccess';
-$plugin->version   = 2026091101;
+$plugin->version   = 2026091600;
 $plugin->requires  = 2025041400; // Requires Moodle 5.0+ (PHP 8.2+).
 $plugin->maturity  = MATURITY_ALPHA;
 $plugin->release   = 'v1.0.0-alpha';

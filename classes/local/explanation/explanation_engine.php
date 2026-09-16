@@ -29,7 +29,7 @@ use local_learningsuccess\local\signal\signal_collector;
  * Keeps observable evidence strictly separate from actionable recommendations.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class explanation_engine {
@@ -289,6 +289,18 @@ class explanation_engine {
         list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'uid');
         $baseparams = array_merge(['courseid' => $courseid], $inparams);
 
+        // Course start date and lifecycle.
+        $course = $DB->get_record('course', ['id' => $courseid], 'id, startdate', MUST_EXIST);
+        $coursestarted = ($course->startdate <= 0 || $course->startdate <= $now);
+
+        // Bulk query user enrolments for grace period calculations.
+        $enrolsql = "SELECT ue.userid, MIN(COALESCE(NULLIF(ue.timestart, 0), ue.timecreated)) AS enroltime
+                       FROM {user_enrolments} ue
+                       JOIN {enrol} e ON e.id = ue.enrolid
+                      WHERE e.courseid = :courseid AND ue.userid $insql
+                   GROUP BY ue.userid";
+        $enrolrecords = $DB->get_records_sql($enrolsql, $baseparams);
+
         // 1. Bulk query last access.
         $lastaccesssql = "SELECT userid, timeaccess FROM {user_lastaccess} WHERE courseid = :courseid AND userid $insql";
         $lastaccessrecords = $DB->get_records_sql($lastaccesssql, $baseparams);
@@ -366,17 +378,26 @@ class explanation_engine {
             $rate = 100;
 
             // Inactivity rule.
+            $enroltime = isset($enrolrecords[$uid]) ? (int) $enrolrecords[$uid]->enroltime : $now;
+            $isrecentlyenrolled = ($now - $enroltime) < (5 * DAYSECS);
             $lastaccess = isset($lastaccessrecords[$uid]) ? (int) $lastaccessrecords[$uid]->timeaccess : 0;
-            if ($lastaccess === 0) {
-                $daysinactive = 999;
-                $signals[] = [
-                    'rule' => 'inactivity',
-                    'severity' => 'critical',
-                    'message' => get_string('signal_inactivity_critical', 'local_learningsuccess', '14+'),
-                    'value' => 14,
-                ];
-            } else {
+
+            if ($lastaccess > 0) {
                 $daysinactive = (int) floor(($now - $lastaccess) / DAYSECS);
+            } else if (!$coursestarted) {
+                $daysinactive = 0;
+            } else if ($isrecentlyenrolled) {
+                $baseline = max($enroltime, (int) $course->startdate);
+                $daysinactive = (int) floor(max(0, $now - $baseline) / DAYSECS);
+            } else {
+                $baseline = max($enroltime, (int) $course->startdate);
+                $daysinactive = (int) floor(max(0, $now - $baseline) / DAYSECS);
+                if ($daysinactive < 14) {
+                    $daysinactive = max(14, $daysinactive);
+                }
+            }
+
+            if ($coursestarted && (!$isrecentlyenrolled || $daysinactive >= 7)) {
                 if ($daysinactive >= $inactivitycritical) {
                     $signals[] = [
                         'rule' => 'inactivity',
@@ -394,8 +415,8 @@ class explanation_engine {
                 }
             }
 
-            // Completion rule.
-            if ($totalmodules > 0) {
+            // Completion rule (suppressed if course hasn't started or student enrolled recently).
+            if ($totalmodules > 0 && $coursestarted && !$isrecentlyenrolled) {
                 $completed = isset($completionrecords[$uid]) ? (int) $completionrecords[$uid]->completed_count : 0;
                 $rate = (int) round(($completed / $totalmodules) * 100);
                 if ($rate < 30) {
@@ -466,32 +487,39 @@ class explanation_engine {
                 $struggletag = [
                     'code' => 'disengaged',
                     'label' => get_string('struggle_disengaged', 'local_learningsuccess'),
-                    'class' => 'badge-danger',
+                    'class' => 'text-bg-danger',
                     'icon' => 'fa-user-times',
                 ];
             } else if ($maxattempt >= 2 && $percent !== null && $percent < 60) {
                 $struggletag = [
                     'code' => 'repeated_attempts',
                     'label' => get_string('struggle_repeated_attempts', 'local_learningsuccess', $maxattempt),
-                    'class' => 'badge-warning text-dark',
+                    'class' => 'text-bg-warning',
                     'icon' => 'fa-repeat',
                 ];
             } else if ($missedassigns > 0) {
                 $struggletag = [
                     'code' => 'overdue',
                     'label' => get_string('struggle_overdue', 'local_learningsuccess', $missedassigns),
-                    'class' => 'badge-info',
+                    'class' => 'text-bg-info',
                     'icon' => 'fa-clock-o',
                 ];
             } else if ($rate < 50) {
                 $struggletag = [
                     'code' => 'pacing',
                     'label' => get_string('struggle_pacing', 'local_learningsuccess'),
-                    'class' => 'badge-secondary',
+                    'class' => 'text-bg-secondary',
                     'icon' => 'fa-hourglass-half',
                 ];
             } else {
                 $struggletag = null;
+            }
+
+            // Ensure all name fields exist to prevent debugging() warnings in fullname().
+            foreach (\core_user\fields::get_name_fields() as $nf) {
+                if (!isset($user->$nf)) {
+                    $user->$nf = '';
+                }
             }
 
             $results[] = [

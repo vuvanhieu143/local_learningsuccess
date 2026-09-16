@@ -24,7 +24,7 @@ defined('MOODLE_INTERNAL') || die();
  * All messages are rendered as teacher drafts and are never sent automatically.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class message_template {
@@ -102,6 +102,11 @@ class message_template {
         $uobj = is_array($user) ? (object) $user : $user;
         $firstname = $uobj->firstname ?? '';
         $lastname = $uobj->lastname ?? '';
+        foreach (\core_user\fields::get_name_fields() as $nf) {
+            if (!isset($uobj->$nf)) {
+                $uobj->$nf = '';
+            }
+        }
         $fullname = fullname($uobj);
 
         $coursename = is_object($course) ? ($course->fullname ?? '') : (string) $course;

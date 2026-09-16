@@ -25,7 +25,7 @@ use local_learningsuccess\local\recommendation\recommendation_rule;
  * Recommendation rule mapping grade decline signals to academic guidance.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class grade_decline_rule implements recommendation_rule {
@@ -38,7 +38,7 @@ class grade_decline_rule implements recommendation_rule {
      */
     public function matches(array $signals): bool {
         foreach ($signals as $s) {
-            $type = is_array($s) ? ($s['type'] ?? '') : $s->get_type();
+            $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
             if ($type === 'grade_decline') {
                 return true;
             }
@@ -57,7 +57,7 @@ class grade_decline_rule implements recommendation_rule {
         $isCritical = false;
 
         foreach ($signals as $s) {
-            $type = is_array($s) ? ($s['type'] ?? '') : $s->get_type();
+            $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
             if ($type === 'grade_decline') {
                 $pct = is_array($s) ? ($s['value'] ?? 50) : $s->get_value();
                 $sev = is_array($s) ? ($s['severity'] ?? '') : $s->get_severity();

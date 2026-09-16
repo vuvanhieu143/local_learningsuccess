@@ -26,7 +26,7 @@ use local_learningsuccess\local\risk\risk_provider;
  * Service capturing standardized before and followup metrics snapshots for interventions.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class snapshot_service {
@@ -66,7 +66,7 @@ class snapshot_service {
     }
 
     /**
-     * Capture and persist snapshot to local_ls_snapshot table.
+     * Capture and persist snapshot to local_learningsuccess_snap table.
      *
      * @param int $interventionid
      * @param int $userid
@@ -91,7 +91,7 @@ class snapshot_service {
             'timecreated' => $data['timestamp'],
         ];
 
-        return $DB->insert_record('local_ls_snapshot', $record);
+        return $DB->insert_record('local_learningsuccess_snap', $record);
     }
 
     /**
@@ -104,7 +104,7 @@ class snapshot_service {
         global $DB;
 
         $records = $DB->get_records(
-            'local_ls_snapshot',
+            'local_learningsuccess_snap',
             ['interventionid' => $interventionid],
             'timecreated ASC'
         );

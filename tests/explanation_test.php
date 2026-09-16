@@ -33,7 +33,7 @@ use local_learningsuccess\local\recommendation\recommendation_engine;
  *
  * @package    local_learningsuccess
  * @category   test
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class explanation_test extends advanced_testcase {
@@ -227,6 +227,8 @@ class explanation_test extends advanced_testcase {
         $assign1 = $DB->insert_record('assign', (object) [
             'course' => $course->id,
             'name' => 'Assignment 1',
+            'intro' => '',
+            'introformat' => 0,
             'duedate' => $now - 3600,
         ]);
 
@@ -240,6 +242,8 @@ class explanation_test extends advanced_testcase {
         $assign2 = $DB->insert_record('assign', (object) [
             'course' => $course->id,
             'name' => 'Assignment 2',
+            'intro' => '',
+            'introformat' => 0,
             'duedate' => $now - 7200,
         ]);
 
@@ -282,8 +286,8 @@ class explanation_test extends advanced_testcase {
         $this->assertIsArray($signals);
         $this->assertNotEmpty($signals);
 
-        // Verify records in local_ls_signal.
-        $persisted = $DB->get_records('local_ls_signal', ['userid' => $user->id, 'courseid' => $course->id]);
+        // Verify records in local_learningsuccess_sign.
+        $persisted = $DB->get_records('local_learningsuccess_sign', ['userid' => $user->id, 'courseid' => $course->id]);
         $this->assertNotEmpty($persisted);
     }
 
@@ -337,7 +341,7 @@ class explanation_test extends advanced_testcase {
 
         $this->assertNotEmpty($recommendations);
 
-        $actiontypes = array_column($recommendations, 'action');
+        $actiontypes = array_column($recommendations, 'type');
         $this->assertContains(recommendation_engine::ACTION_CONTACT, $actiontypes);
         $this->assertContains(recommendation_engine::ACTION_MISSED_ACTIVITY, $actiontypes);
         $this->assertContains(recommendation_engine::ACTION_EXTENSION, $actiontypes);

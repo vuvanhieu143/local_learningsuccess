@@ -24,7 +24,7 @@ use local_learningsuccess\local\explanation\explanation;
  * Registry and collector for modular student learning signals with history and teacher dismissal overrides.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class signal_collector {
@@ -88,7 +88,7 @@ class signal_collector {
         global $DB;
 
         $now = time();
-        $existing = $DB->get_record('local_ls_signal', [
+        $existing = $DB->get_record('local_learningsuccess_sign', [
             'userid' => $userid,
             'courseid' => $courseid,
             'signal_type' => $signaltype,
@@ -100,7 +100,7 @@ class signal_collector {
             $existing->dismissedat = $now;
             $existing->dismissreason = $reason;
             $existing->active = 0;
-            return $DB->update_record('local_ls_signal', $existing);
+            return $DB->update_record('local_learningsuccess_sign', $existing);
         }
 
         $record = (object) [
@@ -120,7 +120,7 @@ class signal_collector {
             'timecreated' => $now,
         ];
 
-        return (bool) $DB->insert_record('local_ls_signal', $record);
+        return (bool) $DB->insert_record('local_learningsuccess_sign', $record);
     }
 
     /**
@@ -142,7 +142,7 @@ class signal_collector {
     ): bool {
         global $DB;
 
-        $record = $DB->get_record('local_ls_signal', [
+        $record = $DB->get_record('local_learningsuccess_sign', [
             'userid' => $userid,
             'courseid' => $courseid,
             'signal_type' => $signaltype,
@@ -173,7 +173,7 @@ class signal_collector {
      *
      * @param int $userid
      * @param int $courseid
-     * @param bool $persist Whether to persist active signals to local_ls_signal table.
+     * @param bool $persist Whether to persist active signals to local_learningsuccess_sign table.
      * @param bool $includedismissed If true, returns dismissed signals marked with is_dismissed = true
      * @return explanation[]
      */
@@ -214,7 +214,7 @@ class signal_collector {
             $results[] = $item;
 
             if ($persist) {
-                $existing = $DB->get_record('local_ls_signal', [
+                $existing = $DB->get_record('local_learningsuccess_sign', [
                     'userid' => $userid,
                     'courseid' => $courseid,
                     'signal_type' => $type,
@@ -230,7 +230,7 @@ class signal_collector {
                         $existing->active = 1;
                         $existing->dismissed = 0;
                     }
-                    $DB->update_record('local_ls_signal', $existing);
+                    $DB->update_record('local_learningsuccess_sign', $existing);
                 } else {
                     $record = (object) [
                         'userid' => $userid,
@@ -248,7 +248,7 @@ class signal_collector {
                         'dismissreason' => null,
                         'timecreated' => $now,
                     ];
-                    $DB->insert_record('local_ls_signal', $record);
+                    $DB->insert_record('local_learningsuccess_sign', $record);
                 }
             }
         }
@@ -259,14 +259,14 @@ class signal_collector {
                 list($notinsql, $notinparams) = $DB->get_in_or_equal($observedtypes, SQL_PARAMS_NAMED, 'st', false);
                 $params = array_merge(['userid' => $userid, 'courseid' => $courseid], $notinparams);
                 $DB->execute(
-                    "UPDATE {local_ls_signal}
+                    "UPDATE {local_learningsuccess_sign}
                         SET active = 0
                       WHERE userid = :userid AND courseid = :courseid AND active = 1 AND signal_type $notinsql",
                     $params
                 );
             } else {
                 $DB->execute(
-                    "UPDATE {local_ls_signal}
+                    "UPDATE {local_learningsuccess_sign}
                         SET active = 0
                       WHERE userid = :userid AND courseid = :courseid AND active = 1",
                     ['userid' => $userid, 'courseid' => $courseid]

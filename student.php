@@ -18,7 +18,7 @@
  * Student Success Details and Intervention History.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -48,10 +48,7 @@ $dashboardurl = new moodle_url('/local/learningsuccess/dashboard.php', ['coursei
 $PAGE->navbar->add(get_string('pluginname', 'local_learningsuccess'), $dashboardurl);
 $PAGE->navbar->add(fullname($targetuser));
 
-$PAGE->requires->js_call_amd('local_learningsuccess/intervention', 'init', [
-    'courseid' => $courseid,
-    'userid' => $userid,
-]);
+$PAGE->requires->js_call_amd('local_learningsuccess/intervention', 'init', [$courseid, $userid]);
 
 $service = new student_success_service();
 $studentdata = $service->get_student_summary($userid, $courseid);

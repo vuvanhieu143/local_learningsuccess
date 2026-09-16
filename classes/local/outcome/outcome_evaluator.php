@@ -24,7 +24,7 @@ defined('MOODLE_INTERNAL') || die();
  * Adheres strictly to Rule 7: Does not claim direct causal attribution, stating only observed metric changes.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class outcome_evaluator {
@@ -142,7 +142,7 @@ class outcome_evaluator {
     public function get_course_effectiveness(int $courseid): array {
         global $DB;
 
-        $records = $DB->get_records('local_ls_intervention', ['courseid' => $courseid], '', 'id, outcome, status');
+        $records = $DB->get_records('local_learningsuccess_int', ['courseid' => $courseid], '', 'id, outcome, status');
 
         $total = count($records);
         $improved = 0;

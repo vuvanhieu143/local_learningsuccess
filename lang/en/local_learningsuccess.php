@@ -18,7 +18,7 @@
  * English strings for local_learningsuccess.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -59,6 +59,8 @@ $string['status_healthy'] = 'Healthy';
 $string['status_monitor'] = 'Monitor';
 $string['status_atrisk'] = 'At Risk';
 $string['status_critical'] = 'Critical';
+$string['status_nodata'] = 'No Data';
+$string['status_nodata_desc'] = 'There is not enough learning activity yet to assess this student.';
 
 // Actionability & Priority Work-Queue.
 $string['priority_urgent'] = 'Urgent Action';
@@ -245,29 +247,29 @@ $string['followup_notification_subject'] = 'Follow-up Due: Student {$a}';
 $string['followup_notification_body'] = 'A scheduled follow-up for student {$a->student} in course {$a->course} is due today. Please review the student progress and record the outcome.';
 
 // Privacy metadata strings.
-$string['privacy:metadata:local_ls_intervention'] = 'Stores records of teacher interventions and before/after outcome snapshots.';
-$string['privacy:metadata:local_ls_intervention:userid'] = 'The ID of the student receiving the intervention.';
-$string['privacy:metadata:local_ls_intervention:courseid'] = 'The ID of the course in which the intervention took place.';
-$string['privacy:metadata:local_ls_intervention:teacherid'] = 'The ID of the teacher recording the intervention.';
-$string['privacy:metadata:local_ls_intervention:type'] = 'The categorization of the intervention.';
-$string['privacy:metadata:local_ls_intervention:reason'] = 'The reason or explanation triggering the intervention.';
-$string['privacy:metadata:local_ls_intervention:recommended_action'] = 'The action recommended by the system.';
-$string['privacy:metadata:local_ls_intervention:actual_action'] = 'The notes or action recorded by the teacher.';
-$string['privacy:metadata:local_ls_intervention:status'] = 'The current progress status of the intervention.';
-$string['privacy:metadata:local_ls_intervention:outcome'] = 'The measured outcome of the intervention.';
-$string['privacy:metadata:local_ls_intervention:before_snapshot'] = 'Snapshot of student metrics before the intervention.';
-$string['privacy:metadata:local_ls_intervention:after_snapshot'] = 'Snapshot of student metrics after the intervention.';
-$string['privacy:metadata:local_ls_intervention:timecreated'] = 'Timestamp when the record was created.';
-$string['privacy:metadata:local_ls_intervention:timemodified'] = 'Timestamp when the record was last modified.';
-$string['privacy:metadata:local_ls_intervention:completed_at'] = 'Timestamp when the intervention was completed.';
-$string['privacy:metadata:local_ls_signal'] = 'Stores derived learning risk signals.';
-$string['privacy:metadata:local_ls_signal:userid'] = 'The ID of the student.';
-$string['privacy:metadata:local_ls_signal:courseid'] = 'The ID of the course.';
-$string['privacy:metadata:local_ls_signal:signal_type'] = 'The type of signal (e.g. inactivity, completion).';
-$string['privacy:metadata:local_ls_signal:severity'] = 'The severity level of the signal.';
-$string['privacy:metadata:local_ls_signal:value'] = 'The metric value associated with the signal.';
-$string['privacy:metadata:local_ls_signal:metadata'] = 'Additional contextual JSON metadata.';
-$string['privacy:metadata:local_ls_signal:timecreated'] = 'Timestamp when the signal was recorded.';
+$string['privacy:metadata:local_learningsuccess_int'] = 'Stores records of teacher interventions and before/after outcome snapshots.';
+$string['privacy:metadata:local_learningsuccess_int:userid'] = 'The ID of the student receiving the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:courseid'] = 'The ID of the course in which the intervention took place.';
+$string['privacy:metadata:local_learningsuccess_int:teacherid'] = 'The ID of the teacher recording the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:type'] = 'The categorization of the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:reason'] = 'The reason or explanation triggering the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:recommended_action'] = 'The action recommended by the system.';
+$string['privacy:metadata:local_learningsuccess_int:actual_action'] = 'The notes or action recorded by the teacher.';
+$string['privacy:metadata:local_learningsuccess_int:status'] = 'The current progress status of the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:outcome'] = 'The measured outcome of the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:before_snapshot'] = 'Snapshot of student metrics before the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:after_snapshot'] = 'Snapshot of student metrics after the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:timecreated'] = 'Timestamp when the record was created.';
+$string['privacy:metadata:local_learningsuccess_int:timemodified'] = 'Timestamp when the record was last modified.';
+$string['privacy:metadata:local_learningsuccess_int:completed_at'] = 'Timestamp when the intervention was completed.';
+$string['privacy:metadata:local_learningsuccess_sign'] = 'Stores derived learning risk signals.';
+$string['privacy:metadata:local_learningsuccess_sign:userid'] = 'The ID of the student.';
+$string['privacy:metadata:local_learningsuccess_sign:courseid'] = 'The ID of the course.';
+$string['privacy:metadata:local_learningsuccess_sign:signal_type'] = 'The type of signal (e.g. inactivity, completion).';
+$string['privacy:metadata:local_learningsuccess_sign:severity'] = 'The severity level of the signal.';
+$string['privacy:metadata:local_learningsuccess_sign:value'] = 'The metric value associated with the signal.';
+$string['privacy:metadata:local_learningsuccess_sign:metadata'] = 'Additional contextual JSON metadata.';
+$string['privacy:metadata:local_learningsuccess_sign:timecreated'] = 'Timestamp when the signal was recorded.';
 $string['interventions'] = 'Interventions';
 $string['signals'] = 'Signals';
 
@@ -275,4 +277,38 @@ $string['signals'] = 'Signals';
 $string['usernotenrolled'] = 'The requested user is not enrolled in this course.';
 $string['nopermissiontoviewstudent'] = 'You do not have permission to view students outside your assigned groups.';
 $string['nopermissiontoviewgroup'] = 'You do not have permission to view this group.';
+
+// Risk source transparency.
+$string['risk_source_analytics'] = 'Based on Moodle Analytics';
+$string['risk_source_activity'] = 'Based on course activity signals';
+$string['risk_source_tooltip'] = 'Deterministic prioritisation score based on course activity signals, not a calibrated machine learning prediction.';
+
+// Dashboard actionable triage and recency.
+$string['what_needs_attention'] = 'What needs attention?';
+$string['what_needs_attention_desc'] = '{$a->total} students currently require educator attention ({$a->followups} follow-ups due, {$a->critical} critical, {$a->atrisk} at risk).';
+$string['recently_handled'] = 'Recently Handled';
+$string['recently_handled_empty'] = 'No interventions recently handled in the past 7 days.';
+$string['last_updated_at'] = 'Data assessed: {$a}';
+$string['just_now'] = 'Just now';
+$string['time_ago'] = '{$a} ago';
+$string['limited_course_data'] = 'Limited course assessment data available';
+
+// Signal dismissal options.
+$string['dismiss_signal'] = 'Dismiss Signal';
+$string['dismiss_signal_confirm'] = 'Dismiss this signal for the next 14 days?';
+$string['dismiss_reason'] = 'Reason for dismissal';
+$string['reason_approved_leave'] = 'Approved leave / absence';
+$string['reason_working_offline'] = 'Working offline';
+$string['reason_false_positive'] = 'False positive';
+$string['reason_not_relevant'] = 'Not relevant';
+$string['reason_other'] = 'Other reason';
+
+// Duplicate intervention safeguard.
+$string['active_intervention_exists'] = 'An active intervention already exists for this student (Status: {$a}).';
+$string['view_existing_intervention'] = 'View Existing';
+$string['create_another_intervention'] = 'Create Another';
+
+// Admin settings.
+$string['setting_analytics_model'] = 'Preferred Analytics Model';
+$string['setting_analytics_model_desc'] = 'Target class or model identifier to prioritize when multiple Moodle Analytics models are enabled.';
 

@@ -24,7 +24,7 @@ use local_learningsuccess\local\helper\cache_helper;
  * Event observer callbacks for local_learningsuccess.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class observers {

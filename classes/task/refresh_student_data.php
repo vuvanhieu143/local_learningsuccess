@@ -26,7 +26,7 @@ use local_learningsuccess\local\service\student_success_service;
  * Scheduled background task to refresh learning success signals and warm cache.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class refresh_student_data extends scheduled_task {

@@ -30,7 +30,7 @@ use local_learningsuccess\output\student_detail;
  *
  * @package    local_learningsuccess
  * @category   test
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class external_exporter_test extends advanced_testcase {
@@ -99,7 +99,8 @@ class external_exporter_test extends advanced_testcase {
             'CONTACT',
             'Inactivity detected',
             'Send check-in message',
-            'Message dispatched'
+            'Message dispatched',
+            true
         );
 
         $this->assertTrue($createResult['success']);

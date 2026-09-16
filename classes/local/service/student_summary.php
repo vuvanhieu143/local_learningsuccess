@@ -26,7 +26,7 @@ use local_learningsuccess\local\risk\risk_result;
  * Consumed identically by page controllers, Mustache templates, and External Web Services.
  *
  * @package    local_learningsuccess
- * @copyright  2026 Learning Success Team
+ * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class student_summary {
