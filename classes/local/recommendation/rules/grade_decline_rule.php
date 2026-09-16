@@ -39,7 +39,7 @@ class grade_decline_rule implements recommendation_rule {
     public function matches(array $signals): bool {
         foreach ($signals as $s) {
             $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
-            if ($type === 'grade_decline') {
+            if ($type === 'grade_decline' || $type === 'grade_performance') {
                 return true;
             }
         }
@@ -58,7 +58,7 @@ class grade_decline_rule implements recommendation_rule {
 
         foreach ($signals as $s) {
             $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
-            if ($type === 'grade_decline') {
+            if ($type === 'grade_decline' || $type === 'grade_performance') {
                 $pct = is_array($s) ? ($s['value'] ?? 50) : $s->get_value();
                 $sev = is_array($s) ? ($s['severity'] ?? '') : $s->get_severity();
                 $isCritical = ($sev === 'critical');

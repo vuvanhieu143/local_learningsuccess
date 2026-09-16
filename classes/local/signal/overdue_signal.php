@@ -50,15 +50,15 @@ class overdue_signal implements signal {
         $sql = "SELECT a.id, a.name, a.duedate
                   FROM {assign} a
                  WHERE a.course = :courseid
-                   AND a.duedate > 0
-                   AND a.duedate < :now
-                   AND NOT EXISTS (
-                       SELECT 1
-                         FROM {assign_submission} s
-                        WHERE s.assignment = a.id
-                          AND s.userid = :userid
-                          AND s.status = 'submitted'
-                   )";
+                       AND a.duedate > 0
+                       AND a.duedate < :now
+                       AND NOT EXISTS (
+                           SELECT 1
+                             FROM {assign_submission} s
+                            WHERE s.assignment = a.id
+                                  AND s.userid = :userid
+                                  AND s.status = 'submitted'
+                       )";
 
         $overdue = $DB->get_records_sql($sql, [
             'courseid' => $courseid,

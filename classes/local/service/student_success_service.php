@@ -255,8 +255,8 @@ class student_success_service {
                   FROM {local_learningsuccess_int} i
                   JOIN {user} u ON u.id = i.userid
                  WHERE i.courseid = :courseid
-                   AND i.status = :completed
-                   AND i.outcome = :improved
+                       AND i.status = :completed
+                       AND i.outcome = :improved
               ORDER BY COALESCE(i.completed_at, i.timemodified) DESC";
 
         $records = $DB->get_records_sql($sql, [
@@ -390,8 +390,8 @@ class student_success_service {
                   FROM {local_learningsuccess_int} i
                   JOIN {user} u ON u.id = i.userid
                  WHERE i.courseid = :courseid
-                   AND i.status IN (:completed, :contacted, :dismissed)
-                   AND i.timemodified >= :since
+                       AND i.status IN (:completed, :contacted, :dismissed)
+                       AND i.timemodified >= :since
               ORDER BY i.timemodified DESC";
 
         $records = $DB->get_records_sql($sql, [

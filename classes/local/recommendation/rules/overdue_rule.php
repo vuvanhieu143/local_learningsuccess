@@ -39,7 +39,7 @@ class overdue_rule implements recommendation_rule {
     public function matches(array $signals): bool {
         foreach ($signals as $s) {
             $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
-            if ($type === 'overdue' || $type === 'missed_activity') {
+            if ($type === 'overdue' || $type === 'missed_activity' || $type === 'missed_assignments') {
                 return true;
             }
         }
@@ -58,7 +58,7 @@ class overdue_rule implements recommendation_rule {
 
         foreach ($signals as $s) {
             $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
-            if ($type === 'overdue' || $type === 'missed_activity') {
+            if ($type === 'overdue' || $type === 'missed_activity' || $type === 'missed_assignments') {
                 $count = is_array($s) ? ($s['value'] ?? 1) : $s->get_value();
                 $sev = is_array($s) ? ($s['severity'] ?? '') : $s->get_severity();
                 $isCritical = ($sev === 'critical');

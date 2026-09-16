@@ -101,7 +101,8 @@ class provider implements
                   FROM {context} c
                   JOIN {course} cr ON c.instanceid = cr.id AND c.contextlevel = :contextlevel
                   JOIN {local_learningsuccess_int} i ON i.courseid = cr.id
-                 WHERE i.userid = :userid1 OR i.teacherid = :teacherid";
+                 WHERE i.userid = :userid1
+                       OR i.teacherid = :teacherid";
 
         $params = [
             'contextlevel' => CONTEXT_COURSE,
@@ -134,13 +135,19 @@ class provider implements
 
         $params = ['courseid' => $context->instanceid];
 
-        $sql = "SELECT userid FROM {local_learningsuccess_int} WHERE courseid = :courseid";
+        $sql = "SELECT userid
+                  FROM {local_learningsuccess_int}
+                 WHERE courseid = :courseid";
         $userlist->add_from_sql('userid', $sql, $params);
 
-        $sqlTeacher = "SELECT teacherid AS userid FROM {local_learningsuccess_int} WHERE courseid = :courseid";
+        $sqlTeacher = "SELECT teacherid AS userid
+                         FROM {local_learningsuccess_int}
+                        WHERE courseid = :courseid";
         $userlist->add_from_sql('userid', $sqlTeacher, $params);
 
-        $sqlSignal = "SELECT userid FROM {local_learningsuccess_sign} WHERE courseid = :courseid";
+        $sqlSignal = "SELECT userid
+                        FROM {local_learningsuccess_sign}
+                       WHERE courseid = :courseid";
         $userlist->add_from_sql('userid', $sqlSignal, $params);
     }
 

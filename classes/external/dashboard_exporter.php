@@ -41,6 +41,7 @@ class dashboard_exporter extends external_api {
     public static function get_dashboard_data_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course ID to fetch dashboard for'),
+            'refresh' => new external_value(PARAM_BOOL, 'Whether to force refresh and bypass cache', VALUE_DEFAULT, false),
         ]);
     }
 
@@ -48,17 +49,26 @@ class dashboard_exporter extends external_api {
      * Fetch dashboard pulse and priority student data.
      *
      * @param int $courseid
+     * @param bool $refresh
      * @return array
      */
-    public static function get_dashboard_data(int $courseid): array {
-        $params = self::validate_parameters(self::get_dashboard_data_parameters(), ['courseid' => $courseid]);
+    public static function get_dashboard_data(int $courseid, bool $refresh = false): array {
+        $params = self::validate_parameters(self::get_dashboard_data_parameters(), [
+            'courseid' => $courseid,
+            'refresh' => $refresh,
+        ]);
 
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/learningsuccess:viewcourse', $context);
 
+        $skipcache = !empty($params['refresh']);
+        if ($skipcache) {
+            \local_learningsuccess\local\helper\cache_helper::invalidate_course($params['courseid']);
+        }
+
         $service = new student_success_service();
-        $summary = $service->get_course_summary($params['courseid']);
+        $summary = $service->get_course_summary($params['courseid'], 0, $skipcache);
         $priorities = $service->get_priority_students($params['courseid']);
 
         return [

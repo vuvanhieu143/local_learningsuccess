@@ -101,6 +101,8 @@ $string['signal_inactivity_critical_desc'] = 'No course activity recorded for {$
 $string['signal_inactivity_warning_desc'] = 'Student has been inactive for {$a} days.';
 $string['signal_inactivity_critical'] = 'No course activity for {$a} days';
 $string['signal_inactivity_warning'] = 'Inactive for {$a} days';
+$string['signal_no_activity_title'] = 'No course activity';
+$string['signal_no_activity_desc'] = 'The student has not accessed this course since enrolment.';
 
 $string['signal_overdue_title'] = 'Overdue Activities';
 $string['signal_overdue_desc'] = 'Student has {$a} overdue assignment activities.';

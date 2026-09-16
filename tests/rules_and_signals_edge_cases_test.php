@@ -101,6 +101,8 @@ class rules_and_signals_edge_cases_test extends advanced_testcase {
         $this->assertInstanceOf(explanation::class, $result);
         $this->assertEquals(inactivity_signal::TYPE, $result->get_type());
         $this->assertEquals(explanation::SEVERITY_CRITICAL, $result->get_severity());
+        $this->assertEquals(get_string('signal_no_activity_title', 'local_learningsuccess'), $result->get_title());
+        $this->assertEquals(get_string('signal_no_activity_desc', 'local_learningsuccess'), $result->get_description());
     }
 
     /**

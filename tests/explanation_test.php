@@ -55,6 +55,8 @@ class explanation_test extends advanced_testcase {
         $this->assertNotNull($explanation);
         $this->assertEquals('inactivity', $explanation->get_type());
         $this->assertEquals(explanation::SEVERITY_CRITICAL, $explanation->get_severity());
+        $this->assertEquals(get_string('signal_no_activity_title', 'local_learningsuccess'), $explanation->get_title());
+        $this->assertEquals(get_string('signal_no_activity_desc', 'local_learningsuccess'), $explanation->get_description());
     }
 
     /**

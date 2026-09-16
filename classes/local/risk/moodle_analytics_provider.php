@@ -106,8 +106,8 @@ class moodle_analytics_provider implements risk_provider {
                                   JOIN {analytics_predict_samples} aps ON aps.predictionid = ap.id
                              LEFT JOIN {user_enrolments} ue ON ue.id = aps.sampleid AND aps.sampleorigin = 'user_enrolments'
                                  WHERE ap.contextid = :contextid
-                                   AND (COALESCE(ue.userid, aps.sampleid) $uinsql)
-                                   AND am.enabled = 1
+                                       AND (COALESCE(ue.userid, aps.sampleid) $uinsql)
+                                       AND am.enabled = 1
                               ORDER BY (CASE WHEN am.target = :preferredtarget THEN 0 ELSE 1 END) ASC,
                                        ap.timecreated DESC";
 

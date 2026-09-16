@@ -55,71 +55,23 @@ class fallback_provider implements risk_provider {
      * @return array<int, risk_result> Map of userid => risk_result.
      */
     public function get_risks(array $userids, int $courseid): array {
-        global $DB;
-
         $userids = array_values(array_filter(array_unique(array_map('intval', $userids))));
         if (empty($userids)) {
             return [];
         }
 
         $now = time();
+        $batch = metrics_helper::get_course_metrics_batch($userids, $courseid);
 
-        // 1. Batch fetch user last course access.
-        list($uinsql, $params) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'uid');
-        $params['courseid'] = $courseid;
+        $course = $batch['course'];
+        $coursestarted = $batch['coursestarted'];
+        $enrolrecords = $batch['enrolrecords'];
+        $lastaccessrecords = $batch['lastaccessrecords'];
+        $totalmodules = $batch['totalmodules'];
+        $completioncounts = $batch['completionrecords'];
+        $graderecords = $batch['graderecords'];
 
-        $lastaccessrecords = $DB->get_records_select(
-            'user_lastaccess',
-            "courseid = :courseid AND userid $uinsql",
-            $params,
-            '',
-            'userid, timeaccess'
-        );
-
-        // 2. Batch fetch final course grades.
-        $gradesql = "SELECT gg.userid, gg.finalgrade, gi.grademax
-                       FROM {grade_grades} gg
-                       JOIN {grade_items} gi ON gi.id = gg.itemid
-                      WHERE gi.courseid = :courseid
-                        AND gi.itemtype = 'course'
-                        AND gg.userid $uinsql";
-        $graderecords = $DB->get_records_sql($gradesql, $params);
-
-        // 3. Batch fetch activity completion counts.
-        $totalmodules = $DB->count_records('course_modules', [
-            'course' => $courseid,
-            'completion' => 1,
-            'deletioninprogress' => 0,
-        ]);
-
-        $completioncounts = [];
-        if ($totalmodules > 0) {
-            $completionsql = "SELECT cmc.userid, COUNT(cmc.id) AS completedcount
-                                FROM {course_modules_completion} cmc
-                                JOIN {course_modules} cm ON cm.id = cmc.coursemoduleid
-                               WHERE cm.course = :courseid
-                                 AND cm.completion = 1
-                                 AND cm.deletioninprogress = 0
-                                 AND cmc.completionstate IN (1, 2)
-                                 AND cmc.userid $uinsql
-                            GROUP BY cmc.userid";
-            $completioncounts = $DB->get_records_sql($completionsql, $params);
-        }
-
-        // Fetch course details for lifecycle checks.
-        $course = $DB->get_record('course', ['id' => $courseid], 'id, startdate', MUST_EXIST);
-        $coursestarted = ($course->startdate <= 0 || $course->startdate <= $now);
-
-        // Batch fetch student enrolment timestamps for grace period calculations.
-        $enrolsql = "SELECT ue.userid, MIN(COALESCE(NULLIF(ue.timestart, 0), ue.timecreated)) AS enroltime
-                       FROM {user_enrolments} ue
-                       JOIN {enrol} e ON e.id = ue.enrolid
-                      WHERE e.courseid = :courseid
-                        AND ue.userid $uinsql
-                   GROUP BY ue.userid";
-        $enrolrecords = $DB->get_records_sql($enrolsql, $params);
-
-        // 4. Compute identical risk scoring for each student.
+        // Compute risk scoring for each student.
         $results = [];
         $graceperiod = 5 * DAYSECS;
 
@@ -177,7 +129,9 @@ class fallback_provider implements risk_provider {
 
             // Completion evaluation (suppressed if course hasn't started or student is in grace period).
             if ($totalmodules > 0) {
-                $completed = isset($completioncounts[$uid]) ? (int) $completioncounts[$uid]->completedcount : 0;
+                $completed = isset($completioncounts[$uid])
+                    ? (int) ($completioncounts[$uid]->completed_count ?? $completioncounts[$uid]->completedcount ?? 0)
+                    : 0;
                 if ($completed > 0) {
                     $hasmeaningfuldata = true;
                 }

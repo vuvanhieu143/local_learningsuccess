@@ -55,6 +55,7 @@ class inactivity_rule implements recommendation_rule {
     public function get_recommendation(array $signals): recommendation {
         $days = 7;
         $isCritical = false;
+        $isNever = false;
 
         foreach ($signals as $s) {
             $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
@@ -62,15 +63,24 @@ class inactivity_rule implements recommendation_rule {
                 $days = is_array($s) ? ($s['value'] ?? 7) : $s->get_value();
                 $sev = is_array($s) ? ($s['severity'] ?? '') : $s->get_severity();
                 $isCritical = ($sev === 'critical');
+                $evidence = is_array($s) ? ($s['evidence'] ?? []) : $s->get_evidence();
+                $lastaccess = $evidence['lastaccess'] ?? null;
+                if ($lastaccess !== null && (int) $lastaccess <= 0) {
+                    $isNever = true;
+                }
                 break;
             }
         }
+
+        $reason = $isNever
+            ? get_string('signal_no_activity_desc', 'local_learningsuccess')
+            : get_string('signal_inactivity_warning_desc', 'local_learningsuccess', $days);
 
         return new recommendation(
             type: 'checkin',
             title: get_string('action_contact_student', 'local_learningsuccess'),
             action: get_string('recommend_contact', 'local_learningsuccess'),
-            reason: get_string('signal_inactivity_warning_desc', 'local_learningsuccess', $days),
+            reason: $reason,
             urgency: $isCritical ? recommendation::URGENCY_HIGH : recommendation::URGENCY_MEDIUM,
             suggestedmessage: get_string('default_checkin_message', 'local_learningsuccess')
         );

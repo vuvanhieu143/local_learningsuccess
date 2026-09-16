@@ -387,10 +387,11 @@ class intervention_manager {
     public function get_active_for_student(int $userid, int $courseid): ?\stdClass {
         global $DB;
 
-        $sql = "SELECT * FROM {local_learningsuccess_int}
+        $sql = "SELECT *
+                  FROM {local_learningsuccess_int}
                  WHERE courseid = :courseid
-                   AND userid = :userid
-                   AND status IN (:open, :contacted, :waiting, :follow_up, :in_progress)
+                       AND userid = :userid
+                       AND status IN (:open, :contacted, :waiting, :follow_up, :in_progress)
               ORDER BY timecreated DESC";
 
         $records = $DB->get_records_sql($sql, [
@@ -415,9 +416,10 @@ class intervention_manager {
     public function get_active_for_course_by_user(int $courseid): array {
         global $DB;
 
-        $sql = "SELECT * FROM {local_learningsuccess_int}
+        $sql = "SELECT *
+                  FROM {local_learningsuccess_int}
                  WHERE courseid = :courseid
-                   AND status IN (:open, :contacted, :waiting, :follow_up, :in_progress)
+                       AND status IN (:open, :contacted, :waiting, :follow_up, :in_progress)
               ORDER BY timecreated DESC";
 
         $records = $DB->get_records_sql($sql, [
@@ -498,11 +500,23 @@ class intervention_manager {
         $count = 0;
 
         foreach ($pending as $intervention) {
-            $this->complete(
-                (int) $intervention->id,
-                $intervention->actual_action ?: get_string('auto_evaluated_note', 'local_learningsuccess', $days)
-            );
-            $count++;
+            try {
+                if (strtolower($intervention->status) === strtolower(self::STATUS_OPEN)) {
+                    $this->transition_to(
+                        (int) $intervention->id,
+                        intervention_status::CONTACTED,
+                        'Auto-advanced before outcome evaluation'
+                    );
+                }
+                $this->complete(
+                    (int) $intervention->id,
+                    $intervention->actual_action ?: get_string('auto_evaluated_note', 'local_learningsuccess', $days)
+                );
+                $count++;
+            } catch (\Throwable $e) {
+                // Safeguard against individual transition issues during scheduled execution.
+                continue;
+            }
         }
 
         return $count;

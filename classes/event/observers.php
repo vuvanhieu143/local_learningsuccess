@@ -30,39 +30,39 @@ use local_learningsuccess\local\helper\cache_helper;
 class observers {
 
     /**
-     * Invalidate course and student cache when module completion is updated.
+     * Invalidate student cache when module completion is updated.
      *
      * @param \core\event\course_module_completion_updated $event
      */
     public static function module_completion_updated(\core\event\course_module_completion_updated $event): void {
-        self::mark_dirty($event->courseid, $event->relateduserid);
+        self::mark_dirty($event->courseid, $event->relateduserid, false);
     }
 
     /**
-     * Invalidate cache when an assignment submission is graded.
+     * Invalidate student cache when an assignment submission is graded.
      *
      * @param \mod_assign\event\submission_graded $event
      */
     public static function submission_graded(\mod_assign\event\submission_graded $event): void {
-        self::mark_dirty($event->courseid, $event->relateduserid);
+        self::mark_dirty($event->courseid, $event->relateduserid, false);
     }
 
     /**
-     * Invalidate cache when a quiz attempt is submitted.
+     * Invalidate student cache when a quiz attempt is submitted.
      *
      * @param \mod_quiz\event\attempt_submitted $event
      */
     public static function attempt_submitted(\mod_quiz\event\attempt_submitted $event): void {
-        self::mark_dirty($event->courseid, $event->userid);
+        self::mark_dirty($event->courseid, $event->userid, false);
     }
 
     /**
-     * Invalidate cache when user enrolment changes.
+     * Invalidate course and student cache when user enrolment changes.
      *
      * @param \core\event\base $event
      */
     public static function user_enrolment_changed(\core\event\base $event): void {
-        self::mark_dirty($event->courseid, $event->relateduserid);
+        self::mark_dirty($event->courseid, $event->relateduserid, true);
     }
 
     /**
@@ -70,9 +70,12 @@ class observers {
      *
      * @param int $courseid
      * @param int|null $userid
+     * @param bool $invalidatecourse Whether to purge the aggregate course cache.
      */
-    protected static function mark_dirty(int $courseid, ?int $userid = null): void {
-        cache_helper::invalidate_course($courseid);
+    protected static function mark_dirty(int $courseid, ?int $userid = null, bool $invalidatecourse = false): void {
+        if ($invalidatecourse) {
+            cache_helper::invalidate_course($courseid);
+        }
 
         if ($userid) {
             cache_helper::invalidate_student($courseid, $userid);
