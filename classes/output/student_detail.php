@@ -131,6 +131,10 @@ class student_detail implements renderable, templatable {
                 'signal_type' => $type,
                 'message' => $msg,
                 'severity' => $sev,
+                'is_critical' => ($sev === 'critical'),
+                'is_high' => ($sev === 'high' || $sev === 'warning'),
+                'is_medium' => ($sev === 'medium' || $sev === 'info'),
+                'is_low' => ($sev === 'low'),
                 'dismissal_reasons' => $dismissalreasons,
             ]);
         }, $this->studentdata['signals'] ?? []);
@@ -149,6 +153,9 @@ class student_detail implements renderable, templatable {
                 'message_url' => $messageurl,
             ]),
             'courseid' => $this->studentdata['courseid'],
+            'dashboard_url' => (new \moodle_url('/local/learningsuccess/dashboard.php', [
+                'courseid' => $this->studentdata['courseid'],
+            ]))->out(false),
             'profile_url' => $profileurl,
             'message_url' => $messageurl,
             'status' => $status,

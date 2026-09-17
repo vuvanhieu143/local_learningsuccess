@@ -1,0 +1,201 @@
+/**
+ * Styling for the local_learningsuccess plugin with WCAG 2.1 AA compliant color contrast.
+ *
+ * @package    local_learningsuccess
+ * @copyright  2026 vuvanhieu143
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/* ==========================================================================
+   1. Section Headers & Cards
+   ========================================================================== */
+
+.local-learningsuccess-dashboard .section-title-success {
+    color: #146c43;
+}
+
+.local-learningsuccess-dashboard .section-title-info {
+    color: #055160;
+}
+
+.local-learningsuccess-dashboard .card-improvements {
+    border-left: 5px solid #146c43;
+}
+
+.local-learningsuccess-dashboard .card-handled {
+    border-left: 5px solid #087990;
+}
+
+.local-learningsuccess-dashboard .action-note-preview {
+    color: #212529;
+    font-style: italic;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   2. Class Pulse Metrics & Icons
+   ========================================================================== */
+
+.local-learningsuccess-dashboard .pulse-metric-healthy,
+.local-learningsuccess-dashboard .pulse-icon-healthy {
+    color: #146c43;
+}
+
+.local-learningsuccess-dashboard .pulse-metric-monitor,
+.local-learningsuccess-dashboard .pulse-icon-monitor {
+    color: #055160;
+}
+
+.local-learningsuccess-dashboard .pulse-metric-atrisk,
+.local-learningsuccess-dashboard .pulse-icon-atrisk {
+    color: #944a00;
+}
+
+.local-learningsuccess-dashboard .pulse-metric-critical,
+.local-learningsuccess-dashboard .pulse-icon-critical {
+    color: #b02a37;
+}
+
+.local-learningsuccess-dashboard .signal-warning-icon,
+.local-learningsuccess-student-detail .signal-warning-icon {
+    color: #944a00;
+}
+
+.local-learningsuccess-dashboard .profile-link-icon {
+    color: #495057;
+}
+
+.local-learningsuccess-dashboard .profile-link-icon:hover {
+    color: #212529;
+}
+
+/* ==========================================================================
+   3. Accessible Badges (WCAG AA Compliant)
+   ========================================================================== */
+
+.local-learningsuccess-dashboard .badge-urgent,
+.local-learningsuccess-student-detail .badge-urgent {
+    background-color: #b02a37;
+    color: #fff;
+}
+
+.local-learningsuccess-dashboard .badge-followup,
+.local-learningsuccess-student-detail .badge-followup {
+    background-color: #0a58ca;
+    color: #fff;
+}
+
+.local-learningsuccess-dashboard .badge-recommend,
+.local-learningsuccess-student-detail .badge-recommend {
+    background-color: #ffc107;
+    color: #212529;
+    font-weight: 600;
+}
+
+.local-learningsuccess-dashboard .badge-monitor,
+.local-learningsuccess-student-detail .badge-monitor {
+    background-color: #087990;
+    color: #fff;
+}
+
+.local-learningsuccess-dashboard .badge-healthy,
+.local-learningsuccess-student-detail .badge-healthy {
+    background-color: #146c43;
+    color: #fff;
+}
+
+.local-learningsuccess-dashboard .badge-nodata,
+.local-learningsuccess-student-detail .badge-nodata,
+.local-learningsuccess-dashboard .badge-secondary-neutral,
+.local-learningsuccess-student-detail .badge-secondary-neutral {
+    background-color: #495057;
+    color: #fff;
+}
+
+.local-learningsuccess-dashboard .risk-source-badge,
+.local-learningsuccess-student-detail .risk-source-badge {
+    background-color: #f8f9fa;
+    color: #212529;
+    border: 1px solid #ced4da;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   4. Accessible Buttons & Interactive Outlines
+   ========================================================================== */
+
+.local-learningsuccess-dashboard .btn-outline-info,
+.local-learningsuccess-student-detail .btn-outline-info,
+#intervention-modal-form .btn-outline-info {
+    color: #055160;
+    border-color: #087990;
+    background-color: transparent;
+    font-weight: 500;
+}
+
+.local-learningsuccess-dashboard .btn-outline-info:hover,
+.local-learningsuccess-student-detail .btn-outline-info:hover,
+#intervention-modal-form .btn-outline-info:hover {
+    background-color: #087990;
+    color: #fff;
+}
+
+.local-learningsuccess-dashboard .btn-outline-success,
+.local-learningsuccess-student-detail .btn-outline-success {
+    color: #146c43;
+    border-color: #146c43;
+    font-weight: 500;
+}
+
+.local-learningsuccess-dashboard .btn-outline-success:hover,
+.local-learningsuccess-student-detail .btn-outline-success:hover {
+    background-color: #146c43;
+    color: #fff;
+}
+
+#intervention-modal-form .btn-outline-warning {
+    color: #854d0e;
+    border-color: #a16207;
+    background-color: transparent;
+    font-weight: 500;
+}
+
+#intervention-modal-form .btn-outline-warning:hover {
+    background-color: #a16207;
+    color: #fff;
+}
+
+.local-learningsuccess-dashboard .btn-outline-secondary,
+.local-learningsuccess-student-detail .btn-outline-secondary {
+    color: #343a40;
+    border-color: #6c757d;
+}
+
+.local-learningsuccess-dashboard .btn-outline-secondary:hover,
+.local-learningsuccess-student-detail .btn-outline-secondary:hover {
+    background-color: #495057;
+    color: #fff;
+}
+
+/* ==========================================================================
+   5. Accessible Alerts & Tables
+   ========================================================================== */
+
+.local-learningsuccess-student-detail .active-intervention-alert {
+    background-color: #e0f2fe;
+    border-color: #7dd3fc;
+    color: #0369a1;
+}
+
+.local-learningsuccess-student-detail .active-intervention-alert .alert-info-icon {
+    color: #0369a1;
+}
+
+.local-learningsuccess-student-detail .active-intervention-alert .alert-info-subtitle {
+    color: #075985;
+}
+
+.local-learningsuccess-student-detail .table thead th {
+    color: #212529;
+    border-bottom: 2px solid #ced4da;
+}

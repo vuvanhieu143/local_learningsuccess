@@ -42,33 +42,33 @@
             <div class="col-6 col-md-3">
                 <div class="p-3 bg-white rounded border">
                     <span class="d-block text-muted small text-uppercase fw-bold">
-                        <i class="fa fa-check-circle text-success me-1" aria-hidden="true"></i>{{#str}}status_healthy, local_learningsuccess{{/str}}
+                        <i class="fa fa-check-circle pulse-icon-healthy me-1" aria-hidden="true"></i>{{#str}}status_healthy, local_learningsuccess{{/str}}
                     </span>
-                    <span class="h3 fw-bold text-success">{{healthy_count}}</span>
+                    <span class="h3 fw-bold pulse-metric-healthy">{{healthy_count}}</span>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="p-3 bg-white rounded border">
                     <span class="d-block text-muted small text-uppercase fw-bold">
-                        <i class="fa fa-info-circle text-info me-1" aria-hidden="true"></i>{{#str}}status_monitor, local_learningsuccess{{/str}}
+                        <i class="fa fa-info-circle pulse-icon-monitor me-1" aria-hidden="true"></i>{{#str}}status_monitor, local_learningsuccess{{/str}}
                     </span>
-                    <span class="h3 fw-bold text-info">{{monitor_count}}</span>
+                    <span class="h3 fw-bold pulse-metric-monitor">{{monitor_count}}</span>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="p-3 bg-white rounded border">
                     <span class="d-block text-muted small text-uppercase fw-bold">
-                        <i class="fa fa-exclamation-triangle text-warning me-1" aria-hidden="true"></i>{{#str}}status_atrisk, local_learningsuccess{{/str}}
+                        <i class="fa fa-exclamation-triangle pulse-icon-atrisk me-1" aria-hidden="true"></i>{{#str}}status_atrisk, local_learningsuccess{{/str}}
                     </span>
-                    <span class="h3 fw-bold text-warning">{{atrisk_count}}</span>
+                    <span class="h3 fw-bold pulse-metric-atrisk">{{atrisk_count}}</span>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="p-3 bg-white rounded border">
                     <span class="d-block text-muted small text-uppercase fw-bold">
-                        <i class="fa fa-exclamation-circle text-danger me-1" aria-hidden="true"></i>{{#str}}status_critical, local_learningsuccess{{/str}}
+                        <i class="fa fa-exclamation-circle pulse-icon-critical me-1" aria-hidden="true"></i>{{#str}}status_critical, local_learningsuccess{{/str}}
                     </span>
-                    <span class="h3 fw-bold text-danger">{{critical_count}}</span>
+                    <span class="h3 fw-bold pulse-metric-critical">{{critical_count}}</span>
                 </div>
             </div>
         </div>
@@ -78,7 +78,7 @@
                 <i class="fa fa-users me-2" aria-hidden="true"></i>
                 <span>{{#str}}metric_total_students, local_learningsuccess{{/str}}: <strong>{{total_students}}</strong></span>
                 {{#nodata_count}}
-                    <span class="badge text-bg-secondary ms-2" title="{{#str}}status_nodata, local_learningsuccess{{/str}}">
+                    <span class="badge badge-nodata ms-2" title="{{#str}}status_nodata, local_learningsuccess{{/str}}">
                         {{nodata_count}} {{#str}}status_nodata, local_learningsuccess{{/str}}
                     </span>
                 {{/nodata_count}}
@@ -88,7 +88,7 @@
                 <span>{{#str}}metric_active_interventions, local_learningsuccess{{/str}}: <strong>{{active_interventions}}</strong></span>
             </div>
             <div class="col-md-4 d-flex align-items-center justify-content-md-end mt-2 mt-md-0">
-                <i class="fa fa-clock-o me-2 text-secondary" aria-hidden="true"></i>
+                <i class="fa fa-clock-o me-2 text-dark" aria-hidden="true"></i>
                 <span>{{last_updated_label}}</span>
             </div>
         </div>
