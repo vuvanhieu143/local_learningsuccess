@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_learningsuccess';
-$plugin->version   = 2026091600;
+$plugin->version   = 2026091700;
 $plugin->requires  = 2025041400; // Requires Moodle 5.0+ (PHP 8.2+).
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = 'v1.0.0';
+$plugin->release   = 'v1.1.0';

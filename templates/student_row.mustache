@@ -50,12 +50,12 @@
     <div class="d-flex align-items-center mb-2 mb-md-0">
         <div class="me-3">
             <span class="badge rounded-pill p-2 text-uppercase fw-bold 
-                {{#is_urgent}}text-bg-danger{{/is_urgent}}
-                {{#is_follow_up}}text-bg-primary{{/is_follow_up}}
-                {{#is_recommend}}text-bg-warning{{/is_recommend}}
-                {{#is_monitor}}text-bg-secondary{{/is_monitor}}
-                {{#status_is_nodata}}text-bg-secondary{{/status_is_nodata}}
-                {{^is_urgent}}{{^is_follow_up}}{{^is_recommend}}{{^is_monitor}}{{^status_is_nodata}}text-bg-info{{/status_is_nodata}}{{/is_monitor}}{{/is_recommend}}{{/is_follow_up}}{{/is_urgent}}">
+                {{#is_urgent}}text-bg-danger text-white{{/is_urgent}}
+                {{#is_follow_up}}text-bg-primary text-white{{/is_follow_up}}
+                {{#is_recommend}}text-bg-warning text-dark{{/is_recommend}}
+                {{#is_monitor}}text-bg-secondary text-white{{/is_monitor}}
+                {{#status_is_nodata}}text-bg-secondary text-white{{/status_is_nodata}}
+                {{^is_urgent}}{{^is_follow_up}}{{^is_recommend}}{{^is_monitor}}{{^status_is_nodata}}text-bg-info text-white{{/status_is_nodata}}{{/is_monitor}}{{/is_recommend}}{{/is_follow_up}}{{/is_urgent}}">
                 {{#is_urgent}}<i class="fa fa-fire me-1" aria-hidden="true"></i>{{/is_urgent}}
                 {{#is_follow_up}}<i class="fa fa-clock-o me-1" aria-hidden="true"></i>{{/is_follow_up}}
                 {{#is_recommend}}<i class="fa fa-lightbulb-o me-1" aria-hidden="true"></i>{{/is_recommend}}
@@ -78,7 +78,7 @@
                     </span>
                 {{/struggle_tag}}
                 {{#risk_source_label}}
-                    <span class="badge bg-light text-secondary border small px-2 py-1 me-2" title="{{risk_source_tooltip}}">
+                    <span class="badge bg-light text-dark border small px-2 py-1 me-2 risk-source-badge" title="{{risk_source_tooltip}}">
                         <i class="fa {{risk_source_icon}} me-1" aria-hidden="true"></i>{{risk_source_label}}
                     </span>
                 {{/risk_source_label}}

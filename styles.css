@@ -1,0 +1,223 @@
+/**
+ * Styling for the local_learningsuccess plugin with WCAG 2.1 AA compliant color contrast.
+ *
+ * @package    local_learningsuccess
+ * @copyright  2026 vuvanhieu143
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/* ==========================================================================
+   1. Scope & Text Color Overrides for AA Accessibility
+   ========================================================================== */
+
+/* Accessible text-muted and text-secondary: dark charcoal for maximum visibility (contrast >= 14.6:1) */
+.local-learningsuccess-dashboard .text-muted,
+.local-learningsuccess-student-detail .text-muted,
+.local-learningsuccess-dashboard .text-secondary,
+.local-learningsuccess-student-detail .text-secondary {
+    color: #212529 !important;
+    --bs-text-opacity: 1 !important;
+}
+
+/* Action notes and quotes (contrast >= 14.6:1) */
+.local-learningsuccess-dashboard .action-note-preview,
+.local-learningsuccess-dashboard .fst-italic.text-truncate {
+    color: #212529 !important;
+    font-style: italic;
+    font-weight: 500;
+}
+
+/* Accessible Success colors (contrast >= 5.6:1) */
+.local-learningsuccess-dashboard .text-success,
+.local-learningsuccess-student-detail .text-success {
+    color: #146c43 !important;
+}
+
+.local-learningsuccess-dashboard .border-success,
+.local-learningsuccess-student-detail .border-success {
+    border-color: #146c43 !important;
+}
+
+/* Accessible Warning / Amber colors (contrast >= 5.0:1 on white/light) */
+.local-learningsuccess-dashboard .text-warning,
+.local-learningsuccess-student-detail .text-warning,
+.local-learningsuccess-dashboard [data-region="pulse-cards"] .text-warning,
+#intervention-modal-form .text-warning {
+    color: #944a00 !important;
+}
+
+/* Accessible Info / Teal colors (contrast >= 5.0:1 on white/light) */
+.local-learningsuccess-dashboard .text-info,
+.local-learningsuccess-student-detail .text-info,
+.local-learningsuccess-dashboard [data-region="pulse-cards"] .text-info {
+    color: #055160 !important;
+}
+
+.local-learningsuccess-dashboard .border-info,
+.local-learningsuccess-student-detail .border-info {
+    border-color: #087990 !important;
+}
+
+/* Accessible Danger / Urgent colors (contrast >= 6.5:1) */
+.local-learningsuccess-dashboard .text-danger,
+.local-learningsuccess-student-detail .text-danger {
+    color: #b02a37 !important;
+}
+
+.local-learningsuccess-dashboard .border-danger,
+.local-learningsuccess-student-detail .border-danger {
+    border-color: #b02a37 !important;
+}
+
+/* ==========================================================================
+   2. Accessible Badges (WCAG AA compliant contrast)
+   ========================================================================== */
+
+/* Info badge: deep accessible teal with white text (contrast 5.06:1) */
+.local-learningsuccess-dashboard .text-bg-info,
+.local-learningsuccess-student-detail .text-bg-info {
+    background-color: #087990 !important;
+    color: #ffffff !important;
+}
+
+/* Warning badge: golden yellow with dark charcoal text (contrast 9.46:1) */
+.local-learningsuccess-dashboard .text-bg-warning,
+.local-learningsuccess-student-detail .text-bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+    font-weight: 600;
+}
+
+/* Success badge: deep green with white text (contrast 6.45:1) */
+.local-learningsuccess-dashboard .text-bg-success,
+.local-learningsuccess-student-detail .text-bg-success {
+    background-color: #146c43 !important;
+    color: #ffffff !important;
+}
+
+/* Danger badge: deep crimson with white text (contrast 6.50:1) */
+.local-learningsuccess-dashboard .text-bg-danger,
+.local-learningsuccess-student-detail .text-bg-danger {
+    background-color: #b02a37 !important;
+    color: #ffffff !important;
+}
+
+/* Secondary badge: dark neutral with white text (contrast 8.18:1) */
+.local-learningsuccess-dashboard .text-bg-secondary,
+.local-learningsuccess-student-detail .text-bg-secondary {
+    background-color: #495057 !important;
+    color: #ffffff !important;
+}
+
+/* Risk source pill (e.g. "Based on course activity signals") */
+.local-learningsuccess-dashboard .risk-source-badge,
+.local-learningsuccess-student-detail .risk-source-badge {
+    background-color: #f1f3f5 !important;
+    color: #212529 !important;
+    border: 1px solid #ced4da !important;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   3. Accessible Buttons & Interactive Outlines
+   ========================================================================== */
+
+/* Info outline button (Message Student) - contrast 8.9:1 */
+.local-learningsuccess-dashboard .btn-outline-info,
+.local-learningsuccess-student-detail .btn-outline-info,
+#intervention-modal-form .btn-outline-info {
+    color: #055160;
+    border-color: #087990;
+    background-color: transparent;
+    font-weight: 500;
+}
+
+.local-learningsuccess-dashboard .btn-outline-info:hover,
+.local-learningsuccess-student-detail .btn-outline-info:hover,
+#intervention-modal-form .btn-outline-info:hover {
+    background-color: #087990;
+    color: #ffffff;
+}
+
+/* Success outline button (Check in, Complete) - contrast 6.4:1 */
+.local-learningsuccess-dashboard .btn-outline-success,
+.local-learningsuccess-student-detail .btn-outline-success {
+    color: #146c43;
+    border-color: #146c43;
+    font-weight: 500;
+}
+
+.local-learningsuccess-dashboard .btn-outline-success:hover,
+.local-learningsuccess-student-detail .btn-outline-success:hover {
+    background-color: #146c43;
+    color: #ffffff;
+}
+
+/* Warning outline button (Extension preset) - contrast 6.4:1 */
+#intervention-modal-form .btn-outline-warning {
+    color: #854d0e;
+    border-color: #a16207;
+    background-color: transparent;
+    font-weight: 500;
+}
+
+#intervention-modal-form .btn-outline-warning:hover {
+    background-color: #a16207;
+    color: #ffffff;
+}
+
+/* Secondary outline button (Dismiss, Chevron, Refresh) - contrast 8.1:1 */
+.local-learningsuccess-dashboard .btn-outline-secondary,
+.local-learningsuccess-student-detail .btn-outline-secondary {
+    color: #343a40;
+    border-color: #6c757d;
+}
+
+.local-learningsuccess-dashboard .btn-outline-secondary:hover,
+.local-learningsuccess-student-detail .btn-outline-secondary:hover {
+    background-color: #495057;
+    color: #ffffff;
+}
+
+/* External profile link icon */
+.local-learningsuccess-dashboard a.text-muted:hover,
+.local-learningsuccess-dashboard a.text-muted {
+    color: #495057 !important;
+}
+
+/* ==========================================================================
+   4. Accessible Alerts & Tables
+   ========================================================================== */
+
+/* Active intervention alert banner */
+.local-learningsuccess-student-detail .alert-info {
+    background-color: #e0f2fe;
+    border-color: #7dd3fc;
+    color: #0369a1;
+}
+
+.local-learningsuccess-student-detail .alert-info .text-info {
+    color: #0369a1 !important;
+}
+
+.local-learningsuccess-student-detail .alert-info .text-muted {
+    color: #075985 !important;
+}
+
+/* Attention needed warning alert banner */
+.local-learningsuccess-dashboard .alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffe69c;
+    color: #664d03;
+}
+
+.local-learningsuccess-dashboard .alert-warning .text-warning {
+    color: #944a00 !important;
+}
+
+/* Intervention history table */
+.local-learningsuccess-student-detail .table thead th {
+    color: #212529;
+    border-bottom: 2px solid #ced4da;
+}
+

@@ -131,6 +131,10 @@ class student_detail implements renderable, templatable {
                 'signal_type' => $type,
                 'message' => $msg,
                 'severity' => $sev,
+                'is_critical' => ($sev === 'critical'),
+                'is_high' => ($sev === 'high' || $sev === 'warning'),
+                'is_medium' => ($sev === 'medium' || $sev === 'info'),
+                'is_low' => ($sev === 'low'),
                 'dismissal_reasons' => $dismissalreasons,
             ]);
         }, $this->studentdata['signals'] ?? []);
