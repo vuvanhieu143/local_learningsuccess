@@ -40,7 +40,7 @@ const registerEventListeners = (courseId) => {
 
             Ajax.call([{
                 methodname: 'local_learningsuccess_get_dashboard_data',
-                args: {courseid: courseId}
+                args: {courseid: courseId, refresh: true}
             }])[0].then(() => {
                 window.location.reload();
                 return null;

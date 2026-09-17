@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use local_learningsuccess\local\intervention\intervention_manager;
 use local_learningsuccess\local\intervention\intervention_status;
@@ -33,10 +31,11 @@ use local_learningsuccess\local\recommendation\recommendation_engine;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\local\outcome\outcome_evaluator
  */
 final class outcome_evaluator_test extends advanced_testcase {
-
     public function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 

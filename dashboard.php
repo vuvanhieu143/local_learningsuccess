@@ -29,11 +29,16 @@ use local_learningsuccess\output\dashboard;
 
 $courseid = required_param('courseid', PARAM_INT);
 $groupid = optional_param('groupid', 0, PARAM_INT);
+$refresh = optional_param('refresh', 0, PARAM_BOOL);
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
 require_login($course);
 $context = context_course::instance($courseid);
 require_capability('local/learningsuccess:viewcourse', $context);
+
+if ($refresh) {
+    \local_learningsuccess\local\helper\cache_helper::invalidate_course($courseid);
+}
 
 $urlparams = ['courseid' => $courseid];
 if ($groupid > 0) {
@@ -51,7 +56,7 @@ $PAGE->requires->js_call_amd('local_learningsuccess/dashboard', 'init', [$course
 [$groupid, $groups] = \local_learningsuccess\local\helper\access_helper::resolve_group_scope($course, $context, $groupid);
 
 $service = new student_success_service();
-$summary = $service->get_course_summary($courseid, $groupid);
+$summary = $service->get_course_summary($courseid, $groupid, (bool) $refresh);
 $priorities = $service->get_priority_students($courseid, $groupid);
 $successstories = $service->get_recent_success_stories($courseid, 4);
 $recentlyhandled = $service->get_recently_handled_students($courseid, 4);
@@ -62,4 +67,3 @@ $dashboardrenderable = new dashboard($courseid, $summary, $priorities, $groupid,
 echo $output->header();
 echo $output->render($dashboardrenderable);
 echo $output->footer();
-

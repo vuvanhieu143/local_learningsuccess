@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\privacy;
 
-defined('MOODLE_INTERNAL') || die();
-
 use core_privacy\local\metadata\collection;
 use core_privacy\local\metadata\provider as metadata_provider;
 use core_privacy\local\request\approved_contextlist;
@@ -37,11 +35,7 @@ use core_privacy\local\request\writer;
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements
-    metadata_provider,
-    plugin_provider,
-    core_userlist_provider {
-
+class provider implements core_userlist_provider, metadata_provider, plugin_provider {
     /**
      * Return the fields which contain personal data.
      *
@@ -101,7 +95,8 @@ class provider implements
                   FROM {context} c
                   JOIN {course} cr ON c.instanceid = cr.id AND c.contextlevel = :contextlevel
                   JOIN {local_learningsuccess_int} i ON i.courseid = cr.id
-                 WHERE i.userid = :userid1 OR i.teacherid = :teacherid";
+                 WHERE i.userid = :userid1
+                       OR i.teacherid = :teacherid";
 
         $params = [
             'contextlevel' => CONTEXT_COURSE,
@@ -134,14 +129,20 @@ class provider implements
 
         $params = ['courseid' => $context->instanceid];
 
-        $sql = "SELECT userid FROM {local_learningsuccess_int} WHERE courseid = :courseid";
+        $sql = "SELECT userid
+                  FROM {local_learningsuccess_int}
+                 WHERE courseid = :courseid";
         $userlist->add_from_sql('userid', $sql, $params);
 
-        $sqlTeacher = "SELECT teacherid AS userid FROM {local_learningsuccess_int} WHERE courseid = :courseid";
-        $userlist->add_from_sql('userid', $sqlTeacher, $params);
+        $sqlteacher = "SELECT teacherid AS userid
+                         FROM {local_learningsuccess_int}
+                        WHERE courseid = :courseid";
+        $userlist->add_from_sql('userid', $sqlteacher, $params);
 
-        $sqlSignal = "SELECT userid FROM {local_learningsuccess_sign} WHERE courseid = :courseid";
-        $userlist->add_from_sql('userid', $sqlSignal, $params);
+        $sqlsignal = "SELECT userid
+                        FROM {local_learningsuccess_sign}
+                       WHERE courseid = :courseid";
+        $userlist->add_from_sql('userid', $sqlsignal, $params);
     }
 
     /**
@@ -264,11 +265,10 @@ class provider implements
             return;
         }
 
-        list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
         $params = array_merge(['courseid' => $courseid], $inparams);
 
         $DB->delete_records_select('local_learningsuccess_int', "courseid = :courseid AND userid $insql", $params);
         $DB->delete_records_select('local_learningsuccess_sign', "courseid = :courseid AND userid $insql", $params);
     }
 }
-

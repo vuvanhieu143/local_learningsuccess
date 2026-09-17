@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use context_course;
 use dml_missing_record_exception;
@@ -33,10 +31,11 @@ use required_capability_exception;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\local\helper\access_helper
  */
-class access_control_edge_cases_test extends advanced_testcase {
-
+final class access_control_edge_cases_test extends advanced_testcase {
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -59,31 +58,31 @@ class access_control_edge_cases_test extends advanced_testcase {
     public function test_separate_groups_without_accessallgroups_denied(): void {
         $course = $this->getDataGenerator()->create_course(['groupmode' => SEPARATEGROUPS]);
         $teacher = $this->getDataGenerator()->create_user();
-        $studentA = $this->getDataGenerator()->create_user();
-        $studentB = $this->getDataGenerator()->create_user();
+        $studenta = $this->getDataGenerator()->create_user();
+        $studentb = $this->getDataGenerator()->create_user();
 
         $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'teacher');
-        $this->getDataGenerator()->enrol_user($studentA->id, $course->id, 'student');
-        $this->getDataGenerator()->enrol_user($studentB->id, $course->id, 'student');
+        $this->getDataGenerator()->enrol_user($studenta->id, $course->id, 'student');
+        $this->getDataGenerator()->enrol_user($studentb->id, $course->id, 'student');
 
-        $groupA = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
-        $groupB = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $groupa = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $groupb = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
 
-        $this->getDataGenerator()->create_group_member(['groupid' => $groupA->id, 'userid' => $teacher->id]);
-        $this->getDataGenerator()->create_group_member(['groupid' => $groupA->id, 'userid' => $studentA->id]);
-        $this->getDataGenerator()->create_group_member(['groupid' => $groupB->id, 'userid' => $studentB->id]);
+        $this->getDataGenerator()->create_group_member(['groupid' => $groupa->id, 'userid' => $teacher->id]);
+        $this->getDataGenerator()->create_group_member(['groupid' => $groupa->id, 'userid' => $studenta->id]);
+        $this->getDataGenerator()->create_group_member(['groupid' => $groupb->id, 'userid' => $studentb->id]);
 
         $this->setUser($teacher);
         $context = context_course::instance($course->id);
 
         // Student A in same group should succeed.
-        $resolved = access_helper::validate_student_access($course, $context, $studentA->id);
+        $resolved = access_helper::validate_student_access($course, $context, $studenta->id);
         $this->assertEquals($course->id, $resolved->id);
 
         // Student B in disjoint group must throw nopermissiontoviewstudent.
         $this->expectException(moodle_exception::class);
         $this->expectExceptionMessage(get_string('nopermissiontoviewstudent', 'local_learningsuccess'));
-        access_helper::validate_student_access($course, $context, $studentB->id);
+        access_helper::validate_student_access($course, $context, $studentb->id);
     }
 
     /**
@@ -115,10 +114,10 @@ class access_control_edge_cases_test extends advanced_testcase {
         $teacher = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'teacher');
 
-        $groupA = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
-        $groupB = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $groupa = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $groupb = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
 
-        $this->getDataGenerator()->create_group_member(['groupid' => $groupA->id, 'userid' => $teacher->id]);
+        $this->getDataGenerator()->create_group_member(['groupid' => $groupa->id, 'userid' => $teacher->id]);
 
         $this->setUser($teacher);
         $context = context_course::instance($course->id);
@@ -126,7 +125,7 @@ class access_control_edge_cases_test extends advanced_testcase {
         // Accessing Group B which teacher does not belong to.
         $this->expectException(moodle_exception::class);
         $this->expectExceptionMessage(get_string('nopermissiontoviewgroup', 'local_learningsuccess'));
-        access_helper::resolve_group_scope($course, $context, $groupB->id);
+        access_helper::resolve_group_scope($course, $context, $groupb->id);
     }
 
     /**
@@ -137,15 +136,15 @@ class access_control_edge_cases_test extends advanced_testcase {
         $teacher = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'teacher');
 
-        $groupA = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
-        $this->getDataGenerator()->create_group_member(['groupid' => $groupA->id, 'userid' => $teacher->id]);
+        $groupa = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $this->getDataGenerator()->create_group_member(['groupid' => $groupa->id, 'userid' => $teacher->id]);
 
         $this->setUser($teacher);
         $context = context_course::instance($course->id);
 
         [$resolvedid, $allowed] = access_helper::resolve_group_scope($course, $context, 0);
-        $this->assertEquals($groupA->id, $resolvedid);
-        $this->assertArrayHasKey($groupA->id, $allowed);
+        $this->assertEquals($groupa->id, $resolvedid);
+        $this->assertArrayHasKey($groupa->id, $allowed);
     }
 
     /**
@@ -185,4 +184,3 @@ class access_control_edge_cases_test extends advanced_testcase {
         \local_learningsuccess\external\dashboard_exporter::complete_intervention($interventionid, 'Done');
     }
 }
-

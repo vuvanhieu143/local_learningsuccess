@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\risk;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Risk provider interfacing directly with Moodle Learning Analytics core subsystem.
  *
@@ -30,15 +28,15 @@ defined('MOODLE_INTERNAL') || die();
  *    via COALESCE(ue.userid, aps.sampleid).
  * 2. High-Performance Bulk Retrieval: While Moodle core provides \core_analytics\manager and \core_analytics\model,
  *    iterating through model->get_predictions() instantiates heavy individual sample and prediction objects one by one
- *    in PHP memory, which creates unacceptable overhead for cohorts of 300+ students. Encapsulating an optimized batch
- *    query inside this provider keeps page renders strictly sub-150ms while insulating the rest of the plugin from Analytics internals.
+ *    in PHP memory, which creates overhead for cohorts of 300+ students. Encapsulating an optimized batch query
+ *    inside this provider keeps page renders strictly sub-150ms while insulating the plugin from Analytics internals.
  *
  * @package    local_learningsuccess
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class moodle_analytics_provider implements risk_provider {
-
+    /** @var string Risk source name identifier. */
     public const SOURCE_NAME = 'moodle_analytics';
 
     /** @var fallback_provider */
@@ -90,10 +88,11 @@ class moodle_analytics_provider implements risk_provider {
                 if ($dbman->table_exists('analytics_models') && $dbman->table_exists('analytics_predictions')) {
                     $context = \context_course::instance($courseid, IGNORE_MISSING);
                     if ($context) {
-                        list($uinsql, $params) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'uid');
+                        [$uinsql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'uid');
                         $params['contextid'] = $context->id;
 
-                        $preferredtarget = get_config('local_learningsuccess', 'analytics_model') ?: '\core\analytics\target\course_dropout';
+                        $preferredtarget = get_config('local_learningsuccess', 'analytics_model')
+                            ?: '\core\analytics\target\course_dropout';
                         $params['preferredtarget'] = $preferredtarget;
 
                         // Semantic Resolution:
@@ -106,8 +105,8 @@ class moodle_analytics_provider implements risk_provider {
                                   JOIN {analytics_predict_samples} aps ON aps.predictionid = ap.id
                              LEFT JOIN {user_enrolments} ue ON ue.id = aps.sampleid AND aps.sampleorigin = 'user_enrolments'
                                  WHERE ap.contextid = :contextid
-                                   AND (COALESCE(ue.userid, aps.sampleid) $uinsql)
-                                   AND am.enabled = 1
+                                       AND (COALESCE(ue.userid, aps.sampleid) $uinsql)
+                                       AND am.enabled = 1
                               ORDER BY (CASE WHEN am.target = :preferredtarget THEN 0 ELSE 1 END) ASC,
                                        ap.timecreated DESC";
 

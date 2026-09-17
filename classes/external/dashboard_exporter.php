@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\external;
 
-defined('MOODLE_INTERNAL') || die();
-
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_multiple_structure;
@@ -34,13 +32,13 @@ use local_learningsuccess\local\service\student_success_service;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dashboard_exporter extends external_api {
-
     /**
      * Parameters for get_dashboard_data.
      */
     public static function get_dashboard_data_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course ID to fetch dashboard for'),
+            'refresh' => new external_value(PARAM_BOOL, 'Whether to force refresh and bypass cache', VALUE_DEFAULT, false),
         ]);
     }
 
@@ -48,17 +46,26 @@ class dashboard_exporter extends external_api {
      * Fetch dashboard pulse and priority student data.
      *
      * @param int $courseid
+     * @param bool $refresh
      * @return array
      */
-    public static function get_dashboard_data(int $courseid): array {
-        $params = self::validate_parameters(self::get_dashboard_data_parameters(), ['courseid' => $courseid]);
+    public static function get_dashboard_data(int $courseid, bool $refresh = false): array {
+        $params = self::validate_parameters(self::get_dashboard_data_parameters(), [
+            'courseid' => $courseid,
+            'refresh' => $refresh,
+        ]);
 
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/learningsuccess:viewcourse', $context);
 
+        $skipcache = !empty($params['refresh']);
+        if ($skipcache) {
+            \local_learningsuccess\local\helper\cache_helper::invalidate_course($params['courseid']);
+        }
+
         $service = new student_success_service();
-        $summary = $service->get_course_summary($params['courseid']);
+        $summary = $service->get_course_summary($params['courseid'], 0, $skipcache);
         $priorities = $service->get_priority_students($params['courseid']);
 
         return [
@@ -222,11 +229,16 @@ class dashboard_exporter extends external_api {
             'actual_action' => $actualaction,
         ]);
 
-        list($record, $course, $context) = \local_learningsuccess\local\helper\access_helper::validate_intervention_access($params['id']);
+        [$record, $course, $context] =
+            \local_learningsuccess\local\helper\access_helper::validate_intervention_access($params['id']);
 
         $manager = new intervention_manager();
         if (strtolower($record->status) === \local_learningsuccess\local\intervention\intervention_status::OPEN) {
-            $manager->transition_to($params['id'], \local_learningsuccess\local\intervention\intervention_status::CONTACTED, 'Contact established');
+            $manager->transition_to(
+                $params['id'],
+                \local_learningsuccess\local\intervention\intervention_status::CONTACTED,
+                'Contact established'
+            );
         }
         $success = $manager->complete($params['id'], $params['actual_action']);
 
@@ -274,7 +286,8 @@ class dashboard_exporter extends external_api {
             'id' => $id,
         ]);
 
-        list($record, $course, $context) = \local_learningsuccess\local\helper\access_helper::validate_intervention_access($params['id']);
+        [$record, $course, $context] =
+            \local_learningsuccess\local\helper\access_helper::validate_intervention_access($params['id']);
 
         $manager = new intervention_manager();
         $success = $manager->dismiss($params['id']);
@@ -316,17 +329,17 @@ class dashboard_exporter extends external_api {
      *
      * @param int $courseid
      * @param int $userid
-     * @param string $signal_type
+     * @param string $signaltype
      * @param string $reason
      * @return array
      */
-    public static function dismiss_signal(int $courseid, int $userid, string $signal_type, string $reason = 'other'): array {
+    public static function dismiss_signal(int $courseid, int $userid, string $signaltype, string $reason = 'other'): array {
         global $USER;
 
         $params = self::validate_parameters(self::dismiss_signal_parameters(), [
             'courseid' => $courseid,
             'userid' => $userid,
-            'signal_type' => $signal_type,
+            'signal_type' => $signaltype,
             'reason' => $reason,
         ]);
 
@@ -365,4 +378,3 @@ class dashboard_exporter extends external_api {
         ]);
     }
 }
-

@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\external;
 
-defined('MOODLE_INTERNAL') || die();
-
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_multiple_structure;
@@ -34,7 +32,6 @@ use local_learningsuccess\local\service\student_success_service;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class student_exporter extends external_api {
-
     /**
      * Parameters for get_student_detail.
      */

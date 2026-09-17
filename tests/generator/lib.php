@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\intervention\intervention_status;
 use local_learningsuccess\local\outcome\outcome;
 
@@ -28,7 +26,6 @@ use local_learningsuccess\local\outcome\outcome;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_learningsuccess_generator extends component_generator_base {
-
     /**
      * Create an intervention record.
      *
@@ -81,4 +78,3 @@ class local_learningsuccess_generator extends component_generator_base {
         return $intervention;
     }
 }
-

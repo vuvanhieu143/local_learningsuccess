@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\helper;
 
-defined('MOODLE_INTERNAL') || die();
-
 use context_course;
 use moodle_exception;
 use stdClass;
@@ -30,7 +28,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class access_helper {
-
     /**
      * Validate that target student is enrolled and accessible to current user under SEPARATEGROUPS.
      *

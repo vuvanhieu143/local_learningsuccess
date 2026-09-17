@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 use renderable;
 use renderer_base;
 use templatable;
@@ -30,7 +28,6 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class student_detail implements renderable, templatable {
-
     /** @var array Student summary data */
     protected array $studentdata;
 
@@ -56,7 +53,7 @@ class student_detail implements renderable, templatable {
             $record = (object) $item;
             $outcome = strtoupper($record->outcome ?? '');
             $status = strtoupper($record->status ?? '');
-            $isOpen = in_array($status, ['OPEN', 'IN_PROGRESS', 'CONTACTED', 'WAITING', 'FOLLOW_UP']);
+            $isopen = in_array($status, ['OPEN', 'IN_PROGRESS', 'CONTACTED', 'WAITING', 'FOLLOW_UP']);
 
             $typekey = 'type_' . strtolower($record->type ?? '');
             $typelabel = get_string_manager()->string_exists($typekey, 'local_learningsuccess')
@@ -95,8 +92,8 @@ class student_detail implements renderable, templatable {
                 'has_followup' => !empty($followupformatted),
                 'notes' => $notes,
                 'has_notes' => !empty($notes),
-                'can_complete' => $isOpen,
-                'can_dismiss' => $isOpen,
+                'can_complete' => $isopen,
+                'can_dismiss' => $isopen,
             ];
         }, $this->studentdata['interventions'] ?? []);
 
@@ -181,4 +178,3 @@ class student_detail implements renderable, templatable {
         ];
     }
 }
-

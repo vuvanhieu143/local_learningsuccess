@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 use renderable;
 use renderer_base;
 use templatable;
@@ -30,15 +28,38 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dashboard implements renderable, templatable {
-
+    /** @var int Course ID. */
     protected int $courseid;
+
+    /** @var array Summary metrics. */
     protected array $summary;
+
+    /** @var array Priority students list. */
     protected array $priorities;
+
+    /** @var int Selected group ID. */
     protected int $groupid;
+
+    /** @var array Available course groups. */
     protected array $groups;
+
+    /** @var array Success story items. */
     protected array $successstories;
+
+    /** @var array Recently handled items. */
     protected array $recentlyhandled;
 
+    /**
+     * Constructor.
+     *
+     * @param int $courseid
+     * @param array $summary
+     * @param array $priorities
+     * @param int $groupid
+     * @param array $groups
+     * @param array $successstories
+     * @param array $recentlyhandled
+     */
     public function __construct(
         int $courseid,
         array $summary,
@@ -177,4 +198,3 @@ class dashboard implements renderable, templatable {
         ];
     }
 }
-

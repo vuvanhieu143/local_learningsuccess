@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use context_course;
 use required_capability_exception;
@@ -32,10 +30,11 @@ use local_learningsuccess\output\student_detail;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\external\dashboard_exporter
  */
-class external_exporter_test extends advanced_testcase {
-
+final class external_exporter_test extends advanced_testcase {
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -93,7 +92,7 @@ class external_exporter_test extends advanced_testcase {
         $this->setUser($teacher);
 
         // 1. Create intervention.
-        $createResult = dashboard_exporter::create_intervention(
+        $createresult = dashboard_exporter::create_intervention(
             $course->id,
             $student->id,
             'CONTACT',
@@ -103,26 +102,26 @@ class external_exporter_test extends advanced_testcase {
             true
         );
 
-        $this->assertTrue($createResult['success']);
-        $this->assertGreaterThan(0, $createResult['id']);
-        $interventionId = $createResult['id'];
+        $this->assertTrue($createresult['success']);
+        $this->assertGreaterThan(0, $createresult['id']);
+        $interventionid = $createresult['id'];
 
         // 2. Complete intervention.
-        $completeResult = dashboard_exporter::complete_intervention($interventionId, 'Resolved with student.');
-        $this->assertTrue($completeResult['success']);
-        $this->assertEquals('COMPLETED', $completeResult['status']);
+        $completeresult = dashboard_exporter::complete_intervention($interventionid, 'Resolved with student.');
+        $this->assertTrue($completeresult['success']);
+        $this->assertEquals('COMPLETED', $completeresult['status']);
 
         // 3. Create second intervention and dismiss.
-        $createResult2 = dashboard_exporter::create_intervention(
+        $createresult2 = dashboard_exporter::create_intervention(
             $course->id,
             $student->id,
             'EXTENSION',
             'Missed quiz',
             'Grant 2-day extension'
         );
-        $dismissResult = dashboard_exporter::dismiss_intervention($createResult2['id']);
-        $this->assertTrue($dismissResult['success']);
-        $this->assertEquals('DISMISSED', $dismissResult['status']);
+        $dismissresult = dashboard_exporter::dismiss_intervention($createresult2['id']);
+        $this->assertTrue($dismissresult['success']);
+        $this->assertEquals('DISMISSED', $dismissresult['status']);
     }
 
     /**

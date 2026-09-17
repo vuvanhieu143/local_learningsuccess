@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\signal;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\explanation\explanation;
 
 /**
@@ -28,7 +26,7 @@ use local_learningsuccess\local\explanation\explanation;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class overdue_signal implements signal {
-
+    /** @var string Signal type identifier. */
     public const TYPE = 'overdue';
 
     /**
@@ -50,15 +48,15 @@ class overdue_signal implements signal {
         $sql = "SELECT a.id, a.name, a.duedate
                   FROM {assign} a
                  WHERE a.course = :courseid
-                   AND a.duedate > 0
-                   AND a.duedate < :now
-                   AND NOT EXISTS (
-                       SELECT 1
-                         FROM {assign_submission} s
-                        WHERE s.assignment = a.id
-                          AND s.userid = :userid
-                          AND s.status = 'submitted'
-                   )";
+                       AND a.duedate > 0
+                       AND a.duedate < :now
+                       AND NOT EXISTS (
+                           SELECT 1
+                             FROM {assign_submission} s
+                            WHERE s.assignment = a.id
+                                  AND s.userid = :userid
+                                  AND s.status = 'submitted'
+                       )";
 
         $overdue = $DB->get_records_sql($sql, [
             'courseid' => $courseid,

@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\intervention;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Standardized constants and state-machine transitions for the intervention lifecycle.
  *
@@ -26,22 +24,35 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class intervention_status {
+    /** @var string Open status. */
+    public const OPEN = 'open';
 
-    // Primary workflow states.
-    public const OPEN               = 'open';
-    public const CONTACTED          = 'contacted';
-    public const WAITING            = 'waiting';
-    public const FOLLOW_UP          = 'follow_up';
-    public const COMPLETED          = 'completed';
+    /** @var string Contacted status. */
+    public const CONTACTED = 'contacted';
 
-    // Terminal / Alternative states.
-    public const DISMISSED          = 'dismissed';
-    public const UNABLE_TO_CONTACT  = 'unable_to_contact';
-    public const NOT_APPLICABLE     = 'not_applicable';
+    /** @var string Waiting status. */
+    public const WAITING = 'waiting';
 
-    // Legacy compatibility aliases.
-    public const RESOLVED           = self::COMPLETED;
-    public const IN_PROGRESS        = self::CONTACTED;
+    /** @var string Follow-up due status. */
+    public const FOLLOW_UP = 'follow_up';
+
+    /** @var string Completed status. */
+    public const COMPLETED = 'completed';
+
+    /** @var string Dismissed status. */
+    public const DISMISSED = 'dismissed';
+
+    /** @var string Unable to contact status. */
+    public const UNABLE_TO_CONTACT = 'unable_to_contact';
+
+    /** @var string Not applicable status. */
+    public const NOT_APPLICABLE = 'not_applicable';
+
+    /** @var string Legacy alias for completed. */
+    public const RESOLVED = self::COMPLETED;
+
+    /** @var string Legacy alias for contacted. */
+    public const IN_PROGRESS = self::CONTACTED;
 
     /**
      * Allowed state transition graph.

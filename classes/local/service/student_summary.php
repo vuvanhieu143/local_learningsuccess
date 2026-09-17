@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\service;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\risk\risk_result;
 
 /**
@@ -30,6 +28,41 @@ use local_learningsuccess\local\risk\risk_result;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class student_summary {
+    /** @var int Target user ID. */
+    public readonly int $userid;
+
+    /** @var int Target course ID. */
+    public readonly int $courseid;
+
+    /** @var array User metadata. */
+    public readonly array $user;
+
+    /** @var risk_result|array Risk evaluation data. */
+    public readonly risk_result|array $risk;
+
+    /** @var array Underlying risk signals. */
+    public readonly array $signals;
+
+    /** @var array Explanation item records. */
+    public readonly array $explanations;
+
+    /** @var array Actionable recommendations. */
+    public readonly array $recommendations;
+
+    /** @var array Intervention history records. */
+    public readonly array $interventions;
+
+    /** @var array Pending follow-up alerts. */
+    public readonly array $pendingfollowups;
+
+    /** @var array Teacher notes on interventions. */
+    public readonly array $notes;
+
+    /** @var array Recent historical outcomes. */
+    public readonly array $recentoutcomes;
+
+    /** @var array|null Actionability result payload. */
+    public readonly ?array $actionability;
 
     /**
      * Constructor.
@@ -45,21 +78,34 @@ class student_summary {
      * @param array $pendingfollowups
      * @param array $notes
      * @param array $recentoutcomes
+     * @param array|null $actionability
      */
     public function __construct(
-        public readonly int $userid,
-        public readonly int $courseid,
-        public readonly array $user,
-        public readonly risk_result|array $risk,
-        public readonly array $signals,
-        public readonly array $explanations,
-        public readonly array $recommendations,
-        public readonly array $interventions,
-        public readonly array $pendingfollowups = [],
-        public readonly array $notes = [],
-        public readonly array $recentoutcomes = [],
-        public readonly ?array $actionability = null
+        int $userid,
+        int $courseid,
+        array $user,
+        risk_result|array $risk,
+        array $signals,
+        array $explanations,
+        array $recommendations,
+        array $interventions,
+        array $pendingfollowups = [],
+        array $notes = [],
+        array $recentoutcomes = [],
+        ?array $actionability = null
     ) {
+        $this->userid = $userid;
+        $this->courseid = $courseid;
+        $this->user = $user;
+        $this->risk = $risk;
+        $this->signals = $signals;
+        $this->explanations = $explanations;
+        $this->recommendations = $recommendations;
+        $this->interventions = $interventions;
+        $this->pendingfollowups = $pendingfollowups;
+        $this->notes = $notes;
+        $this->recentoutcomes = $recentoutcomes;
+        $this->actionability = $actionability;
     }
 
     /**

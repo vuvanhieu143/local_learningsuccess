@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\task;
 
-defined('MOODLE_INTERNAL') || die();
-
 use core\task\scheduled_task;
 use local_learningsuccess\local\intervention\intervention_status;
 use stdClass;
@@ -30,7 +28,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class process_followups extends scheduled_task {
-
     /**
      * Get task human-readable name.
      *
@@ -61,7 +58,11 @@ class process_followups extends scheduled_task {
 
         foreach ($due as $record) {
             try {
-                $manager->transition_to((int) $record->id, intervention_status::FOLLOW_UP, 'Follow-up date reached (automated task)');
+                $manager->transition_to(
+                    (int) $record->id,
+                    intervention_status::FOLLOW_UP,
+                    'Follow-up date reached (automated task)'
+                );
                 $this->notify_teacher($record);
                 $count++;
             } catch (\Throwable $e) {
@@ -94,7 +95,16 @@ class process_followups extends scheduled_task {
             // Fallback if original teacher account has been suspended, deleted, or reassigned.
             if (!$teacher || !empty($teacher->deleted) || !empty($teacher->suspended)) {
                 $context = \context_course::instance($course->id);
-                $courseadmins = get_enrolled_users($context, 'local/learningsuccess:manageintervention', 0, 'u.*', null, 0, 1, true);
+                $courseadmins = get_enrolled_users(
+                    $context,
+                    'local/learningsuccess:manageintervention',
+                    0,
+                    'u.*',
+                    null,
+                    0,
+                    1,
+                    true
+                );
                 if (!empty($courseadmins)) {
                     $teacher = reset($courseadmins);
                 } else {

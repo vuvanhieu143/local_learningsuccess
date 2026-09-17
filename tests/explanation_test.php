@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use local_learningsuccess\local\signal\inactivity_signal;
 use local_learningsuccess\local\signal\completion_signal;
@@ -35,10 +33,11 @@ use local_learningsuccess\local\recommendation\recommendation_engine;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\local\explanation\explanation_engine
  */
-class explanation_test extends advanced_testcase {
-
+final class explanation_test extends advanced_testcase {
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -55,6 +54,8 @@ class explanation_test extends advanced_testcase {
         $this->assertNotNull($explanation);
         $this->assertEquals('inactivity', $explanation->get_type());
         $this->assertEquals(explanation::SEVERITY_CRITICAL, $explanation->get_severity());
+        $this->assertEquals(get_string('signal_no_activity_title', 'local_learningsuccess'), $explanation->get_title());
+        $this->assertEquals(get_string('signal_no_activity_desc', 'local_learningsuccess'), $explanation->get_description());
     }
 
     /**
@@ -82,20 +83,20 @@ class explanation_test extends advanced_testcase {
             'userid' => $user->id,
             'courseid' => $course->id,
         ]);
-        $signalWarning = $signal->evaluate($user->id, $course->id);
-        $this->assertNotNull($signalWarning);
-        $this->assertEquals(explanation::SEVERITY_WARNING, $signalWarning->get_severity());
-        $this->assertEquals(8, $signalWarning->get_value());
+        $signalwarning = $signal->evaluate($user->id, $course->id);
+        $this->assertNotNull($signalwarning);
+        $this->assertEquals(explanation::SEVERITY_WARNING, $signalwarning->get_severity());
+        $this->assertEquals(8, $signalwarning->get_value());
 
         // 3. Inactive for 15 days (critical severity).
         $DB->set_field('user_lastaccess', 'timeaccess', $now - (15 * DAYSECS), [
             'userid' => $user->id,
             'courseid' => $course->id,
         ]);
-        $signalCritical = $signal->evaluate($user->id, $course->id);
-        $this->assertNotNull($signalCritical);
-        $this->assertEquals(explanation::SEVERITY_CRITICAL, $signalCritical->get_severity());
-        $this->assertEquals(15, $signalCritical->get_value());
+        $signalcritical = $signal->evaluate($user->id, $course->id);
+        $this->assertNotNull($signalcritical);
+        $this->assertEquals(explanation::SEVERITY_CRITICAL, $signalcritical->get_severity());
+        $this->assertEquals(15, $signalcritical->get_value());
     }
 
     /**
@@ -197,18 +198,18 @@ class explanation_test extends advanced_testcase {
 
         // 2. Grade drops to 50% (< 60% threshold -> SEVERITY_WARNING).
         $DB->set_field('grade_grades', 'finalgrade', 50.0, ['id' => $gg1]);
-        $resWarning = $signal->evaluate($user->id, $course->id);
-        $this->assertNotNull($resWarning);
-        $this->assertEquals('grade_decline', $resWarning->get_type());
-        $this->assertEquals(explanation::SEVERITY_WARNING, $resWarning->get_severity());
-        $this->assertEquals(50.0, $resWarning->get_value());
+        $reswarning = $signal->evaluate($user->id, $course->id);
+        $this->assertNotNull($reswarning);
+        $this->assertEquals('grade_decline', $reswarning->get_type());
+        $this->assertEquals(explanation::SEVERITY_WARNING, $reswarning->get_severity());
+        $this->assertEquals(50.0, $reswarning->get_value());
 
         // 3. Grade drops to 30% (< 40% threshold -> SEVERITY_CRITICAL).
         $DB->set_field('grade_grades', 'finalgrade', 30.0, ['id' => $gg1]);
-        $resCritical = $signal->evaluate($user->id, $course->id);
-        $this->assertNotNull($resCritical);
-        $this->assertEquals(explanation::SEVERITY_CRITICAL, $resCritical->get_severity());
-        $this->assertEquals(30.0, $resCritical->get_value());
+        $rescritical = $signal->evaluate($user->id, $course->id);
+        $this->assertNotNull($rescritical);
+        $this->assertEquals(explanation::SEVERITY_CRITICAL, $rescritical->get_severity());
+        $this->assertEquals(30.0, $rescritical->get_value());
     }
 
     /**

@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\recommendation\rules;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\recommendation\recommendation;
 use local_learningsuccess\local\recommendation\recommendation_rule;
 
@@ -29,7 +27,6 @@ use local_learningsuccess\local\recommendation\recommendation_rule;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class overdue_rule implements recommendation_rule {
-
     /**
      * Check if overdue signal is present.
      *
@@ -39,7 +36,7 @@ class overdue_rule implements recommendation_rule {
     public function matches(array $signals): bool {
         foreach ($signals as $s) {
             $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
-            if ($type === 'overdue' || $type === 'missed_activity') {
+            if ($type === 'overdue' || $type === 'missed_activity' || $type === 'missed_assignments') {
                 return true;
             }
         }
@@ -54,14 +51,14 @@ class overdue_rule implements recommendation_rule {
      */
     public function get_recommendation(array $signals): recommendation {
         $count = 1;
-        $isCritical = false;
+        $iscritical = false;
 
         foreach ($signals as $s) {
             $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
-            if ($type === 'overdue' || $type === 'missed_activity') {
+            if ($type === 'overdue' || $type === 'missed_activity' || $type === 'missed_assignments') {
                 $count = is_array($s) ? ($s['value'] ?? 1) : $s->get_value();
                 $sev = is_array($s) ? ($s['severity'] ?? '') : $s->get_severity();
-                $isCritical = ($sev === 'critical');
+                $iscritical = ($sev === 'critical');
                 break;
             }
         }
@@ -71,7 +68,7 @@ class overdue_rule implements recommendation_rule {
             title: get_string('type_missed_activity', 'local_learningsuccess'),
             action: get_string('recommend_review_missing', 'local_learningsuccess'),
             reason: get_string('signal_overdue_desc', 'local_learningsuccess', $count),
-            urgency: $isCritical ? recommendation::URGENCY_HIGH : recommendation::URGENCY_MEDIUM,
+            urgency: $iscritical ? recommendation::URGENCY_HIGH : recommendation::URGENCY_MEDIUM,
             suggestedmessage: get_string('default_checkin_message', 'local_learningsuccess')
         );
     }

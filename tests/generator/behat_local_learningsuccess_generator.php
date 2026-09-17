@@ -22,10 +22,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Behat data generator for local_learningsuccess.
+ *
+ * @package    local_learningsuccess
+ * @category   test
+ * @copyright  2026 vuvanhieu143
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class behat_local_learningsuccess_generator extends behat_generator_base {
-
     /**
      * Get the list of creatable entities for local_learningsuccess.
      *
@@ -56,4 +61,3 @@ class behat_local_learningsuccess_generator extends behat_generator_base {
         return $this->get_user_id($username);
     }
 }
-

@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\signal;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\explanation\explanation;
 use local_learningsuccess\local\risk\moodle_analytics_provider;
 use local_learningsuccess\local\risk\risk_result;
@@ -30,7 +28,7 @@ use local_learningsuccess\local\risk\risk_result;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class analytics_risk_signal implements signal {
-
+    /** @var string Signal type identifier. */
     public const TYPE = 'analytics_risk';
 
     /** @var moodle_analytics_provider */

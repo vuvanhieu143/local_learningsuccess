@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use local_learningsuccess\local\actionability\actionability_engine;
 use local_learningsuccess\local\actionability\actionability_result;
@@ -38,10 +36,11 @@ use local_learningsuccess\local\signal\overdue_signal;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\local\signal\signal_collector
  */
-class rules_and_signals_edge_cases_test extends advanced_testcase {
-
+final class rules_and_signals_edge_cases_test extends advanced_testcase {
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -101,6 +100,8 @@ class rules_and_signals_edge_cases_test extends advanced_testcase {
         $this->assertInstanceOf(explanation::class, $result);
         $this->assertEquals(inactivity_signal::TYPE, $result->get_type());
         $this->assertEquals(explanation::SEVERITY_CRITICAL, $result->get_severity());
+        $this->assertEquals(get_string('signal_no_activity_title', 'local_learningsuccess'), $result->get_title());
+        $this->assertEquals(get_string('signal_no_activity_desc', 'local_learningsuccess'), $result->get_description());
     }
 
     /**

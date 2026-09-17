@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\signal;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\explanation\explanation;
 
 /**
@@ -28,14 +26,23 @@ use local_learningsuccess\local\explanation\explanation;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class signal_collector {
-
+    /** @var int Number of days signal dismissal remains active. */
     public const DISMISSAL_WINDOW_DAYS = 14;
 
-    public const REASON_APPROVED_LEAVE  = 'approved_leave';
+    /** @var string Dismissal reason: approved leave. */
+    public const REASON_APPROVED_LEAVE = 'approved_leave';
+
+    /** @var string Dismissal reason: student working offline. */
     public const REASON_WORKING_OFFLINE = 'working_offline';
-    public const REASON_FALSE_POSITIVE  = 'false_positive';
-    public const REASON_NOT_RELEVANT    = 'not_relevant';
-    public const REASON_OTHER           = 'other';
+
+    /** @var string Dismissal reason: false positive indication. */
+    public const REASON_FALSE_POSITIVE = 'false_positive';
+
+    /** @var string Dismissal reason: not relevant to course. */
+    public const REASON_NOT_RELEVANT = 'not_relevant';
+
+    /** @var string Dismissal reason: other. */
+    public const REASON_OTHER = 'other';
 
     /** @var signal[] */
     private array $signals = [];
@@ -256,7 +263,7 @@ class signal_collector {
         if ($persist) {
             $observedtypes = array_map(fn($item) => $item->get_type(), $rawexplanations);
             if (!empty($observedtypes)) {
-                list($notinsql, $notinparams) = $DB->get_in_or_equal($observedtypes, SQL_PARAMS_NAMED, 'st', false);
+                [$notinsql, $notinparams] = $DB->get_in_or_equal($observedtypes, SQL_PARAMS_NAMED, 'st', false);
                 $params = array_merge(['userid' => $userid, 'courseid' => $courseid], $notinparams);
                 $DB->execute(
                     "UPDATE {local_learningsuccess_sign}

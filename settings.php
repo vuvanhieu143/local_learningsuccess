@@ -85,4 +85,3 @@ if ($hassiteconfig) {
         ));
     }
 }
-

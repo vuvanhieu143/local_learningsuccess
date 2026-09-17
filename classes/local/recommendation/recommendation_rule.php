@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\recommendation;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Interface contract for deterministic recommendation rules.
  *
@@ -26,7 +24,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 interface recommendation_rule {
-
     /**
      * Check if this rule matches against the student's active explanation signals.
      *

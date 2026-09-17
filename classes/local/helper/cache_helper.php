@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\helper;
 
-defined('MOODLE_INTERNAL') || die();
-
 use cache;
 
 /**
@@ -28,7 +26,6 @@ use cache;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cache_helper {
-
     /**
      * Invalidate course summary cache, including all group-specific views.
      *

@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\outcome;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Domain evaluator that compares before and followup snapshots to measure intervention progress.
  *
@@ -28,7 +26,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class outcome_evaluator {
-
     /**
      * Compare before and after snapshots to produce a structured outcome.
      *
@@ -90,7 +87,7 @@ class outcome_evaluator {
      *
      * @param mixed $before
      * @param mixed $after
-     * @return array{status: string, summary: string, risk_delta: float, grade_delta: float, completion_delta: float, indicators: array}
+     * @return array Detailed system evidence array.
      */
     public function evaluate_system_evidence(mixed $before, mixed $after): array {
         $outcome = $this->evaluate($before, $after);

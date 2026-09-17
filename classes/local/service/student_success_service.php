@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\service;
 
-defined('MOODLE_INTERNAL') || die();
-
 use cache;
 use local_learningsuccess\local\actionability\actionability_engine;
 use local_learningsuccess\local\actionability\actionability_result;
@@ -38,13 +36,30 @@ use local_learningsuccess\local\risk\risk_result;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class student_success_service {
-
+    /** @var risk_provider Risk provider instance. */
     protected risk_provider $riskprovider;
+
+    /** @var explanation_engine Explanation engine instance. */
     protected explanation_engine $explanationengine;
+
+    /** @var recommendation_engine Recommendation engine instance. */
     protected recommendation_engine $recommendationengine;
+
+    /** @var intervention_manager Intervention manager instance. */
     protected intervention_manager $interventionmanager;
+
+    /** @var actionability_engine Actionability engine instance. */
     protected actionability_engine $actionabilityengine;
 
+    /**
+     * Constructor.
+     *
+     * @param risk_provider|null $riskprovider
+     * @param explanation_engine|null $explanationengine
+     * @param recommendation_engine|null $recommendationengine
+     * @param intervention_manager|null $interventionmanager
+     * @param actionability_engine|null $actionabilityengine
+     */
     public function __construct(
         ?risk_provider $riskprovider = null,
         ?explanation_engine $explanationengine = null,
@@ -91,7 +106,16 @@ class student_success_service {
         $context = \context_course::instance($courseid);
         $userfieldsapi = \core_user\fields::for_name();
         $userfields = 'u.id, ' . $userfieldsapi->get_sql('u', false, '', '', false)->selects;
-        $enrolledusers = get_enrolled_users($context, 'moodle/course:isincompletionreports', $groupid, $userfields, null, 0, 0, true);
+        $enrolledusers = get_enrolled_users(
+            $context,
+            'moodle/course:isincompletionreports',
+            $groupid,
+            $userfields,
+            null,
+            0,
+            0,
+            true
+        );
         if (empty($enrolledusers)) {
             // Fallback to active enrolled learners if completion capability is not explicitly assigned.
             $enrolledusers = get_enrolled_users($context, '', $groupid, $userfields, null, 0, 0, true);
@@ -255,8 +279,8 @@ class student_success_service {
                   FROM {local_learningsuccess_int} i
                   JOIN {user} u ON u.id = i.userid
                  WHERE i.courseid = :courseid
-                   AND i.status = :completed
-                   AND i.outcome = :improved
+                       AND i.status = :completed
+                       AND i.outcome = :improved
               ORDER BY COALESCE(i.completed_at, i.timemodified) DESC";
 
         $records = $DB->get_records_sql($sql, [
@@ -390,8 +414,8 @@ class student_success_service {
                   FROM {local_learningsuccess_int} i
                   JOIN {user} u ON u.id = i.userid
                  WHERE i.courseid = :courseid
-                   AND i.status IN (:completed, :contacted, :dismissed)
-                   AND i.timemodified >= :since
+                       AND i.status IN (:completed, :contacted, :dismissed)
+                       AND i.timemodified >= :since
               ORDER BY i.timemodified DESC";
 
         $records = $DB->get_records_sql($sql, [

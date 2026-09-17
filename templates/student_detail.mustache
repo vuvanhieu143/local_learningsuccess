@@ -127,7 +127,13 @@
                                 <div class="d-flex align-items-start me-md-2 mb-2 mb-md-0">
                                     <i class="fa fa-exclamation-triangle text-warning me-3 mt-1" aria-hidden="true"></i>
                                     <div>
-                                        <strong class="d-block text-dark">{{message}}</strong>
+                                        {{#title}}
+                                            <strong class="d-block text-dark">{{title}}</strong>
+                                            <div class="text-muted small mb-1">{{#description}}{{description}}{{/description}}{{^description}}{{message}}{{/description}}</div>
+                                        {{/title}}
+                                        {{^title}}
+                                            <strong class="d-block text-dark">{{message}}</strong>
+                                        {{/title}}
                                         <span class="badge text-bg-secondary text-uppercase small">{{severity}}</span>
                                     </div>
                                 </div>

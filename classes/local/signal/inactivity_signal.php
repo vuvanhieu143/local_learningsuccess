@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\signal;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\explanation\explanation;
 use local_learningsuccess\local\helper\metrics_helper;
 
@@ -29,7 +27,7 @@ use local_learningsuccess\local\helper\metrics_helper;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class inactivity_signal implements signal {
-
+    /** @var string Signal type identifier. */
     public const TYPE = 'inactivity';
 
     /**
@@ -43,14 +41,21 @@ class inactivity_signal implements signal {
         $metrics = metrics_helper::get_student_metrics($userid, $courseid);
         $days = $metrics['inactive_days'];
 
+        $lastaccess = (int) ($metrics['lastaccess'] ?? 0);
+        $isnever = ($lastaccess <= 0);
+
         if ($days >= 14) {
             return new explanation(
                 type: self::TYPE,
                 severity: explanation::SEVERITY_CRITICAL,
-                title: get_string('signal_inactivity_title', 'local_learningsuccess'),
-                description: get_string('signal_inactivity_critical_desc', 'local_learningsuccess', $days),
+                title: $isnever
+                    ? get_string('signal_no_activity_title', 'local_learningsuccess')
+                    : get_string('signal_inactivity_title', 'local_learningsuccess'),
+                description: $isnever
+                    ? get_string('signal_no_activity_desc', 'local_learningsuccess')
+                    : get_string('signal_inactivity_critical_desc', 'local_learningsuccess', $days),
                 value: $days,
-                evidence: ['days' => $days, 'lastaccess' => $metrics['lastaccess']]
+                evidence: ['days' => $days, 'lastaccess' => $lastaccess]
             );
         }
 
@@ -58,10 +63,14 @@ class inactivity_signal implements signal {
             return new explanation(
                 type: self::TYPE,
                 severity: explanation::SEVERITY_WARNING,
-                title: get_string('signal_inactivity_title', 'local_learningsuccess'),
-                description: get_string('signal_inactivity_warning_desc', 'local_learningsuccess', $days),
+                title: $isnever
+                    ? get_string('signal_no_activity_title', 'local_learningsuccess')
+                    : get_string('signal_inactivity_title', 'local_learningsuccess'),
+                description: $isnever
+                    ? get_string('signal_no_activity_desc', 'local_learningsuccess')
+                    : get_string('signal_inactivity_warning_desc', 'local_learningsuccess', $days),
                 value: $days,
-                evidence: ['days' => $days, 'lastaccess' => $metrics['lastaccess']]
+                evidence: ['days' => $days, 'lastaccess' => $lastaccess]
             );
         }
 
