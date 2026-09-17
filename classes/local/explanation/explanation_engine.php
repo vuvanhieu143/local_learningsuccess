@@ -475,28 +475,28 @@ class explanation_engine {
                 $struggletag = [
                     'code' => 'disengaged',
                     'label' => get_string('struggle_disengaged', 'local_learningsuccess'),
-                    'class' => 'text-bg-danger text-white',
+                    'class' => 'badge-urgent',
                     'icon' => 'fa-user-times',
                 ];
             } else if ($maxattempt >= 2 && $percent !== null && $percent < 60) {
                 $struggletag = [
                     'code' => 'repeated_attempts',
                     'label' => get_string('struggle_repeated_attempts', 'local_learningsuccess', $maxattempt),
-                    'class' => 'text-bg-warning text-dark',
+                    'class' => 'badge-recommend',
                     'icon' => 'fa-repeat',
                 ];
             } else if ($missedassigns > 0) {
                 $struggletag = [
                     'code' => 'overdue',
                     'label' => get_string('struggle_overdue', 'local_learningsuccess', $missedassigns),
-                    'class' => 'text-bg-info text-white',
+                    'class' => 'badge-monitor',
                     'icon' => 'fa-clock-o',
                 ];
             } else if ($rate < 50) {
                 $struggletag = [
                     'code' => 'pacing',
                     'label' => get_string('struggle_pacing', 'local_learningsuccess'),
-                    'class' => 'text-bg-secondary text-white',
+                    'class' => 'badge-nodata',
                     'icon' => 'fa-hourglass-half',
                 ];
             } else {

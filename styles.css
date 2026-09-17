@@ -7,122 +7,123 @@
  */
 
 /* ==========================================================================
-   1. Scope & Text Color Overrides for AA Accessibility
+   1. Section Headers & Cards
    ========================================================================== */
 
-/* Accessible text-muted and text-secondary: dark charcoal for maximum visibility (contrast >= 14.6:1) */
-.local-learningsuccess-dashboard .text-muted,
-.local-learningsuccess-student-detail .text-muted,
-.local-learningsuccess-dashboard .text-secondary,
-.local-learningsuccess-student-detail .text-secondary {
-    color: #212529 !important;
-    --bs-text-opacity: 1 !important;
+.local-learningsuccess-dashboard .section-title-success {
+    color: #146c43;
 }
 
-/* Action notes and quotes (contrast >= 14.6:1) */
-.local-learningsuccess-dashboard .action-note-preview,
-.local-learningsuccess-dashboard .fst-italic.text-truncate {
-    color: #212529 !important;
+.local-learningsuccess-dashboard .section-title-info {
+    color: #055160;
+}
+
+.local-learningsuccess-dashboard .card-improvements {
+    border-left: 5px solid #146c43;
+}
+
+.local-learningsuccess-dashboard .card-handled {
+    border-left: 5px solid #087990;
+}
+
+.local-learningsuccess-dashboard .action-note-preview {
+    color: #212529;
     font-style: italic;
     font-weight: 500;
 }
 
-/* Accessible Success colors (contrast >= 5.6:1) */
-.local-learningsuccess-dashboard .text-success,
-.local-learningsuccess-student-detail .text-success {
-    color: #146c43 !important;
+/* ==========================================================================
+   2. Class Pulse Metrics & Icons
+   ========================================================================== */
+
+.local-learningsuccess-dashboard .pulse-metric-healthy,
+.local-learningsuccess-dashboard .pulse-icon-healthy {
+    color: #146c43;
 }
 
-.local-learningsuccess-dashboard .border-success,
-.local-learningsuccess-student-detail .border-success {
-    border-color: #146c43 !important;
+.local-learningsuccess-dashboard .pulse-metric-monitor,
+.local-learningsuccess-dashboard .pulse-icon-monitor {
+    color: #055160;
 }
 
-/* Accessible Warning / Amber colors (contrast >= 5.0:1 on white/light) */
-.local-learningsuccess-dashboard .text-warning,
-.local-learningsuccess-student-detail .text-warning,
-.local-learningsuccess-dashboard [data-region="pulse-cards"] .text-warning,
-#intervention-modal-form .text-warning {
-    color: #944a00 !important;
+.local-learningsuccess-dashboard .pulse-metric-atrisk,
+.local-learningsuccess-dashboard .pulse-icon-atrisk {
+    color: #944a00;
 }
 
-/* Accessible Info / Teal colors (contrast >= 5.0:1 on white/light) */
-.local-learningsuccess-dashboard .text-info,
-.local-learningsuccess-student-detail .text-info,
-.local-learningsuccess-dashboard [data-region="pulse-cards"] .text-info {
-    color: #055160 !important;
+.local-learningsuccess-dashboard .pulse-metric-critical,
+.local-learningsuccess-dashboard .pulse-icon-critical {
+    color: #b02a37;
 }
 
-.local-learningsuccess-dashboard .border-info,
-.local-learningsuccess-student-detail .border-info {
-    border-color: #087990 !important;
+.local-learningsuccess-dashboard .signal-warning-icon,
+.local-learningsuccess-student-detail .signal-warning-icon {
+    color: #944a00;
 }
 
-/* Accessible Danger / Urgent colors (contrast >= 6.5:1) */
-.local-learningsuccess-dashboard .text-danger,
-.local-learningsuccess-student-detail .text-danger {
-    color: #b02a37 !important;
+.local-learningsuccess-dashboard .profile-link-icon {
+    color: #495057;
 }
 
-.local-learningsuccess-dashboard .border-danger,
-.local-learningsuccess-student-detail .border-danger {
-    border-color: #b02a37 !important;
+.local-learningsuccess-dashboard .profile-link-icon:hover {
+    color: #212529;
 }
 
 /* ==========================================================================
-   2. Accessible Badges (WCAG AA compliant contrast)
+   3. Accessible Badges (WCAG AA Compliant)
    ========================================================================== */
 
-/* Info badge: deep accessible teal with white text (contrast 5.06:1) */
-.local-learningsuccess-dashboard .text-bg-info,
-.local-learningsuccess-student-detail .text-bg-info {
-    background-color: #087990 !important;
-    color: #ffffff !important;
+.local-learningsuccess-dashboard .badge-urgent,
+.local-learningsuccess-student-detail .badge-urgent {
+    background-color: #b02a37;
+    color: #fff;
 }
 
-/* Warning badge: golden yellow with dark charcoal text (contrast 9.46:1) */
-.local-learningsuccess-dashboard .text-bg-warning,
-.local-learningsuccess-student-detail .text-bg-warning {
-    background-color: #ffc107 !important;
-    color: #212529 !important;
+.local-learningsuccess-dashboard .badge-followup,
+.local-learningsuccess-student-detail .badge-followup {
+    background-color: #0a58ca;
+    color: #fff;
+}
+
+.local-learningsuccess-dashboard .badge-recommend,
+.local-learningsuccess-student-detail .badge-recommend {
+    background-color: #ffc107;
+    color: #212529;
     font-weight: 600;
 }
 
-/* Success badge: deep green with white text (contrast 6.45:1) */
-.local-learningsuccess-dashboard .text-bg-success,
-.local-learningsuccess-student-detail .text-bg-success {
-    background-color: #146c43 !important;
-    color: #ffffff !important;
+.local-learningsuccess-dashboard .badge-monitor,
+.local-learningsuccess-student-detail .badge-monitor {
+    background-color: #087990;
+    color: #fff;
 }
 
-/* Danger badge: deep crimson with white text (contrast 6.50:1) */
-.local-learningsuccess-dashboard .text-bg-danger,
-.local-learningsuccess-student-detail .text-bg-danger {
-    background-color: #b02a37 !important;
-    color: #ffffff !important;
+.local-learningsuccess-dashboard .badge-healthy,
+.local-learningsuccess-student-detail .badge-healthy {
+    background-color: #146c43;
+    color: #fff;
 }
 
-/* Secondary badge: dark neutral with white text (contrast 8.18:1) */
-.local-learningsuccess-dashboard .text-bg-secondary,
-.local-learningsuccess-student-detail .text-bg-secondary {
-    background-color: #495057 !important;
-    color: #ffffff !important;
+.local-learningsuccess-dashboard .badge-nodata,
+.local-learningsuccess-student-detail .badge-nodata,
+.local-learningsuccess-dashboard .badge-secondary-neutral,
+.local-learningsuccess-student-detail .badge-secondary-neutral {
+    background-color: #495057;
+    color: #fff;
 }
 
-/* Risk source pill (e.g. "Based on course activity signals") */
 .local-learningsuccess-dashboard .risk-source-badge,
 .local-learningsuccess-student-detail .risk-source-badge {
-    background-color: #f1f3f5 !important;
-    color: #212529 !important;
-    border: 1px solid #ced4da !important;
+    background-color: #f8f9fa;
+    color: #212529;
+    border: 1px solid #ced4da;
     font-weight: 500;
 }
 
 /* ==========================================================================
-   3. Accessible Buttons & Interactive Outlines
+   4. Accessible Buttons & Interactive Outlines
    ========================================================================== */
 
-/* Info outline button (Message Student) - contrast 8.9:1 */
 .local-learningsuccess-dashboard .btn-outline-info,
 .local-learningsuccess-student-detail .btn-outline-info,
 #intervention-modal-form .btn-outline-info {
@@ -136,10 +137,9 @@
 .local-learningsuccess-student-detail .btn-outline-info:hover,
 #intervention-modal-form .btn-outline-info:hover {
     background-color: #087990;
-    color: #ffffff;
+    color: #fff;
 }
 
-/* Success outline button (Check in, Complete) - contrast 6.4:1 */
 .local-learningsuccess-dashboard .btn-outline-success,
 .local-learningsuccess-student-detail .btn-outline-success {
     color: #146c43;
@@ -150,10 +150,9 @@
 .local-learningsuccess-dashboard .btn-outline-success:hover,
 .local-learningsuccess-student-detail .btn-outline-success:hover {
     background-color: #146c43;
-    color: #ffffff;
+    color: #fff;
 }
 
-/* Warning outline button (Extension preset) - contrast 6.4:1 */
 #intervention-modal-form .btn-outline-warning {
     color: #854d0e;
     border-color: #a16207;
@@ -163,10 +162,9 @@
 
 #intervention-modal-form .btn-outline-warning:hover {
     background-color: #a16207;
-    color: #ffffff;
+    color: #fff;
 }
 
-/* Secondary outline button (Dismiss, Chevron, Refresh) - contrast 8.1:1 */
 .local-learningsuccess-dashboard .btn-outline-secondary,
 .local-learningsuccess-student-detail .btn-outline-secondary {
     color: #343a40;
@@ -176,48 +174,28 @@
 .local-learningsuccess-dashboard .btn-outline-secondary:hover,
 .local-learningsuccess-student-detail .btn-outline-secondary:hover {
     background-color: #495057;
-    color: #ffffff;
-}
-
-/* External profile link icon */
-.local-learningsuccess-dashboard a.text-muted:hover,
-.local-learningsuccess-dashboard a.text-muted {
-    color: #495057 !important;
+    color: #fff;
 }
 
 /* ==========================================================================
-   4. Accessible Alerts & Tables
+   5. Accessible Alerts & Tables
    ========================================================================== */
 
-/* Active intervention alert banner */
-.local-learningsuccess-student-detail .alert-info {
+.local-learningsuccess-student-detail .active-intervention-alert {
     background-color: #e0f2fe;
     border-color: #7dd3fc;
     color: #0369a1;
 }
 
-.local-learningsuccess-student-detail .alert-info .text-info {
-    color: #0369a1 !important;
+.local-learningsuccess-student-detail .active-intervention-alert .alert-info-icon {
+    color: #0369a1;
 }
 
-.local-learningsuccess-student-detail .alert-info .text-muted {
-    color: #075985 !important;
+.local-learningsuccess-student-detail .active-intervention-alert .alert-info-subtitle {
+    color: #075985;
 }
 
-/* Attention needed warning alert banner */
-.local-learningsuccess-dashboard .alert-warning {
-    background-color: #fff3cd;
-    border-color: #ffe69c;
-    color: #664d03;
-}
-
-.local-learningsuccess-dashboard .alert-warning .text-warning {
-    color: #944a00 !important;
-}
-
-/* Intervention history table */
 .local-learningsuccess-student-detail .table thead th {
     color: #212529;
     border-bottom: 2px solid #ced4da;
 }
-

@@ -64,7 +64,7 @@
 
     {{#has_attention_needed}}
     <div class="alert alert-warning border-warning shadow-sm d-flex align-items-center mb-4" role="alert">
-        <i class="fa fa-bell fa-2x me-3 text-warning" aria-hidden="true"></i>
+        <i class="fa fa-bell fa-2x me-3 signal-warning-icon" aria-hidden="true"></i>
         <div class="flex-grow-1">
             <h3 class="h6 fw-bold mb-1">{{#str}}what_needs_attention, local_learningsuccess{{/str}}</h3>
             <p class="mb-0 small">{{attention_desc}}</p>
@@ -73,10 +73,10 @@
     {{/has_attention_needed}}
 
     {{#has_recent_improvements}}
-    <div class="card shadow-sm border-0 mb-4 bg-light border-start border-5 border-success" role="region" aria-labelledby="improvements-heading">
+    <div class="card shadow-sm border-0 mb-4 bg-light card-improvements" role="region" aria-labelledby="improvements-heading">
         <div class="card-body">
-            <h2 id="improvements-heading" class="h5 card-title text-success d-flex align-items-center mb-3">
-                <i class="fa fa-line-chart text-success me-2" aria-hidden="true"></i>
+            <h2 id="improvements-heading" class="h5 card-title section-title-success d-flex align-items-center mb-3">
+                <i class="fa fa-line-chart me-2" aria-hidden="true"></i>
                 {{#str}}recent_improvements, local_learningsuccess{{/str}}
             </h2>
             <div class="row">
@@ -85,7 +85,7 @@
                     <div class="p-3 bg-white rounded shadow-sm border h-100">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <strong class="text-dark">{{fullname}}</strong>
-                            <span class="badge text-bg-success small">{{#str}}outcome_improved, local_learningsuccess{{/str}}</span>
+                            <span class="badge badge-healthy small">{{#str}}outcome_improved, local_learningsuccess{{/str}}</span>
                         </div>
                         <div class="small text-muted mb-1">
                             <i class="fa fa-calendar-check-o me-1" aria-hidden="true"></i>{{completed_date}}
@@ -102,10 +102,10 @@
     {{/has_recent_improvements}}
 
     {{#has_recently_handled}}
-    <div class="card shadow-sm border-0 mb-4 bg-light border-start border-5 border-info" role="region" aria-labelledby="recently-handled-heading">
+    <div class="card shadow-sm border-0 mb-4 bg-light card-handled" role="region" aria-labelledby="recently-handled-heading">
         <div class="card-body">
-            <h2 id="recently-handled-heading" class="h5 card-title text-info d-flex align-items-center mb-3">
-                <i class="fa fa-history text-info me-2" aria-hidden="true"></i>
+            <h2 id="recently-handled-heading" class="h5 card-title section-title-info d-flex align-items-center mb-3">
+                <i class="fa fa-history me-2" aria-hidden="true"></i>
                 {{#str}}recently_handled, local_learningsuccess{{/str}}
             </h2>
             <div class="row">
@@ -116,7 +116,7 @@
                             <strong class="text-dark">
                                 <a href="{{student_url}}" class="text-dark text-decoration-none">{{fullname}}</a>
                             </strong>
-                            <span class="badge text-bg-secondary small">{{status_label}}</span>
+                            <span class="badge badge-nodata small">{{status_label}}</span>
                         </div>
                         <div class="small text-muted mb-1">
                             <i class="fa fa-clock-o me-1" aria-hidden="true"></i>{{handled_date}}

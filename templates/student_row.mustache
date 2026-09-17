@@ -50,12 +50,12 @@
     <div class="d-flex align-items-center mb-2 mb-md-0">
         <div class="me-3">
             <span class="badge rounded-pill p-2 text-uppercase fw-bold 
-                {{#is_urgent}}text-bg-danger text-white{{/is_urgent}}
-                {{#is_follow_up}}text-bg-primary text-white{{/is_follow_up}}
-                {{#is_recommend}}text-bg-warning text-dark{{/is_recommend}}
-                {{#is_monitor}}text-bg-secondary text-white{{/is_monitor}}
-                {{#status_is_nodata}}text-bg-secondary text-white{{/status_is_nodata}}
-                {{^is_urgent}}{{^is_follow_up}}{{^is_recommend}}{{^is_monitor}}{{^status_is_nodata}}text-bg-info text-white{{/status_is_nodata}}{{/is_monitor}}{{/is_recommend}}{{/is_follow_up}}{{/is_urgent}}">
+                {{#is_urgent}}badge-urgent{{/is_urgent}}
+                {{#is_follow_up}}badge-followup{{/is_follow_up}}
+                {{#is_recommend}}badge-recommend{{/is_recommend}}
+                {{#is_monitor}}badge-monitor{{/is_monitor}}
+                {{#status_is_nodata}}badge-nodata{{/status_is_nodata}}
+                {{^is_urgent}}{{^is_follow_up}}{{^is_recommend}}{{^is_monitor}}{{^status_is_nodata}}badge-monitor{{/status_is_nodata}}{{/is_monitor}}{{/is_recommend}}{{/is_follow_up}}{{/is_urgent}}">
                 {{#is_urgent}}<i class="fa fa-fire me-1" aria-hidden="true"></i>{{/is_urgent}}
                 {{#is_follow_up}}<i class="fa fa-clock-o me-1" aria-hidden="true"></i>{{/is_follow_up}}
                 {{#is_recommend}}<i class="fa fa-lightbulb-o me-1" aria-hidden="true"></i>{{/is_recommend}}
@@ -82,7 +82,7 @@
                         <i class="fa {{risk_source_icon}} me-1" aria-hidden="true"></i>{{risk_source_label}}
                     </span>
                 {{/risk_source_label}}
-                <a href="{{profile_url}}" class="text-muted small me-2" target="_blank" rel="noopener" title="Moodle Profile">
+                <a href="{{profile_url}}" class="profile-link-icon small me-2" target="_blank" rel="noopener" title="Moodle Profile">
                     <i class="fa fa-external-link" aria-hidden="true"></i>
                 </a>
             </div>
@@ -96,12 +96,12 @@
             <div class="text-muted small">
                 {{#signals}}
                     <span class="me-2 d-inline-block">
-                        <i class="fa fa-exclamation-circle text-warning me-1" aria-hidden="true"></i>
+                        <i class="fa fa-exclamation-circle signal-warning-icon me-1" aria-hidden="true"></i>
                         {{message}}
                     </span>
                 {{/signals}}
                 {{^signals}}
-                    <span class="text-success"><i class="fa fa-check-circle me-1" aria-hidden="true"></i>{{#str}}ontrack, local_learningsuccess{{/str}}</span>
+                    <span class="pulse-icon-healthy"><i class="fa fa-check-circle me-1" aria-hidden="true"></i>{{#str}}ontrack, local_learningsuccess{{/str}}</span>
                 {{/signals}}
             </div>
         </div>
