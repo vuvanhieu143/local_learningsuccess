@@ -218,6 +218,8 @@ final class external_exporter_test extends advanced_testcase {
         $exported = $detail->export_for_template($renderer);
 
         $this->assertEquals(2, $exported['courseid']);
+        $this->assertNotEmpty($exported['dashboard_url']);
+        $this->assertStringContainsString('courseid=2', $exported['dashboard_url']);
         $this->assertTrue($exported['status_is_atrisk']);
         $this->assertFalse($exported['status_is_healthy']);
         $this->assertTrue($exported['has_signals']);

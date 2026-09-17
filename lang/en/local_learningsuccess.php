@@ -38,6 +38,7 @@ $string['all_groups'] = 'All Groups / Cohorts';
 $string['alternative_options'] = 'Other Options';
 $string['applythisaction'] = 'Apply This Action';
 $string['auto_evaluated_note'] = 'Auto-evaluated after {$a} days of intervention.';
+$string['backtodashboard'] = 'Back to Dashboard';
 $string['classpulse'] = 'Class Pulse';
 $string['click_preset_to_fill'] = 'Click a preset to quickly fill a warm message:';
 $string['confirm_complete_body'] = 'Are you sure you want to mark this intervention as completed?';

@@ -153,6 +153,9 @@ class student_detail implements renderable, templatable {
                 'message_url' => $messageurl,
             ]),
             'courseid' => $this->studentdata['courseid'],
+            'dashboard_url' => (new \moodle_url('/local/learningsuccess/dashboard.php', [
+                'courseid' => $this->studentdata['courseid'],
+            ]))->out(false),
             'profile_url' => $profileurl,
             'message_url' => $messageurl,
             'status' => $status,

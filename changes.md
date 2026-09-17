@@ -10,9 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [v1.1.0] - 2026-09-17
 
 ### Added
-- **Plugin Stylesheet (`styles.css`)**: Created dedicated plugin stylesheet automatically loaded by Moodle's theme engine, providing WCAG 2.1 Level AA compliant color styling across all components.
-- **Dynamic Signal Severity Badging**: Added dynamic severity styling in the student detail view, ensuring Critical signals render in prominent danger red (`text-bg-danger text-white`) instead of plain gray.
-- **Explicit Contrast Utility Classes**: Added `text-white` and `text-dark` attributes to struggle tags, status pills, and actionability badges to guarantee text legibility regardless of theme configuration.
+- **Back to Dashboard Navigation**: Added dedicated, accessible "Back to Dashboard" button in the student view header navigation to facilitate direct return to course dashboard.
+- **Plugin Stylesheet (`styles.css`)**: Created dedicated plugin stylesheet automatically loaded by Moodle's theme engine, providing WCAG 2.1 Level AA compliant color styling across all components with zero `!important` declarations.
+- **Dynamic Signal Severity Badging**: Added dynamic severity styling in the student detail view, ensuring Critical signals render in prominent danger red (`badge-urgent`) instead of plain gray.
+- **Explicit Contrast Utility Classes**: Added accessible semantic badge and card classes to guarantee text legibility regardless of theme configuration.
 
 ### Changed
 - **Accessibility & Contrast Overhaul (WCAG 2.1 Level AA)**:
