@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use local_learningsuccess\task\process_followups;
 use local_learningsuccess\local\intervention\intervention_status;
@@ -29,10 +27,11 @@ use local_learningsuccess\local\intervention\intervention_status;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\task\process_followups
  */
-class process_followups_test extends advanced_testcase {
-
+final class process_followups_test extends advanced_testcase {
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 

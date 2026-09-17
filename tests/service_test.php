@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use cache;
 use local_learningsuccess\local\service\student_success_service;
@@ -30,10 +28,11 @@ use local_learningsuccess\local\intervention\intervention_manager;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\local\service\student_success_service
  */
-class service_test extends advanced_testcase {
-
+final class service_test extends advanced_testcase {
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -66,11 +65,11 @@ class service_test extends advanced_testcase {
      */
     public function test_get_priority_students_ordering(): void {
         $course = $this->getDataGenerator()->create_course();
-        $studentA = $this->getDataGenerator()->create_user();
-        $studentB = $this->getDataGenerator()->create_user();
+        $studenta = $this->getDataGenerator()->create_user();
+        $studentb = $this->getDataGenerator()->create_user();
 
-        $this->getDataGenerator()->enrol_user($studentA->id, $course->id, 'student');
-        $this->getDataGenerator()->enrol_user($studentB->id, $course->id, 'student');
+        $this->getDataGenerator()->enrol_user($studenta->id, $course->id, 'student');
+        $this->getDataGenerator()->enrol_user($studentb->id, $course->id, 'student');
 
         $service = new student_success_service();
         $priorities = $service->get_priority_students($course->id, 5);
@@ -115,47 +114,47 @@ class service_test extends advanced_testcase {
         $coursecache = cache::make('local_learningsuccess', 'course_summary');
         $studentcache = cache::make('local_learningsuccess', 'student_summary');
 
-        $studentCacheKey = "{$course->id}_{$student->id}";
+        $studentcachekey = "{$course->id}_{$student->id}";
 
         // 1. Initial fetch populates caches.
         $summary = $service->get_course_summary($course->id);
-        $studentDetails = $service->get_student_summary($student->id, $course->id);
+        $studentdetails = $service->get_student_summary($student->id, $course->id);
 
-        $cachedCourse = $coursecache->get($course->id);
-        $this->assertNotFalse($cachedCourse);
-        $this->assertEquals($summary['total_students'], $cachedCourse['total_students']);
+        $cachedcourse = $coursecache->get($course->id);
+        $this->assertNotFalse($cachedcourse);
+        $this->assertEquals($summary['total_students'], $cachedcourse['total_students']);
 
-        $cachedStudent = $studentcache->get($studentCacheKey);
-        $this->assertNotFalse($cachedStudent);
-        $this->assertEquals($studentDetails['user']['id'], $cachedStudent['user']['id']);
+        $cachedstudent = $studentcache->get($studentcachekey);
+        $this->assertNotFalse($cachedstudent);
+        $this->assertEquals($studentdetails['user']['id'], $cachedstudent['user']['id']);
 
         // 2. Fetch with skipcache=true returns fresh data.
-        $freshSummary = $service->get_course_summary($course->id, true);
-        $this->assertEquals($summary['total_students'], $freshSummary['total_students']);
+        $freshsummary = $service->get_course_summary($course->id, true);
+        $this->assertEquals($summary['total_students'], $freshsummary['total_students']);
 
         // 3. Creating an intervention invalidates both course and student caches.
         $manager = new intervention_manager();
-        $interventionId = $manager->create($student->id, $course->id, $teacher->id, 'CONTACT');
+        $interventionid = $manager->create($student->id, $course->id, $teacher->id, 'CONTACT');
 
         $this->assertFalse($coursecache->get($course->id));
-        $this->assertFalse($studentcache->get($studentCacheKey));
+        $this->assertFalse($studentcache->get($studentcachekey));
 
         // 4. Repopulate caches, then update intervention -> should invalidate again.
         $service->get_course_summary($course->id);
         $service->get_student_summary($student->id, $course->id);
         $this->assertNotFalse($coursecache->get($course->id));
 
-        $manager->update($interventionId, ['actual_action' => 'Sent follow-up']);
+        $manager->update($interventionid, ['actual_action' => 'Sent follow-up']);
         $this->assertFalse($coursecache->get($course->id));
-        $this->assertFalse($studentcache->get($studentCacheKey));
+        $this->assertFalse($studentcache->get($studentcachekey));
 
         // 5. Repopulate and dismiss intervention -> should invalidate again.
         $service->get_course_summary($course->id);
         $service->get_student_summary($student->id, $course->id);
         $this->assertNotFalse($coursecache->get($course->id));
 
-        $manager->dismiss($interventionId);
+        $manager->dismiss($interventionid);
         $this->assertFalse($coursecache->get($course->id));
-        $this->assertFalse($studentcache->get($studentCacheKey));
+        $this->assertFalse($studentcache->get($studentcachekey));
     }
 }

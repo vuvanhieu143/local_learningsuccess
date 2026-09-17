@@ -67,4 +67,3 @@ $dashboardrenderable = new dashboard($courseid, $summary, $priorities, $groupid,
 echo $output->header();
 echo $output->render($dashboardrenderable);
 echo $output->footer();
-

@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use local_learningsuccess\local\explanation\explanation;
 use local_learningsuccess\local\explanation\explanation_engine;
@@ -32,10 +30,11 @@ use local_learningsuccess\local\signal\signal_collector;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\local\signal\signal_collector
  */
 final class signal_dismissal_test extends advanced_testcase {
-
     public function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -137,7 +136,12 @@ final class signal_dismissal_test extends advanced_testcase {
         $this->assertTrue($collector->is_signal_dismissed($user->id, $course->id, 'grade_decline', explanation::SEVERITY_WARNING));
 
         // Critical severity escalation reactivates the signal!
-        $this->assertFalse($collector->is_signal_dismissed($user->id, $course->id, 'grade_decline', explanation::SEVERITY_CRITICAL));
+        $this->assertFalse($collector->is_signal_dismissed(
+            $user->id,
+            $course->id,
+            'grade_decline',
+            explanation::SEVERITY_CRITICAL
+        ));
     }
 
     /**
@@ -220,10 +224,38 @@ final class signal_dismissal_test extends advanced_testcase {
             value: 14.0
         );
 
-        $mocksignal = new class($mockexplanation) implements \local_learningsuccess\local\signal\signal {
-            public function __construct(private explanation $exp) {}
-            public function get_type(): string { return 'inactivity'; }
-            public function evaluate(int $userid, int $courseid): ?explanation { return $this->exp; }
+        $mocksignal = new class ($mockexplanation) implements \local_learningsuccess\local\signal\signal {
+            /** @var explanation Explanation instance. */
+            private explanation $exp;
+
+            /**
+             * Constructor.
+             *
+             * @param explanation $exp
+             */
+            public function __construct(explanation $exp) {
+                $this->exp = $exp;
+            }
+
+            /**
+             * Get signal type.
+             *
+             * @return string
+             */
+            public function get_type(): string {
+                return 'inactivity';
+            }
+
+            /**
+             * Evaluate signal.
+             *
+             * @param int $userid
+             * @param int $courseid
+             * @return explanation|null
+             */
+            public function evaluate(int $userid, int $courseid): ?explanation {
+                return $this->exp;
+            }
         };
 
         $collector = new signal_collector([$mocksignal]);

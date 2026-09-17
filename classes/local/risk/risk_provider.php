@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\risk;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Interface contract for student risk providers.
  *
@@ -26,7 +24,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 interface risk_provider {
-
     /**
      * Evaluate and retrieve risk information for a student in a course.
      *

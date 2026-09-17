@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use context_course;
 use core_privacy\local\metadata\collection;
@@ -36,10 +34,11 @@ use local_learningsuccess\local\signal\signal_collector;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\privacy\provider
  */
-class privacy_test extends advanced_testcase {
-
+final class privacy_test extends advanced_testcase {
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -74,11 +73,11 @@ class privacy_test extends advanced_testcase {
 
         $context = context_course::instance($course->id);
 
-        $studentContexts = provider::get_contexts_for_userid($student->id);
-        $this->assertContainsEquals($context->id, $studentContexts->get_contextids());
+        $studentcontexts = provider::get_contexts_for_userid($student->id);
+        $this->assertContainsEquals($context->id, $studentcontexts->get_contextids());
 
-        $teacherContexts = provider::get_contexts_for_userid($teacher->id);
-        $this->assertContainsEquals($context->id, $teacherContexts->get_contextids());
+        $teachercontexts = provider::get_contexts_for_userid($teacher->id);
+        $this->assertContainsEquals($context->id, $teachercontexts->get_contextids());
     }
 
     /**
@@ -122,20 +121,20 @@ class privacy_test extends advanced_testcase {
         $writer = writer::with_context($context);
         $this->assertTrue($writer->has_any_data());
 
-        $exportedInterventions = $writer->get_data([
+        $exportedinterventions = $writer->get_data([
             get_string('pluginname', 'local_learningsuccess'),
             get_string('interventions', 'local_learningsuccess'),
         ]);
-        $this->assertNotEmpty($exportedInterventions);
-        $this->assertNotEmpty($exportedInterventions->interventions);
-        $this->assertEquals('CONTACT', $exportedInterventions->interventions[0]['type']);
+        $this->assertNotEmpty($exportedinterventions);
+        $this->assertNotEmpty($exportedinterventions->interventions);
+        $this->assertEquals('CONTACT', $exportedinterventions->interventions[0]['type']);
 
-        $exportedSignals = $writer->get_data([
+        $exportedsignals = $writer->get_data([
             get_string('pluginname', 'local_learningsuccess'),
             get_string('signals', 'local_learningsuccess'),
         ]);
-        $this->assertNotEmpty($exportedSignals);
-        $this->assertNotEmpty($exportedSignals->signals);
+        $this->assertNotEmpty($exportedsignals);
+        $this->assertNotEmpty($exportedsignals->signals);
     }
 
     /**
@@ -203,7 +202,7 @@ class privacy_test extends advanced_testcase {
         $approveduserlist = new approved_userlist($context, 'local_learningsuccess', [$student1->id]);
         provider::delete_data_for_users($approveduserlist);
 
-        // student1 data should be deleted, student2 should remain.
+        // Student1 data should be deleted, student2 should remain.
         $this->assertEquals(0, $DB->count_records('local_learningsuccess_int', ['userid' => $student1->id]));
         $this->assertEquals(1, $DB->count_records('local_learningsuccess_int', ['userid' => $student2->id]));
     }

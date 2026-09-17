@@ -59,4 +59,3 @@ $detailrenderable = new \local_learningsuccess\output\student_detail($studentdat
 echo $output->header();
 echo $output->render($detailrenderable);
 echo $output->footer();
-

@@ -22,295 +22,228 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$string['pluginname'] = 'Learning Success & Intervention';
-$string['learningsuccess'] = 'Learning Success';
-$string['dashboard'] = 'Success Dashboard';
-$string['classpulse'] = 'Class Pulse';
-$string['todayspriorities'] = "Today's Priorities";
-$string['studentsrequiringattention'] = 'Students Requiring Attention';
-$string['nostudentsatrisk'] = 'No students currently require urgent intervention. Great work!';
-$string['studentdetails'] = 'Student Success Details';
-$string['refresh'] = 'Refresh';
-$string['refresh_help'] = 'Refresh priorities list';
-$string['ontrack'] = 'On track';
-$string['whystudentatrisk'] = 'Why is this student at risk?';
-$string['nononegativesignals'] = 'No negative signals recorded.';
-$string['recommendedactions'] = 'Recommended Actions';
-$string['applythisaction'] = 'Apply This Action';
-$string['nopendingrecommendations'] = 'No pending recommendations.';
-$string['interventionhistory'] = 'Intervention History & Outcome Tracking';
-$string['nointerventionsfound'] = 'No intervention records found for this student.';
-$string['actions'] = 'Actions';
-$string['confirm_complete_title'] = 'Complete Intervention';
-$string['confirm_complete_body'] = 'Are you sure you want to mark this intervention as completed?';
-$string['confirm_dismiss_title'] = 'Dismiss Intervention';
-$string['confirm_dismiss_body'] = 'Are you sure you want to dismiss this intervention?';
-$string['intervention_created'] = 'Intervention recorded successfully.';
-$string['intervention_completed'] = 'Intervention completed.';
-$string['intervention_dismissed'] = 'Intervention dismissed.';
-$string['placeholder_reason'] = 'e.g. Student inactive for 8 days';
-$string['placeholder_recommended'] = 'e.g. Send check-in message';
-$string['placeholder_actual'] = 'Notes on message sent or meeting scheduled';
-
-// Status labels.
-$string['status_healthy'] = 'Healthy';
-$string['status_monitor'] = 'Monitor';
-$string['status_atrisk'] = 'At Risk';
-$string['status_critical'] = 'Critical';
-$string['status_nodata'] = 'No Data';
-$string['status_nodata_desc'] = 'There is not enough learning activity yet to assess this student.';
-
-// Actionability & Priority Work-Queue.
-$string['priority_urgent'] = 'Urgent Action';
-$string['priority_follow_up'] = 'Follow-up Due';
-$string['priority_recommend'] = 'Recommended';
-$string['priority_monitor'] = 'Monitor';
-$string['priority_no_action'] = 'No Action Needed';
-$string['action_review_followup'] = 'Review Follow-up';
 $string['action_checkin'] = 'Check in';
-$string['why_now'] = 'Why now?';
-$string['primary_recommendation'] = 'Primary Recommendation';
-$string['alternative_options'] = 'Other Options';
-
-
-// Intervention types.
-$string['type_contact'] = 'Direct Message';
-$string['type_learning_resource'] = 'Recommend Learning Resource';
-$string['type_missed_activity'] = 'Review Missed Activity';
-$string['type_extension'] = 'Grant Extension';
-$string['type_advisor_referral'] = 'Advisor Referral';
-$string['type_other'] = 'Other Action';
-
-// Intervention statuses.
-$string['status_open'] = 'Open';
-$string['status_in_progress'] = 'In Progress';
-$string['status_completed'] = 'Completed';
-$string['status_dismissed'] = 'Dismissed';
-
-// Outcomes.
-$string['outcome_improved'] = 'Improved';
-$string['outcome_no_change'] = 'No Change';
-$string['outcome_declined'] = 'Declined';
-$string['outcome_unknown'] = 'Evaluating / Unknown';
-
-// Signal messages.
-$string['signal_inactivity_title'] = 'Course Inactivity';
-$string['signal_inactivity_critical_desc'] = 'No course activity recorded for {$a} consecutive days.';
-$string['signal_inactivity_warning_desc'] = 'Student has been inactive for {$a} days.';
-$string['signal_inactivity_critical'] = 'No course activity for {$a} days';
-$string['signal_inactivity_warning'] = 'Inactive for {$a} days';
-$string['signal_no_activity_title'] = 'No course activity';
-$string['signal_no_activity_desc'] = 'The student has not accessed this course since enrolment.';
-
-$string['signal_overdue_title'] = 'Overdue Activities';
-$string['signal_overdue_desc'] = 'Student has {$a} overdue assignment activities.';
-
-$string['signal_grade_title'] = 'Course Assessment Performance';
-$string['signal_grade_critical_desc'] = 'Current course grade is critically low at {$a}%.';
-$string['signal_grade_warning_desc'] = 'Current course grade is below expectations at {$a}%.';
-$string['signal_grade_decline'] = 'Assessment performance dropped by {$a}%';
-
-$string['signal_completion_title'] = 'Module Completion Progress';
-$string['signal_completion_critical_desc'] = 'Course completion rate is critically stalled at {$a}%.';
-$string['signal_completion_warning_desc'] = 'Course completion progress is pacing slow at {$a}%.';
-$string['signal_completion_low'] = 'Course completion rate is low ({$a}%)';
-
-$string['signal_analytics_title'] = 'Moodle Analytics Risk Flag';
-$string['signal_analytics_desc'] = 'Moodle Learning Analytics model ({$a}) flagged this student as potentially at risk.';
-
-$string['signal_missed_activities'] = '{$a} required activities overdue or incomplete';
-$string['signal_quiz_low'] = 'Recent quiz performance below passing threshold ({$a}%)';
-$string['signal_quiz_retries'] = 'Repeated quiz attempts ({$a} attempts recorded)';
-
-// Struggle Archetypes / Tags.
-$string['struggle_disengaged'] = '👻 Disengaged';
-$string['struggle_repeated_attempts'] = '🔄 Quiz Retries ({$a})';
-$string['struggle_overdue'] = '⏳ Overdue Work ({$a})';
-$string['struggle_pacing'] = '📉 Pacing Behind';
-$string['struggle_on_track'] = '✅ On Track';
-
-// Recommendation descriptions.
-$string['recommend_contact'] = 'Send a personalized check-in message via Moodle messaging.';
-$string['recommend_resource'] = 'Recommend remedial content or prerequisite modules.';
-$string['recommend_extension'] = 'Offer an assignment deadline extension or makeup submission.';
-$string['recommend_review_missing'] = 'Prompt the student to complete overdue assignments.';
-$string['recommend_advisor'] = 'Refer student to academic advising or student support services.';
-
-// Actions & Buttons.
-$string['action_intervene'] = 'Take Action';
-$string['action_create_intervention'] = 'Record Intervention';
-$string['action_quick_contact'] = 'Quick Message';
-$string['action_update_intervention'] = 'Update Intervention';
 $string['action_complete'] = 'Mark as Completed';
-$string['action_dismiss'] = 'Dismiss';
-$string['action_view_student'] = 'View Student Insights';
 $string['action_contact_student'] = 'Message Student';
-
-// Group & Filter strings.
-$string['filter_by_group'] = 'Filter by Group';
+$string['action_create_intervention'] = 'Record Intervention';
+$string['action_dismiss'] = 'Dismiss';
+$string['action_intervene'] = 'Take Action';
+$string['action_quick_contact'] = 'Quick Message';
+$string['action_review_followup'] = 'Review Follow-up';
+$string['action_update_intervention'] = 'Update Intervention';
+$string['action_view_student'] = 'View Student Insights';
+$string['actions'] = 'Actions';
+$string['active_intervention_exists'] = 'An active intervention already exists for this student (Status: {$a}).';
 $string['all_groups'] = 'All Groups / Cohorts';
-
-// Direct Messaging & Check-in strings.
-$string['field_send_message'] = 'Send as direct message via Moodle Messaging';
-$string['message_subject'] = 'Check-in from your teacher regarding course progress';
-$string['default_checkin_message'] = 'Hi, I noticed you have not been active in our course recently. Please let me know if you need any help!';
+$string['alternative_options'] = 'Other Options';
+$string['applythisaction'] = 'Apply This Action';
 $string['auto_evaluated_note'] = 'Auto-evaluated after {$a} days of intervention.';
-
-// Recent Improvements & Evidence.
-$string['recent_improvements'] = 'Recent Improvements & Outcomes';
-$string['no_recent_improvements'] = 'No completed interventions recorded yet.';
-$string['indicators_improved_desc'] = 'Indicators improved after the intervention.';
-$string['indicators_no_change_desc'] = 'Indicators showed no significant change.';
-$string['indicators_declined_desc'] = 'Indicators declined following intervention.';
-$string['system_evidence'] = 'System Evidence';
-$string['teacher_outcome'] = 'Teacher-Confirmed Outcome';
-$string['teacher_outcome_improved'] = 'Confirmed Improved';
-$string['teacher_outcome_no_change'] = 'Confirmed No Change';
-$string['teacher_outcome_declined'] = 'Confirmed Declined';
-$string['teacher_outcome_unable_to_contact'] = 'Unable to Contact';
-$string['teacher_outcome_not_applicable'] = 'Not Applicable';
-
-// Backward-compatibility aliases.
-$string['recent_success_stories'] = 'Recent Improvements & Outcomes';
-$string['no_success_stories_yet'] = 'No completed interventions recorded yet.';
-$string['success_story_desc'] = 'Indicators improved after the intervention.';
-
-// Empathetic Message Presets.
+$string['classpulse'] = 'Class Pulse';
 $string['click_preset_to_fill'] = 'Click a preset to quickly fill a warm message:';
-$string['message_presets'] = 'Empathetic Message Presets';
-$string['preset_empathy_title'] = '🌟 Encouraging Check-in';
-$string['preset_empathy_text'] = 'Hi! I noticed you have been a bit quiet in our course recently. Is there anything difficult with the lessons this week? Feel free to reach out and let me know how I can help!';
-$string['preset_resource_title'] = '💡 Practical Guidance';
-$string['preset_resource_text'] = 'Hello! This week\'s module and assignment are very important and due soon. I have prepared some concise summary materials to help you review and submit on time!';
-$string['preset_extension_title'] = '⏱ Gentle Extension Offer';
-$string['preset_extension_text'] = 'Hello! I noticed you have not been able to submit the recent assignment yet. If you are experiencing unexpected personal or health issues, please reply and I can grant you a 2-day extension.';
-
-// Signal-driven Message Templates (Teacher editable drafts).
-$string['template_inactivity_title'] = 'Course Inactivity Check-in';
-$string['template_inactivity_body'] = "Hi {firstname},\n\nI noticed you haven't been active in {coursename} recently.\nIs everything going okay? Let me know if you need any help getting back on track.";
-$string['template_overdue_title'] = 'Overdue Activity Support';
-$string['template_overdue_body'] = "Hi {firstname},\n\nI noticed you have some overdue activities in {coursename}.\nIf you're having trouble completing them, I can help you work out what to tackle first.";
-$string['template_grade_decline_title'] = 'Assessment Support';
-$string['template_grade_decline_body'] = "Hi {firstname},\n\nI noticed your recent assessment results have dropped in {coursename}.\nWould you like to discuss any areas where you're finding the course difficult?";
-$string['template_general_title'] = 'General Progress Check-in';
-$string['template_general_body'] = "Hi {firstname},\n\nI wanted to check in with you regarding your progress in {coursename}.\nPlease feel free to reply if there is anything I can do to support your learning.";
-
-// Signal Dismissal & Teacher Overrides.
-$string['dismiss_signal'] = 'Dismiss Signal';
+$string['confirm_complete_body'] = 'Are you sure you want to mark this intervention as completed?';
+$string['confirm_complete_title'] = 'Complete Intervention';
+$string['confirm_dismiss_body'] = 'Are you sure you want to dismiss this intervention?';
+$string['confirm_dismiss_title'] = 'Dismiss Intervention';
+$string['create_another_intervention'] = 'Create Another';
+$string['dashboard'] = 'Success Dashboard';
+$string['default_checkin_message'] = 'Hi, I noticed you have not been active in our course recently. Please let me know if you need any help!';
+$string['dismiss_reason'] = 'Reason for dismissal';
 $string['dismiss_reason_approved_leave'] = 'Student on approved leave';
-$string['dismiss_reason_working_offline'] = 'Student working offline';
 $string['dismiss_reason_false_positive'] = 'False positive indicator';
 $string['dismiss_reason_not_relevant'] = 'Not currently relevant';
 $string['dismiss_reason_other'] = 'Other reason';
-$string['signal_dismissed_notice'] = 'Signal dismissed by teacher. It will remain suppressed unless conditions worsen.';
-
-
-// Dashboard Metrics.
-$string['metric_total_students'] = 'Enrolled Students';
-$string['metric_avg_completion'] = 'Avg Completion';
-$string['metric_active_interventions'] = 'Active Interventions';
-$string['metric_resolved_interventions'] = 'Resolved (Improved)';
-
-// Modal and Form fields.
-$string['field_student'] = 'Student';
-$string['field_type'] = 'Intervention Type';
+$string['dismiss_reason_working_offline'] = 'Student working offline';
+$string['dismiss_signal'] = 'Dismiss Signal';
+$string['dismiss_signal_confirm'] = 'Dismiss this signal for the next 14 days?';
+$string['field_actual_action'] = 'Action Taken / Notes';
+$string['field_outcome'] = 'Outcome';
 $string['field_reason'] = 'Identified Need / Reason';
 $string['field_recommended_action'] = 'Recommended Action';
-$string['field_actual_action'] = 'Action Taken / Notes';
+$string['field_send_message'] = 'Send as direct message via Moodle Messaging';
 $string['field_status'] = 'Status';
-$string['field_outcome'] = 'Outcome';
-
-// Capabilities.
-$string['learningsuccess:viewcourse'] = 'View Learning Success course dashboard';
-$string['learningsuccess:viewstudent'] = 'View student success details and signals';
+$string['field_student'] = 'Student';
+$string['field_type'] = 'Intervention Type';
+$string['filter_by_group'] = 'Filter by Group';
+$string['followup_notification_body'] = 'A scheduled follow-up for student {$a->student} in course {$a->course} is due today. Please review the student progress and record the outcome.';
+$string['followup_notification_subject'] = 'Follow-up Due: Student {$a}';
+$string['indicators_declined_desc'] = 'Indicators declined following intervention.';
+$string['indicators_improved_desc'] = 'Indicators improved after the intervention.';
+$string['indicators_no_change_desc'] = 'Indicators showed no significant change.';
+$string['intervention_completed'] = 'Intervention completed.';
+$string['intervention_created'] = 'Intervention recorded successfully.';
+$string['intervention_dismissed'] = 'Intervention dismissed.';
+$string['interventionhistory'] = 'Intervention History & Outcome Tracking';
+$string['interventions'] = 'Interventions';
+$string['just_now'] = 'Just now';
+$string['last_updated_at'] = 'Data assessed: {$a}';
+$string['learningsuccess'] = 'Learning Success';
 $string['learningsuccess:createintervention'] = 'Create student intervention records';
-$string['learningsuccess:manageintervention'] = 'Manage and resolve intervention records';
-$string['learningsuccess:viewreports'] = 'View learning success analytical reports';
 $string['learningsuccess:manageconfig'] = 'Configure learning success plugin settings';
-
-// Admin Settings.
-$string['setting_enabled'] = 'Enable Learning Success';
-$string['setting_enabled_desc'] = 'Enable or disable the Learning Success plugin globally.';
+$string['learningsuccess:manageintervention'] = 'Manage and resolve intervention records';
+$string['learningsuccess:viewcourse'] = 'View Learning Success course dashboard';
+$string['learningsuccess:viewreports'] = 'View learning success analytical reports';
+$string['learningsuccess:viewstudent'] = 'View student success details and signals';
+$string['limited_course_data'] = 'Limited course assessment data available';
+$string['message_presets'] = 'Empathetic Message Presets';
+$string['message_subject'] = 'Check-in from your teacher regarding course progress';
+$string['metric_active_interventions'] = 'Active Interventions';
+$string['metric_avg_completion'] = 'Avg Completion';
+$string['metric_resolved_interventions'] = 'Resolved (Improved)';
+$string['metric_total_students'] = 'Enrolled Students';
+$string['no_recent_improvements'] = 'No completed interventions recorded yet.';
+$string['no_success_stories_yet'] = 'No completed interventions recorded yet.';
+$string['nointerventionsfound'] = 'No intervention records found for this student.';
+$string['nononegativesignals'] = 'No negative signals recorded.';
+$string['nopendingrecommendations'] = 'No pending recommendations.';
+$string['nopermissiontoviewgroup'] = 'You do not have permission to view this group.';
+$string['nopermissiontoviewstudent'] = 'You do not have permission to view students outside your assigned groups.';
+$string['nostudentsatrisk'] = 'No students currently require urgent intervention. Great work!';
+$string['ontrack'] = 'On track';
+$string['outcome_declined'] = 'Declined';
+$string['outcome_improved'] = 'Improved';
+$string['outcome_no_change'] = 'No Change';
+$string['outcome_unknown'] = 'Evaluating / Unknown';
+$string['placeholder_actual'] = 'Notes on message sent or meeting scheduled';
+$string['placeholder_reason'] = 'e.g. Student inactive for 8 days';
+$string['placeholder_recommended'] = 'e.g. Send check-in message';
+$string['pluginname'] = 'Learning Success & Intervention';
+$string['preset_empathy_text'] = 'Hi! I noticed you have been a bit quiet in our course recently. Is there anything difficult with the lessons this week? Feel free to reach out and let me know how I can help!';
+$string['preset_empathy_title'] = '🌟 Encouraging Check-in';
+$string['preset_extension_text'] = 'Hello! I noticed you have not been able to submit the recent assignment yet. If you are experiencing unexpected personal or health issues, please reply and I can grant you a 2-day extension.';
+$string['preset_extension_title'] = '⏱ Gentle Extension Offer';
+$string['preset_resource_text'] = 'Hello! This week\'s module and assignment are very important and due soon. I have prepared some concise summary materials to help you review and submit on time!';
+$string['preset_resource_title'] = '💡 Practical Guidance';
+$string['primary_recommendation'] = 'Primary Recommendation';
+$string['priority_follow_up'] = 'Follow-up Due';
+$string['priority_monitor'] = 'Monitor';
+$string['priority_no_action'] = 'No Action Needed';
+$string['priority_recommend'] = 'Recommended';
+$string['priority_urgent'] = 'Urgent Action';
+$string['privacy:metadata:local_learningsuccess_int'] = 'Stores records of teacher interventions and before/after outcome snapshots.';
+$string['privacy:metadata:local_learningsuccess_int:actual_action'] = 'The notes or action recorded by the teacher.';
+$string['privacy:metadata:local_learningsuccess_int:after_snapshot'] = 'Snapshot of student metrics after the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:before_snapshot'] = 'Snapshot of student metrics before the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:completed_at'] = 'Timestamp when the intervention was completed.';
+$string['privacy:metadata:local_learningsuccess_int:courseid'] = 'The ID of the course in which the intervention took place.';
+$string['privacy:metadata:local_learningsuccess_int:outcome'] = 'The measured outcome of the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:reason'] = 'The reason or explanation triggering the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:recommended_action'] = 'The action recommended by the system.';
+$string['privacy:metadata:local_learningsuccess_int:status'] = 'The current progress status of the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:teacherid'] = 'The ID of the teacher recording the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:timecreated'] = 'Timestamp when the record was created.';
+$string['privacy:metadata:local_learningsuccess_int:timemodified'] = 'Timestamp when the record was last modified.';
+$string['privacy:metadata:local_learningsuccess_int:type'] = 'The categorization of the intervention.';
+$string['privacy:metadata:local_learningsuccess_int:userid'] = 'The ID of the student receiving the intervention.';
+$string['privacy:metadata:local_learningsuccess_sign'] = 'Stores derived learning risk signals.';
+$string['privacy:metadata:local_learningsuccess_sign:courseid'] = 'The ID of the course.';
+$string['privacy:metadata:local_learningsuccess_sign:metadata'] = 'Additional contextual JSON metadata.';
+$string['privacy:metadata:local_learningsuccess_sign:severity'] = 'The severity level of the signal.';
+$string['privacy:metadata:local_learningsuccess_sign:signal_type'] = 'The type of signal (e.g. inactivity, completion).';
+$string['privacy:metadata:local_learningsuccess_sign:timecreated'] = 'Timestamp when the signal was recorded.';
+$string['privacy:metadata:local_learningsuccess_sign:userid'] = 'The ID of the student.';
+$string['privacy:metadata:local_learningsuccess_sign:value'] = 'The metric value associated with the signal.';
+$string['reason_approved_leave'] = 'Approved leave / absence';
+$string['reason_false_positive'] = 'False positive';
+$string['reason_not_relevant'] = 'Not relevant';
+$string['reason_other'] = 'Other reason';
+$string['reason_working_offline'] = 'Working offline';
+$string['recent_improvements'] = 'Recent Improvements & Outcomes';
+$string['recent_success_stories'] = 'Recent Improvements & Outcomes';
+$string['recently_handled'] = 'Recently Handled';
+$string['recently_handled_empty'] = 'No interventions recently handled in the past 7 days.';
+$string['recommend_advisor'] = 'Refer student to academic advising or student support services.';
+$string['recommend_contact'] = 'Send a personalized check-in message via Moodle messaging.';
+$string['recommend_extension'] = 'Offer an assignment deadline extension or makeup submission.';
+$string['recommend_resource'] = 'Recommend remedial content or prerequisite modules.';
+$string['recommend_review_missing'] = 'Prompt the student to complete overdue assignments.';
+$string['recommendedactions'] = 'Recommended Actions';
+$string['refresh'] = 'Refresh';
+$string['refresh_help'] = 'Refresh priorities list';
+$string['risk_source_activity'] = 'Based on course activity signals';
+$string['risk_source_analytics'] = 'Based on Moodle Analytics';
+$string['risk_source_tooltip'] = 'Deterministic prioritisation score based on course activity signals, not a calibrated machine learning prediction.';
+$string['setting_analytics_model'] = 'Preferred Analytics Model';
+$string['setting_analytics_model_desc'] = 'Target class or model identifier to prioritize when multiple Moodle Analytics models are enabled.';
 $string['setting_enable_classpulse'] = 'Enable Class Pulse';
 $string['setting_enable_classpulse_desc'] = 'Show course-level pulse and aggregate health metrics.';
 $string['setting_enable_interventions'] = 'Enable Intervention Tracking';
 $string['setting_enable_interventions_desc'] = 'Allow teachers to record and track student intervention lifecycles.';
-$string['setting_inactivity_threshold'] = 'Inactivity Threshold (Days)';
-$string['setting_inactivity_threshold_desc'] = 'Number of days without course access before a student is flagged as inactive.';
+$string['setting_enabled'] = 'Enable Learning Success';
+$string['setting_enabled_desc'] = 'Enable or disable the Learning Success plugin globally.';
 $string['setting_grade_decline_threshold'] = 'Grade Decline Threshold (%)';
 $string['setting_grade_decline_threshold_desc'] = 'Percentage drop between assessments to trigger a grade decline signal.';
-
-// Tasks.
-$string['task_refresh_student_data'] = 'Refresh student learning success cache and signals';
-$string['task_process_followups'] = 'Process due intervention follow-ups and notify teachers';
-$string['followup_notification_subject'] = 'Follow-up Due: Student {$a}';
-$string['followup_notification_body'] = 'A scheduled follow-up for student {$a->student} in course {$a->course} is due today. Please review the student progress and record the outcome.';
-
-// Privacy metadata strings.
-$string['privacy:metadata:local_learningsuccess_int'] = 'Stores records of teacher interventions and before/after outcome snapshots.';
-$string['privacy:metadata:local_learningsuccess_int:userid'] = 'The ID of the student receiving the intervention.';
-$string['privacy:metadata:local_learningsuccess_int:courseid'] = 'The ID of the course in which the intervention took place.';
-$string['privacy:metadata:local_learningsuccess_int:teacherid'] = 'The ID of the teacher recording the intervention.';
-$string['privacy:metadata:local_learningsuccess_int:type'] = 'The categorization of the intervention.';
-$string['privacy:metadata:local_learningsuccess_int:reason'] = 'The reason or explanation triggering the intervention.';
-$string['privacy:metadata:local_learningsuccess_int:recommended_action'] = 'The action recommended by the system.';
-$string['privacy:metadata:local_learningsuccess_int:actual_action'] = 'The notes or action recorded by the teacher.';
-$string['privacy:metadata:local_learningsuccess_int:status'] = 'The current progress status of the intervention.';
-$string['privacy:metadata:local_learningsuccess_int:outcome'] = 'The measured outcome of the intervention.';
-$string['privacy:metadata:local_learningsuccess_int:before_snapshot'] = 'Snapshot of student metrics before the intervention.';
-$string['privacy:metadata:local_learningsuccess_int:after_snapshot'] = 'Snapshot of student metrics after the intervention.';
-$string['privacy:metadata:local_learningsuccess_int:timecreated'] = 'Timestamp when the record was created.';
-$string['privacy:metadata:local_learningsuccess_int:timemodified'] = 'Timestamp when the record was last modified.';
-$string['privacy:metadata:local_learningsuccess_int:completed_at'] = 'Timestamp when the intervention was completed.';
-$string['privacy:metadata:local_learningsuccess_sign'] = 'Stores derived learning risk signals.';
-$string['privacy:metadata:local_learningsuccess_sign:userid'] = 'The ID of the student.';
-$string['privacy:metadata:local_learningsuccess_sign:courseid'] = 'The ID of the course.';
-$string['privacy:metadata:local_learningsuccess_sign:signal_type'] = 'The type of signal (e.g. inactivity, completion).';
-$string['privacy:metadata:local_learningsuccess_sign:severity'] = 'The severity level of the signal.';
-$string['privacy:metadata:local_learningsuccess_sign:value'] = 'The metric value associated with the signal.';
-$string['privacy:metadata:local_learningsuccess_sign:metadata'] = 'Additional contextual JSON metadata.';
-$string['privacy:metadata:local_learningsuccess_sign:timecreated'] = 'Timestamp when the signal was recorded.';
-$string['interventions'] = 'Interventions';
+$string['setting_inactivity_threshold'] = 'Inactivity Threshold (Days)';
+$string['setting_inactivity_threshold_desc'] = 'Number of days without course access before a student is flagged as inactive.';
+$string['signal_analytics_desc'] = 'Moodle Learning Analytics model ({$a}) flagged this student as potentially at risk.';
+$string['signal_analytics_title'] = 'Moodle Analytics Risk Flag';
+$string['signal_completion_critical_desc'] = 'Course completion rate is critically stalled at {$a}%.';
+$string['signal_completion_low'] = 'Course completion rate is low ({$a}%)';
+$string['signal_completion_title'] = 'Module Completion Progress';
+$string['signal_completion_warning_desc'] = 'Course completion progress is pacing slow at {$a}%.';
+$string['signal_dismissed_notice'] = 'Signal dismissed by teacher. It will remain suppressed unless conditions worsen.';
+$string['signal_grade_critical_desc'] = 'Current course grade is critically low at {$a}%.';
+$string['signal_grade_decline'] = 'Assessment performance dropped by {$a}%';
+$string['signal_grade_title'] = 'Course Assessment Performance';
+$string['signal_grade_warning_desc'] = 'Current course grade is below expectations at {$a}%.';
+$string['signal_inactivity_critical'] = 'No course activity for {$a} days';
+$string['signal_inactivity_critical_desc'] = 'No course activity recorded for {$a} consecutive days.';
+$string['signal_inactivity_title'] = 'Course Inactivity';
+$string['signal_inactivity_warning'] = 'Inactive for {$a} days';
+$string['signal_inactivity_warning_desc'] = 'Student has been inactive for {$a} days.';
+$string['signal_missed_activities'] = '{$a} required activities overdue or incomplete';
+$string['signal_no_activity_desc'] = 'The student has not accessed this course since enrolment.';
+$string['signal_no_activity_title'] = 'No course activity';
+$string['signal_overdue_desc'] = 'Student has {$a} overdue assignment activities.';
+$string['signal_overdue_title'] = 'Overdue Activities';
+$string['signal_quiz_low'] = 'Recent quiz performance below passing threshold ({$a}%)';
+$string['signal_quiz_retries'] = 'Repeated quiz attempts ({$a} attempts recorded)';
 $string['signals'] = 'Signals';
-
-// Security and access control strings.
+$string['status_atrisk'] = 'At Risk';
+$string['status_completed'] = 'Completed';
+$string['status_critical'] = 'Critical';
+$string['status_dismissed'] = 'Dismissed';
+$string['status_healthy'] = 'Healthy';
+$string['status_in_progress'] = 'In Progress';
+$string['status_monitor'] = 'Monitor';
+$string['status_nodata'] = 'No Data';
+$string['status_nodata_desc'] = 'There is not enough learning activity yet to assess this student.';
+$string['status_open'] = 'Open';
+$string['struggle_disengaged'] = '👻 Disengaged';
+$string['struggle_on_track'] = '✅ On Track';
+$string['struggle_overdue'] = '⏳ Overdue Work ({$a})';
+$string['struggle_pacing'] = '📉 Pacing Behind';
+$string['struggle_repeated_attempts'] = '🔄 Quiz Retries ({$a})';
+$string['studentdetails'] = 'Student Success Details';
+$string['studentsrequiringattention'] = 'Students Requiring Attention';
+$string['success_story_desc'] = 'Indicators improved after the intervention.';
+$string['system_evidence'] = 'System Evidence';
+$string['task_process_followups'] = 'Process due intervention follow-ups and notify teachers';
+$string['task_refresh_student_data'] = 'Refresh student learning success cache and signals';
+$string['teacher_outcome'] = 'Teacher-Confirmed Outcome';
+$string['teacher_outcome_declined'] = 'Confirmed Declined';
+$string['teacher_outcome_improved'] = 'Confirmed Improved';
+$string['teacher_outcome_no_change'] = 'Confirmed No Change';
+$string['teacher_outcome_not_applicable'] = 'Not Applicable';
+$string['teacher_outcome_unable_to_contact'] = 'Unable to Contact';
+$string['template_general_body'] = "Hi {firstname},\n\nI wanted to check in with you regarding your progress in {coursename}.\nPlease feel free to reply if there is anything I can do to support your learning.";
+$string['template_general_title'] = 'General Progress Check-in';
+$string['template_grade_decline_body'] = "Hi {firstname},\n\nI noticed your recent assessment results have dropped in {coursename}.\nWould you like to discuss any areas where you're finding the course difficult?";
+$string['template_grade_decline_title'] = 'Assessment Support';
+$string['template_inactivity_body'] = "Hi {firstname},\n\nI noticed you haven't been active in {coursename} recently.\nIs everything going okay? Let me know if you need any help getting back on track.";
+$string['template_inactivity_title'] = 'Course Inactivity Check-in';
+$string['template_overdue_body'] = "Hi {firstname},\n\nI noticed you have some overdue activities in {coursename}.\nIf you're having trouble completing them, I can help you work out what to tackle first.";
+$string['template_overdue_title'] = 'Overdue Activity Support';
+$string['time_ago'] = '{$a} ago';
+$string['todayspriorities'] = "Today's Priorities";
+$string['type_advisor_referral'] = 'Advisor Referral';
+$string['type_contact'] = 'Direct Message';
+$string['type_extension'] = 'Grant Extension';
+$string['type_learning_resource'] = 'Recommend Learning Resource';
+$string['type_missed_activity'] = 'Review Missed Activity';
+$string['type_other'] = 'Other Action';
 $string['usernotenrolled'] = 'The requested user is not enrolled in this course.';
-$string['nopermissiontoviewstudent'] = 'You do not have permission to view students outside your assigned groups.';
-$string['nopermissiontoviewgroup'] = 'You do not have permission to view this group.';
-
-// Risk source transparency.
-$string['risk_source_analytics'] = 'Based on Moodle Analytics';
-$string['risk_source_activity'] = 'Based on course activity signals';
-$string['risk_source_tooltip'] = 'Deterministic prioritisation score based on course activity signals, not a calibrated machine learning prediction.';
-
-// Dashboard actionable triage and recency.
+$string['view_existing_intervention'] = 'View Existing';
 $string['what_needs_attention'] = 'What needs attention?';
 $string['what_needs_attention_desc'] = '{$a->total} students currently require educator attention ({$a->followups} follow-ups due, {$a->critical} critical, {$a->atrisk} at risk).';
-$string['recently_handled'] = 'Recently Handled';
-$string['recently_handled_empty'] = 'No interventions recently handled in the past 7 days.';
-$string['last_updated_at'] = 'Data assessed: {$a}';
-$string['just_now'] = 'Just now';
-$string['time_ago'] = '{$a} ago';
-$string['limited_course_data'] = 'Limited course assessment data available';
-
-// Signal dismissal options.
-$string['dismiss_signal'] = 'Dismiss Signal';
-$string['dismiss_signal_confirm'] = 'Dismiss this signal for the next 14 days?';
-$string['dismiss_reason'] = 'Reason for dismissal';
-$string['reason_approved_leave'] = 'Approved leave / absence';
-$string['reason_working_offline'] = 'Working offline';
-$string['reason_false_positive'] = 'False positive';
-$string['reason_not_relevant'] = 'Not relevant';
-$string['reason_other'] = 'Other reason';
-
-// Duplicate intervention safeguard.
-$string['active_intervention_exists'] = 'An active intervention already exists for this student (Status: {$a}).';
-$string['view_existing_intervention'] = 'View Existing';
-$string['create_another_intervention'] = 'Create Another';
-
-// Admin settings.
-$string['setting_analytics_model'] = 'Preferred Analytics Model';
-$string['setting_analytics_model_desc'] = 'Target class or model identifier to prioritize when multiple Moodle Analytics models are enabled.';
-
+$string['why_now'] = 'Why now?';
+$string['whystudentatrisk'] = 'Why is this student at risk?';

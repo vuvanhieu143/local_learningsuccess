@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\outcome;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Standardized constants and outcome representation for intervention evaluations.
  *
@@ -26,13 +24,38 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class outcome {
+    /** @var string Outcome indicating improvement. */
+    public const IMPROVED = 'IMPROVED';
 
-    public const IMPROVED           = 'IMPROVED';
-    public const NO_CHANGE          = 'NO_CHANGE';
-    public const DECLINED           = 'DECLINED';
-    public const UNABLE_TO_CONTACT  = 'UNABLE_TO_CONTACT';
-    public const NOT_APPLICABLE     = 'NOT_APPLICABLE';
-    public const UNKNOWN            = 'UNKNOWN';
+    /** @var string Outcome indicating no measurable change. */
+    public const NO_CHANGE = 'NO_CHANGE';
+
+    /** @var string Outcome indicating metric decline. */
+    public const DECLINED = 'DECLINED';
+
+    /** @var string Outcome indicating student could not be reached. */
+    public const UNABLE_TO_CONTACT = 'UNABLE_TO_CONTACT';
+
+    /** @var string Outcome indicating intervention was not applicable. */
+    public const NOT_APPLICABLE = 'NOT_APPLICABLE';
+
+    /** @var string Outcome unknown or pending evaluation. */
+    public const UNKNOWN = 'UNKNOWN';
+
+    /** @var string Primary outcome status constant. */
+    public readonly string $status;
+
+    /** @var float Change in risk score. */
+    public readonly float $riskdelta;
+
+    /** @var float Change in grade percentage. */
+    public readonly float $gradedelta;
+
+    /** @var float Change in completion percentage. */
+    public readonly float $completiondelta;
+
+    /** @var string Human-readable non-causal summary of observed changes. */
+    public readonly string $summary;
 
     /**
      * Constructor.
@@ -44,12 +67,17 @@ class outcome {
      * @param string $summary Human-readable non-causal summary of observed changes.
      */
     public function __construct(
-        public readonly string $status,
-        public readonly float $riskdelta = 0.0,
-        public readonly float $gradedelta = 0.0,
-        public readonly float $completiondelta = 0.0,
-        public readonly string $summary = ''
+        string $status,
+        float $riskdelta = 0.0,
+        float $gradedelta = 0.0,
+        float $completiondelta = 0.0,
+        string $summary = ''
     ) {
+        $this->status = $status;
+        $this->riskdelta = $riskdelta;
+        $this->gradedelta = $gradedelta;
+        $this->completiondelta = $completiondelta;
+        $this->summary = $summary;
     }
 
     /**

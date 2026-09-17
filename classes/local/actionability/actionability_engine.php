@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\actionability;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\risk\risk_result;
 use local_learningsuccess\local\recommendation\recommendation_engine;
 use local_learningsuccess\local\intervention\intervention_manager;
@@ -33,7 +31,6 @@ use local_learningsuccess\local\intervention\intervention_status;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class actionability_engine {
-
     /** @var recommendation_engine */
     private recommendation_engine $recommendationengine;
 

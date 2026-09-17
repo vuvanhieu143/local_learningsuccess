@@ -74,4 +74,3 @@ $functions = [
         'capabilities' => 'local/learningsuccess:manageintervention',
     ],
 ];
-

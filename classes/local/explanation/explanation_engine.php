@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\explanation;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\risk\risk_provider;
 use local_learningsuccess\local\risk\risk_result;
 use local_learningsuccess\local\risk\moodle_analytics_provider;
@@ -33,7 +31,6 @@ use local_learningsuccess\local\signal\signal_collector;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class explanation_engine {
-
     /** @var risk_provider */
     protected risk_provider $riskprovider;
 
@@ -125,7 +122,10 @@ class explanation_engine {
             'model' => $risk->get_model(),
             'signals' => $explanations,
             'signal_count' => count($explanations),
-            'has_critical_signals' => !empty(array_filter($explanations, fn($s) => ($s['severity'] ?? '') === explanation::SEVERITY_CRITICAL)),
+            'has_critical_signals' => !empty(array_filter(
+                $explanations,
+                fn($s) => ($s['severity'] ?? '') === explanation::SEVERITY_CRITICAL
+            )),
             'why_now' => $whynow,
         ];
     }
@@ -227,7 +227,7 @@ class explanation_engine {
 
         // 3. Activity comparison (inactive days - lower is better).
         if (isset($before['inactive_days']) && isset($after['inactive_days'])) {
-            $diff = $before['inactive_days'] - $after['inactive_days']; // positive means fewer inactive days = improved!
+            $diff = $before['inactive_days'] - $after['inactive_days']; // Positive means fewer inactive days = improved!
             $direction = $diff > 0 ? 'improved' : ($diff < 0 ? 'declined' : 'unchanged');
             $metrics[] = [
                 'metric' => 'activity',
@@ -244,7 +244,7 @@ class explanation_engine {
 
         // 4. Risk score comparison (lower is better).
         if (isset($before['risk_score']) && isset($after['risk_score'])) {
-            $diff = round($before['risk_score'] - $after['risk_score'], 1); // positive means lower risk score = improved!
+            $diff = round($before['risk_score'] - $after['risk_score'], 1); // Positive means lower risk score = improved!
             $direction = $diff > 0 ? 'improved' : ($diff < 0 ? 'declined' : 'unchanged');
             $metrics[] = [
                 'metric' => 'risk_score',
@@ -286,7 +286,7 @@ class explanation_engine {
         $inactivitywarning = (int) get_config('local_learningsuccess', 'inactivity_threshold') ?: 7;
         $inactivitycritical = $inactivitywarning * 2;
 
-        list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'uid');
+        [$insql, $inparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'uid');
         $baseparams = array_merge(['courseid' => $courseid], $inparams);
 
         // Fetch shared batch metrics.
@@ -317,7 +317,7 @@ class explanation_engine {
             }
         }
 
-        $isdismissed = function(int $uid, string $type, string $curseverity) use ($dismissedbyuser, $now): bool {
+        $isdismissed = function (int $uid, string $type, string $curseverity) use ($dismissedbyuser, $now): bool {
             if (!isset($dismissedbyuser[$uid][$type])) {
                 return false;
             }
@@ -372,7 +372,9 @@ class explanation_engine {
             }
 
             if ($coursestarted && (!$isrecentlyenrolled || $daysinactive >= 7)) {
-                $sev = ($daysinactive >= $inactivitycritical) ? 'critical' : (($daysinactive >= $inactivitywarning) ? 'warning' : null);
+                $sev = ($daysinactive >= $inactivitycritical)
+                    ? 'critical'
+                    : (($daysinactive >= $inactivitywarning) ? 'warning' : null);
                 if ($sev !== null && !$isdismissed($uid, 'inactivity', $sev)) {
                     $isnever = ($lastaccess <= 0);
                     $title = $isnever

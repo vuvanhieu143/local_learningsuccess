@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\risk;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\helper\metrics_helper;
 
 /**
@@ -30,7 +28,7 @@ use local_learningsuccess\local\helper\metrics_helper;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class fallback_provider implements risk_provider {
-
+    /** @var string Risk source name identifier. */
     public const SOURCE_NAME = 'course_activity_signals';
 
     /**
@@ -115,7 +113,10 @@ class fallback_provider implements risk_provider {
             }
 
             // Grade evaluation.
-            if (isset($graderecords[$uid]) && $graderecords[$uid]->finalgrade !== null && (float) $graderecords[$uid]->grademax > 0) {
+            if (
+                isset($graderecords[$uid]) && $graderecords[$uid]->finalgrade !== null
+                    && (float) $graderecords[$uid]->grademax > 0
+            ) {
                 $hasmeaningfuldata = true;
                 $pct = round(((float) $graderecords[$uid]->finalgrade / (float) $graderecords[$uid]->grademax) * 100.0, 1);
                 if ($pct < 40.0) {

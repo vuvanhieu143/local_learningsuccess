@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use local_learningsuccess\local\service\student_summary;
 use local_learningsuccess\local\service\student_success_service;
@@ -31,10 +29,11 @@ use local_learningsuccess\external\student_exporter;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\local\service\student_summary
  */
-class student_summary_test extends advanced_testcase {
-
+final class student_summary_test extends advanced_testcase {
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 

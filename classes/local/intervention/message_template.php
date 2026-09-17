@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\intervention;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Service providing editable, empathetic message templates based on detected signals.
  *
@@ -28,11 +26,17 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class message_template {
+    /** @var string Inactivity message template identifier. */
+    public const TEMPLATE_INACTIVITY = 'inactivity';
 
-    public const TEMPLATE_INACTIVITY    = 'inactivity';
-    public const TEMPLATE_OVERDUE       = 'overdue';
+    /** @var string Overdue activity message template identifier. */
+    public const TEMPLATE_OVERDUE = 'overdue';
+
+    /** @var string Grade decline message template identifier. */
     public const TEMPLATE_GRADE_DECLINE = 'grade_decline';
-    public const TEMPLATE_GENERAL       = 'general';
+
+    /** @var string General check-in message template identifier. */
+    public const TEMPLATE_GENERAL = 'general';
 
     /**
      * Get available template definitions with localized labels and raw bodies.
@@ -76,10 +80,18 @@ class message_template {
         if (in_array('inactivity', $rules, true)) {
             return self::TEMPLATE_INACTIVITY;
         }
-        if (in_array('overdue', $rules, true) || in_array('missed_assignments', $rules, true) || in_array('missed_activity', $rules, true)) {
+        if (
+            in_array('overdue', $rules, true)
+            || in_array('missed_assignments', $rules, true)
+            || in_array('missed_activity', $rules, true)
+        ) {
             return self::TEMPLATE_OVERDUE;
         }
-        if (in_array('grade_decline', $rules, true) || in_array('grade_performance', $rules, true) || in_array('quiz_retries', $rules, true)) {
+        if (
+            in_array('grade_decline', $rules, true)
+            || in_array('grade_performance', $rules, true)
+            || in_array('quiz_retries', $rules, true)
+        ) {
             return self::TEMPLATE_GRADE_DECLINE;
         }
 

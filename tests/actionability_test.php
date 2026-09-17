@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use local_learningsuccess\local\actionability\actionability_engine;
 use local_learningsuccess\local\actionability\actionability_result;
@@ -32,10 +30,11 @@ use local_learningsuccess\local\risk\risk_result;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\local\actionability\actionability_engine
  */
 final class actionability_test extends advanced_testcase {
-
     public function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -133,7 +132,7 @@ final class actionability_test extends advanced_testcase {
             'status' => intervention_status::WAITING,
             'type' => 'contact',
             'timecreated' => $now - (7 * DAYSECS),
-            'followupat' => $now - 3600, // Due 1 hour ago
+            'followupat' => $now - 3600, // Due 1 hour ago.
         ];
 
         $res = $engine->evaluate(

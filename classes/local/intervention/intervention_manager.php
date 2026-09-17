@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\intervention;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\helper\cache_helper;
 use local_learningsuccess\local\outcome\outcome;
 use local_learningsuccess\local\outcome\outcome_evaluator;
@@ -32,15 +30,30 @@ use local_learningsuccess\local\recommendation\recommendation_engine;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class intervention_manager {
+    /** @var string Open status. */
+    public const STATUS_OPEN = intervention_status::OPEN;
 
-    public const STATUS_OPEN        = intervention_status::OPEN;
+    /** @var string In progress status. */
     public const STATUS_IN_PROGRESS = intervention_status::IN_PROGRESS;
-    public const STATUS_COMPLETED   = intervention_status::COMPLETED;
-    public const STATUS_DISMISSED   = intervention_status::DISMISSED;
 
+    /** @var string Completed status. */
+    public const STATUS_COMPLETED = intervention_status::COMPLETED;
+
+    /** @var string Dismissed status. */
+    public const STATUS_DISMISSED = intervention_status::DISMISSED;
+
+    /** @var snapshot_service Snapshot service instance. */
     protected snapshot_service $snapshotservice;
+
+    /** @var outcome_evaluator Outcome evaluator instance. */
     protected outcome_evaluator $outcomeevaluator;
 
+    /**
+     * Constructor.
+     *
+     * @param snapshot_service|null $snapshotservice
+     * @param outcome_evaluator|null $outcomeevaluator
+     */
     public function __construct(
         ?snapshot_service $snapshotservice = null,
         ?outcome_evaluator $outcomeevaluator = null
@@ -224,7 +237,10 @@ class intervention_manager {
         $record->status = $tostatus;
         $record->timemodified = $now;
 
-        if (in_array($tostatus, [intervention_status::CONTACTED, intervention_status::WAITING], true) && empty($record->followupat)) {
+        if (
+            in_array($tostatus, [intervention_status::CONTACTED, intervention_status::WAITING], true)
+            && empty($record->followupat)
+        ) {
             $duration = recommendation_engine::get_default_followup_duration($record->type);
             $record->followupat = $now + $duration;
         } else if ($tostatus === intervention_status::FOLLOW_UP && empty($record->followupat)) {
@@ -367,7 +383,7 @@ class intervention_manager {
      * @param int $courseid
      * @return array
      */
-     public function get_for_student(int $userid, int $courseid): array {
+    public function get_for_student(int $userid, int $courseid): array {
         global $DB;
 
         return $DB->get_records(
@@ -522,4 +538,3 @@ class intervention_manager {
         return $count;
     }
 }
-

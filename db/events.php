@@ -46,4 +46,3 @@ $observers = [
         'callback' => '\local_learningsuccess\event\observers::user_enrolment_changed',
     ],
 ];
-

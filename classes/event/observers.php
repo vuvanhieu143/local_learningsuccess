@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\helper\cache_helper;
 
 /**
@@ -28,7 +26,6 @@ use local_learningsuccess\local\helper\cache_helper;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class observers {
-
     /**
      * Invalidate student cache when module completion is updated.
      *
@@ -82,4 +79,3 @@ class observers {
         }
     }
 }
-

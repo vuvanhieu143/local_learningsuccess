@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\recommendation\rules;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\recommendation\recommendation;
 use local_learningsuccess\local\recommendation\recommendation_rule;
 
@@ -29,7 +27,6 @@ use local_learningsuccess\local\recommendation\recommendation_rule;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class inactivity_rule implements recommendation_rule {
-
     /**
      * Check if inactivity signal is present.
      *
@@ -54,25 +51,25 @@ class inactivity_rule implements recommendation_rule {
      */
     public function get_recommendation(array $signals): recommendation {
         $days = 7;
-        $isCritical = false;
-        $isNever = false;
+        $iscritical = false;
+        $isnever = false;
 
         foreach ($signals as $s) {
             $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
             if ($type === 'inactivity') {
                 $days = is_array($s) ? ($s['value'] ?? 7) : $s->get_value();
                 $sev = is_array($s) ? ($s['severity'] ?? '') : $s->get_severity();
-                $isCritical = ($sev === 'critical');
+                $iscritical = ($sev === 'critical');
                 $evidence = is_array($s) ? ($s['evidence'] ?? []) : $s->get_evidence();
                 $lastaccess = $evidence['lastaccess'] ?? null;
                 if ($lastaccess !== null && (int) $lastaccess <= 0) {
-                    $isNever = true;
+                    $isnever = true;
                 }
                 break;
             }
         }
 
-        $reason = $isNever
+        $reason = $isnever
             ? get_string('signal_no_activity_desc', 'local_learningsuccess')
             : get_string('signal_inactivity_warning_desc', 'local_learningsuccess', $days);
 
@@ -81,7 +78,7 @@ class inactivity_rule implements recommendation_rule {
             title: get_string('action_contact_student', 'local_learningsuccess'),
             action: get_string('recommend_contact', 'local_learningsuccess'),
             reason: $reason,
-            urgency: $isCritical ? recommendation::URGENCY_HIGH : recommendation::URGENCY_MEDIUM,
+            urgency: $iscritical ? recommendation::URGENCY_HIGH : recommendation::URGENCY_MEDIUM,
             suggestedmessage: get_string('default_checkin_message', 'local_learningsuccess')
         );
     }

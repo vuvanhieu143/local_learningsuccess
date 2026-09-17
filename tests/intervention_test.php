@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use local_learningsuccess\local\intervention\intervention_manager;
 use local_learningsuccess\local\intervention\intervention_status;
@@ -31,10 +29,11 @@ use local_learningsuccess\local\outcome\outcome_evaluator;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\local\intervention\intervention_manager
  */
-class intervention_test extends advanced_testcase {
-
+final class intervention_test extends advanced_testcase {
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -134,14 +133,14 @@ class intervention_test extends advanced_testcase {
         $this->assertEquals('Student submitted assignment', $record->actual_action);
 
         // Verify after_snapshot serialization structure.
-        $afterData = json_decode($record->after_snapshot, true);
-        $this->assertIsArray($afterData);
-        $this->assertArrayHasKey('risk_score', $afterData);
-        $this->assertArrayHasKey('status', $afterData);
-        $this->assertArrayHasKey('completion', $afterData);
-        $this->assertArrayHasKey('grade', $afterData);
-        $this->assertArrayHasKey('inactive_days', $afterData);
-        $this->assertArrayHasKey('timestamp', $afterData);
+        $afterdata = json_decode($record->after_snapshot, true);
+        $this->assertIsArray($afterdata);
+        $this->assertArrayHasKey('risk_score', $afterdata);
+        $this->assertArrayHasKey('status', $afterdata);
+        $this->assertArrayHasKey('completion', $afterdata);
+        $this->assertArrayHasKey('grade', $afterdata);
+        $this->assertArrayHasKey('inactive_days', $afterdata);
+        $this->assertArrayHasKey('timestamp', $afterdata);
 
         $this->assertContains($record->outcome, [
             outcome::IMPROVED,
@@ -157,7 +156,7 @@ class intervention_test extends advanced_testcase {
     public function test_outcome_calculation(): void {
         $evaluator = new outcome_evaluator();
 
-        $baseBefore = [
+        $basebefore = [
             'risk_score' => 80,
             'completion' => 30,
             'grade' => 45,
@@ -167,62 +166,62 @@ class intervention_test extends advanced_testcase {
         ];
 
         // 1. Improvement scenario: risk decrease >= 10.
-        $afterRiskReduced = [
+        $afterriskreduced = [
             'risk_score' => 60,
             'completion' => 30,
             'grade' => 45,
         ];
-        $this->assertEquals(outcome::IMPROVED, $evaluator->evaluate($baseBefore, $afterRiskReduced)->get_status());
+        $this->assertEquals(outcome::IMPROVED, $evaluator->evaluate($basebefore, $afterriskreduced)->get_status());
 
         // 2. Improvement scenario: completion increase >= 15.
-        $afterCompletionImproved = [
+        $aftercompletionimproved = [
             'risk_score' => 75,
             'completion' => 50,
             'grade' => 45,
         ];
-        $this->assertEquals(outcome::IMPROVED, $evaluator->evaluate($baseBefore, $afterCompletionImproved)->get_status());
+        $this->assertEquals(outcome::IMPROVED, $evaluator->evaluate($basebefore, $aftercompletionimproved)->get_status());
 
         // 3. Improvement scenario: grade increase >= 10.
-        $afterGradeImproved = [
+        $aftergradeimproved = [
             'risk_score' => 75,
             'completion' => 30,
             'grade' => 60,
         ];
-        $this->assertEquals(outcome::IMPROVED, $evaluator->evaluate($baseBefore, $afterGradeImproved)->get_status());
+        $this->assertEquals(outcome::IMPROVED, $evaluator->evaluate($basebefore, $aftergradeimproved)->get_status());
 
         // 4. Decline scenario: risk increased by >= 15.
-        $afterRiskIncreased = [
+        $afterriskincreased = [
             'risk_score' => 100,
             'completion' => 30,
             'grade' => 45,
         ];
-        $this->assertEquals(outcome::DECLINED, $evaluator->evaluate($baseBefore, $afterRiskIncreased)->get_status());
+        $this->assertEquals(outcome::DECLINED, $evaluator->evaluate($basebefore, $afterriskincreased)->get_status());
 
         // 5. Decline scenario: grade decreased by >= 15.
-        $afterGradeDecreased = [
+        $aftergradedecreased = [
             'risk_score' => 80,
             'completion' => 30,
             'grade' => 25,
         ];
-        $this->assertEquals(outcome::DECLINED, $evaluator->evaluate($baseBefore, $afterGradeDecreased)->get_status());
+        $this->assertEquals(outcome::DECLINED, $evaluator->evaluate($basebefore, $aftergradedecreased)->get_status());
 
         // 6. No change scenario.
-        $afterSame = [
+        $aftersame = [
             'risk_score' => 78,
             'completion' => 32,
             'grade' => 46,
         ];
-        $this->assertEquals(outcome::NO_CHANGE, $evaluator->evaluate($baseBefore, $afterSame)->get_status());
+        $this->assertEquals(outcome::NO_CHANGE, $evaluator->evaluate($basebefore, $aftersame)->get_status());
 
         // 7. Unknown scenario: missing snapshots.
-        $this->assertEquals(outcome::UNKNOWN, $evaluator->evaluate(null, $afterSame)->get_status());
-        $this->assertEquals(outcome::UNKNOWN, $evaluator->evaluate($baseBefore, null)->get_status());
+        $this->assertEquals(outcome::UNKNOWN, $evaluator->evaluate(null, $aftersame)->get_status());
+        $this->assertEquals(outcome::UNKNOWN, $evaluator->evaluate($basebefore, null)->get_status());
         $this->assertEquals(outcome::UNKNOWN, $evaluator->evaluate('', '')->get_status());
 
         // 8. JSON string inputs deserialization.
-        $jsonBefore = json_encode($baseBefore);
-        $jsonAfter = json_encode($afterRiskReduced);
-        $this->assertEquals(outcome::IMPROVED, $evaluator->evaluate($jsonBefore, $jsonAfter)->get_status());
+        $jsonbefore = json_encode($basebefore);
+        $jsonafter = json_encode($afterriskreduced);
+        $this->assertEquals(outcome::IMPROVED, $evaluator->evaluate($jsonbefore, $jsonafter)->get_status());
     }
 
     /**
@@ -238,11 +237,11 @@ class intervention_test extends advanced_testcase {
         $manager->create($student1->id, $course->id, $teacher->id, 'CONTACT');
         $manager->create($student2->id, $course->id, $teacher->id, 'EXTENSION');
 
-        $courseInterventions = $manager->get_for_course($course->id);
-        $this->assertCount(2, $courseInterventions);
+        $courseinterventions = $manager->get_for_course($course->id);
+        $this->assertCount(2, $courseinterventions);
 
-        $student1Interventions = $manager->get_for_student($student1->id, $course->id);
-        $this->assertCount(1, $student1Interventions);
-        $this->assertEquals($student1->id, reset($student1Interventions)->userid);
+        $student1interventions = $manager->get_for_student($student1->id, $course->id);
+        $this->assertCount(1, $student1interventions);
+        $this->assertEquals($student1->id, reset($student1interventions)->userid);
     }
 }

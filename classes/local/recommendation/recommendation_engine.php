@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\recommendation;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\recommendation\rules\inactivity_rule;
 use local_learningsuccess\local\recommendation\rules\overdue_rule;
 use local_learningsuccess\local\recommendation\rules\grade_decline_rule;
@@ -31,10 +29,17 @@ use local_learningsuccess\local\recommendation\rules\completion_rule;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class recommendation_engine {
-    public const ACTION_CONTACT         = 'checkin';
+    /** @var string Check-in action recommendation. */
+    public const ACTION_CONTACT = 'checkin';
+
+    /** @var string Missed activity assignment support action recommendation. */
     public const ACTION_MISSED_ACTIVITY = 'assignment_support';
-    public const ACTION_EXTENSION       = 'assignment_support';
-    public const ACTION_RESOURCE        = 'resource_recommendation';
+
+    /** @var string Deadline extension action recommendation. */
+    public const ACTION_EXTENSION = 'assignment_support';
+
+    /** @var string Learning resource recommendation action. */
+    public const ACTION_RESOURCE = 'resource_recommendation';
 
     /** @var recommendation_rule[] */
     private array $rules = [];
@@ -183,5 +188,3 @@ class recommendation_engine {
         };
     }
 }
-
-

@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\risk;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Normalized value object encapsulating student risk evaluation details.
  *
@@ -26,12 +24,32 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class risk_result {
+    /** @var string Healthy risk level. */
+    public const LEVEL_HEALTHY = 'healthy';
 
-    public const LEVEL_HEALTHY  = 'healthy';
-    public const LEVEL_MONITOR  = 'monitor';
-    public const LEVEL_ATRISK   = 'atrisk';
+    /** @var string Monitor risk level. */
+    public const LEVEL_MONITOR = 'monitor';
+
+    /** @var string At-risk level. */
+    public const LEVEL_ATRISK = 'atrisk';
+
+    /** @var string Critical risk level. */
     public const LEVEL_CRITICAL = 'critical';
-    public const LEVEL_NO_DATA  = 'nodata';
+
+    /** @var string No data available. */
+    public const LEVEL_NO_DATA = 'nodata';
+
+    /** @var float Risk priority score (0.0 to 100.0). */
+    private readonly float $score;
+
+    /** @var string Risk level constant. */
+    private readonly string $level;
+
+    /** @var string Identifying source. */
+    private readonly string $source;
+
+    /** @var string|null Specific Moodle Analytics model identifier. */
+    private readonly ?string $model;
 
     /**
      * Constructor.
@@ -42,11 +60,15 @@ class risk_result {
      * @param string|null $model Specific Moodle Analytics model identifier if applicable.
      */
     public function __construct(
-        private readonly float $score,
-        private readonly string $level,
-        private readonly string $source,
-        private readonly ?string $model = null
+        float $score,
+        string $level,
+        string $source,
+        ?string $model = null
     ) {
+        $this->score = $score;
+        $this->level = $level;
+        $this->source = $source;
+        $this->model = $model;
     }
 
     /**

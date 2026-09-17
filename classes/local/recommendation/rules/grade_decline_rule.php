@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\recommendation\rules;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\recommendation\recommendation;
 use local_learningsuccess\local\recommendation\recommendation_rule;
 
@@ -29,7 +27,6 @@ use local_learningsuccess\local\recommendation\recommendation_rule;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class grade_decline_rule implements recommendation_rule {
-
     /**
      * Check if grade decline signal is present.
      *
@@ -54,14 +51,14 @@ class grade_decline_rule implements recommendation_rule {
      */
     public function get_recommendation(array $signals): recommendation {
         $pct = 50;
-        $isCritical = false;
+        $iscritical = false;
 
         foreach ($signals as $s) {
             $type = is_array($s) ? ($s['type'] ?? $s['rule'] ?? '') : $s->get_type();
             if ($type === 'grade_decline' || $type === 'grade_performance') {
                 $pct = is_array($s) ? ($s['value'] ?? 50) : $s->get_value();
                 $sev = is_array($s) ? ($s['severity'] ?? '') : $s->get_severity();
-                $isCritical = ($sev === 'critical');
+                $iscritical = ($sev === 'critical');
                 break;
             }
         }
@@ -71,7 +68,7 @@ class grade_decline_rule implements recommendation_rule {
             title: get_string('type_advisor_referral', 'local_learningsuccess'),
             action: get_string('recommend_advisor', 'local_learningsuccess'),
             reason: get_string('signal_grade_warning_desc', 'local_learningsuccess', (int) round($pct)),
-            urgency: $isCritical ? recommendation::URGENCY_HIGH : recommendation::URGENCY_MEDIUM,
+            urgency: $iscritical ? recommendation::URGENCY_HIGH : recommendation::URGENCY_MEDIUM,
             suggestedmessage: null
         );
     }

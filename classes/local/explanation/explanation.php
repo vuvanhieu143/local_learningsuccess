@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\explanation;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Normalized value object encapsulating an observable learning explanation / signal evidence.
  *
@@ -26,10 +24,32 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class explanation {
+    /** @var string Informational severity. */
+    public const SEVERITY_INFO = 'info';
 
-    public const SEVERITY_INFO     = 'info';
-    public const SEVERITY_WARNING  = 'warning';
+    /** @var string Warning severity. */
+    public const SEVERITY_WARNING = 'warning';
+
+    /** @var string Critical severity. */
     public const SEVERITY_CRITICAL = 'critical';
+
+    /** @var string Signal category identifier. */
+    private readonly string $type;
+
+    /** @var string Severity level. */
+    private readonly string $severity;
+
+    /** @var string Human-readable summary heading. */
+    private readonly string $title;
+
+    /** @var string Detailed contextual explanation. */
+    private readonly string $description;
+
+    /** @var mixed Underlying metric value. */
+    private readonly mixed $value;
+
+    /** @var array Contextual evidence details. */
+    private readonly array $evidence;
 
     /**
      * Constructor.
@@ -42,13 +62,19 @@ class explanation {
      * @param array $evidence Contextual evidence details (e.g. module names, deadlines).
      */
     public function __construct(
-        private readonly string $type,
-        private readonly string $severity,
-        private readonly string $title,
-        private readonly string $description,
-        private readonly mixed $value = null,
-        private readonly array $evidence = []
+        string $type,
+        string $severity,
+        string $title,
+        string $description,
+        mixed $value = null,
+        array $evidence = []
     ) {
+        $this->type = $type;
+        $this->severity = $severity;
+        $this->title = $title;
+        $this->description = $description;
+        $this->value = $value;
+        $this->evidence = $evidence;
     }
 
     /**

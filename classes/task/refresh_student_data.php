@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\task;
 
-defined('MOODLE_INTERNAL') || die();
-
 use core\task\scheduled_task;
 use local_learningsuccess\local\signal\signal_collector;
 use local_learningsuccess\local\service\student_success_service;
@@ -30,7 +28,6 @@ use local_learningsuccess\local\service\student_success_service;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class refresh_student_data extends scheduled_task {
-
     /**
      * Return task name.
      *
@@ -97,4 +94,3 @@ class refresh_student_data extends scheduled_task {
         mtrace("Learning Success data refresh task completed.");
     }
 }
-

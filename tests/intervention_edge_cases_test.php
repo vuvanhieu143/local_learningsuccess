@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use local_learningsuccess\local\intervention\intervention_manager;
 use local_learningsuccess\local\intervention\intervention_status;
@@ -32,10 +30,11 @@ use moodle_exception;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\local\intervention\intervention_manager
  */
-class intervention_edge_cases_test extends advanced_testcase {
-
+final class intervention_edge_cases_test extends advanced_testcase {
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -98,13 +97,19 @@ class intervention_edge_cases_test extends advanced_testcase {
         $manager->transition_to($id, intervention_status::CONTACTED, 'Sent email');
 
         // CONTACTED -> UNABLE_TO_CONTACT.
-        $this->assertTrue(intervention_status::can_transition(intervention_status::CONTACTED, intervention_status::UNABLE_TO_CONTACT));
+        $this->assertTrue(intervention_status::can_transition(
+            intervention_status::CONTACTED,
+            intervention_status::UNABLE_TO_CONTACT
+        ));
         $manager->transition_to($id, intervention_status::UNABLE_TO_CONTACT, 'Phone disconnected');
         $record = $DB->get_record('local_learningsuccess_int', ['id' => $id]);
         $this->assertEquals(intervention_status::UNABLE_TO_CONTACT, $record->status);
 
         // UNABLE_TO_CONTACT -> DISMISSED.
-        $this->assertTrue(intervention_status::can_transition(intervention_status::UNABLE_TO_CONTACT, intervention_status::DISMISSED));
+        $this->assertTrue(intervention_status::can_transition(
+            intervention_status::UNABLE_TO_CONTACT,
+            intervention_status::DISMISSED
+        ));
         $manager->transition_to($id, intervention_status::DISMISSED, 'Student uncontactable');
         $record = $DB->get_record('local_learningsuccess_int', ['id' => $id]);
         $this->assertEquals(intervention_status::DISMISSED, $record->status);
@@ -145,8 +150,8 @@ class intervention_edge_cases_test extends advanced_testcase {
         $manager = new intervention_manager();
         $id = $manager->create($student->id, $course->id, $teacher1->id, 'meeting');
 
-        $note1Id = $manager->add_note($id, $teacher1->id, 'First attempt to call');
-        $note2Id = $manager->add_note($id, $teacher2->id, 'Second attempt via advisor');
+        $note1id = $manager->add_note($id, $teacher1->id, 'First attempt to call');
+        $note2id = $manager->add_note($id, $teacher2->id, 'Second attempt via advisor');
 
         $notes = array_values($manager->get_notes($id));
         $this->assertCount(2, $notes);
@@ -163,11 +168,11 @@ class intervention_edge_cases_test extends advanced_testcase {
         $evaluator = new outcome_evaluator();
 
         // Empty before snapshot.
-        $outcomeObj = $evaluator->evaluate('', ['riskscore' => 50, 'gradepct' => 70]);
-        $this->assertEquals(outcome::UNKNOWN, $outcomeObj->get_status());
+        $outcomeobj = $evaluator->evaluate('', ['riskscore' => 50, 'gradepct' => 70]);
+        $this->assertEquals(outcome::UNKNOWN, $outcomeobj->get_status());
 
         // Empty after snapshot.
-        $outcomeObj2 = $evaluator->evaluate(json_encode(['riskscore' => 80]), []);
-        $this->assertEquals(outcome::UNKNOWN, $outcomeObj2->get_status());
+        $outcomeobj2 = $evaluator->evaluate(json_encode(['riskscore' => 80]), []);
+        $this->assertEquals(outcome::UNKNOWN, $outcomeobj2->get_status());
     }
 }

@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\recommendation;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Value object representing a practical, explainable teacher intervention recommendation.
  *
@@ -26,10 +24,32 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class recommendation {
+    /** @var string High urgency level. */
+    public const URGENCY_HIGH = 'high';
 
-    public const URGENCY_HIGH   = 'high';
+    /** @var string Medium urgency level. */
     public const URGENCY_MEDIUM = 'medium';
-    public const URGENCY_LOW    = 'low';
+
+    /** @var string Low urgency level. */
+    public const URGENCY_LOW = 'low';
+
+    /** @var string Intervention category type. */
+    private readonly string $type;
+
+    /** @var string Brief human-readable action title. */
+    private readonly string $title;
+
+    /** @var string Detailed practical instruction for the teacher. */
+    private readonly string $action;
+
+    /** @var string Observable reason driving the recommendation. */
+    private readonly string $reason;
+
+    /** @var string Urgency level. */
+    private readonly string $urgency;
+
+    /** @var string|null Optional empathetic draft message. */
+    private readonly ?string $suggestedmessage;
 
     /**
      * Constructor.
@@ -42,13 +62,19 @@ class recommendation {
      * @param string|null $suggestedmessage Optional empathetic draft message for student check-in.
      */
     public function __construct(
-        private readonly string $type,
-        private readonly string $title,
-        private readonly string $action,
-        private readonly string $reason,
-        private readonly string $urgency = self::URGENCY_MEDIUM,
-        private readonly ?string $suggestedmessage = null
+        string $type,
+        string $title,
+        string $action,
+        string $reason,
+        string $urgency = self::URGENCY_MEDIUM,
+        ?string $suggestedmessage = null
     ) {
+        $this->type = $type;
+        $this->title = $title;
+        $this->action = $action;
+        $this->reason = $reason;
+        $this->urgency = $urgency;
+        $this->suggestedmessage = $suggestedmessage;
     }
 
     /**

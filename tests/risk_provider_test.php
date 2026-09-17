@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess;
 
-defined('MOODLE_INTERNAL') || die();
-
 use advanced_testcase;
 use local_learningsuccess\local\risk\risk_result;
 use local_learningsuccess\local\risk\fallback_provider;
@@ -34,10 +32,11 @@ use local_learningsuccess\local\explanation\explanation_engine;
  * @category   test
  * @copyright  2026 vuvanhieu143
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \local_learningsuccess\local\risk\fallback_provider
  */
-class risk_provider_test extends advanced_testcase {
-
+final class risk_provider_test extends advanced_testcase {
     protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 

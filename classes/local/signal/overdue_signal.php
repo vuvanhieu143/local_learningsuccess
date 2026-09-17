@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\signal;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\explanation\explanation;
 
 /**
@@ -28,7 +26,7 @@ use local_learningsuccess\local\explanation\explanation;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class overdue_signal implements signal {
-
+    /** @var string Signal type identifier. */
     public const TYPE = 'overdue';
 
     /**

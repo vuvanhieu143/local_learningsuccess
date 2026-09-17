@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\intervention;
 
-defined('MOODLE_INTERNAL') || die();
-
 use stdClass;
 
 /**
@@ -28,6 +26,44 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class intervention {
+    /** @var int Intervention ID. */
+    public readonly int $id;
+
+    /** @var int Course ID. */
+    public readonly int $courseid;
+
+    /** @var int Student user ID. */
+    public readonly int $userid;
+
+    /** @var int Teacher user ID. */
+    public readonly int $teacherid;
+
+    /** @var string Intervention action type. */
+    public readonly string $type;
+
+    /** @var string Intervention status. */
+    public string $status;
+
+    /** @var string|null Reason for intervention. */
+    public readonly ?string $reason;
+
+    /** @var string|null Actual action taken. */
+    public ?string $action;
+
+    /** @var int|null Follow-up timestamp. */
+    public ?int $followupat;
+
+    /** @var int|null Resolved timestamp. */
+    public ?int $resolvedat;
+
+    /** @var string|null Outcome evaluation string. */
+    public ?string $outcome;
+
+    /** @var int Timestamp created. */
+    public readonly int $timecreated;
+
+    /** @var int Timestamp modified. */
+    public int $timemodified;
 
     /**
      * Constructor.
@@ -47,20 +83,33 @@ class intervention {
      * @param int $timemodified
      */
     public function __construct(
-        public readonly int $id,
-        public readonly int $courseid,
-        public readonly int $userid,
-        public readonly int $teacherid,
-        public readonly string $type,
-        public string $status,
-        public readonly ?string $reason = null,
-        public ?string $action = null,
-        public ?int $followupat = null,
-        public ?int $resolvedat = null,
-        public ?string $outcome = null,
-        public readonly int $timecreated = 0,
-        public int $timemodified = 0
+        int $id,
+        int $courseid,
+        int $userid,
+        int $teacherid,
+        string $type,
+        string $status,
+        ?string $reason = null,
+        ?string $action = null,
+        ?int $followupat = null,
+        ?int $resolvedat = null,
+        ?string $outcome = null,
+        int $timecreated = 0,
+        int $timemodified = 0
     ) {
+        $this->id = $id;
+        $this->courseid = $courseid;
+        $this->userid = $userid;
+        $this->teacherid = $teacherid;
+        $this->type = $type;
+        $this->status = $status;
+        $this->reason = $reason;
+        $this->action = $action;
+        $this->followupat = $followupat;
+        $this->resolvedat = $resolvedat;
+        $this->outcome = $outcome;
+        $this->timecreated = $timecreated;
+        $this->timemodified = $timemodified;
     }
 
     /**
@@ -70,6 +119,10 @@ class intervention {
      * @return self
      */
     public static function from_record(stdClass $record): self {
+        $resolvedat = !empty($record->resolvedat)
+            ? (int) $record->resolvedat
+            : (!empty($record->completed_at) ? (int) $record->completed_at : null);
+
         return new self(
             id: (int) $record->id,
             courseid: (int) $record->courseid,
@@ -80,7 +133,7 @@ class intervention {
             reason: $record->reason ?? null,
             action: $record->actual_action ?? null,
             followupat: !empty($record->followupat) ? (int) $record->followupat : null,
-            resolvedat: !empty($record->resolvedat) ? (int) $record->resolvedat : (!empty($record->completed_at) ? (int) $record->completed_at : null),
+            resolvedat: $resolvedat,
             outcome: $record->outcome ?? null,
             timecreated: (int) $record->timecreated,
             timemodified: (int) $record->timemodified

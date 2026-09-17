@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\helper;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Centralized student learning metrics query helper.
  *
@@ -26,7 +24,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class metrics_helper {
-
     /**
      * Fetch foundational learning metrics for an individual student in a course.
      *
@@ -126,7 +123,7 @@ class metrics_helper {
         $course = $DB->get_record('course', ['id' => $courseid], 'id, startdate', MUST_EXIST);
         $coursestarted = ($course->startdate <= 0 || $course->startdate <= $now);
 
-        list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'uid');
+        [$insql, $inparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'uid');
         $baseparams = array_merge(['courseid' => $courseid], $inparams);
 
         // 2. User enrolments.

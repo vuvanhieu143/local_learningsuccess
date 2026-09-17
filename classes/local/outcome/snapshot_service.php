@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\outcome;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_learningsuccess\local\helper\metrics_helper;
 use local_learningsuccess\local\risk\moodle_analytics_provider;
 use local_learningsuccess\local\risk\risk_provider;
@@ -30,7 +28,6 @@ use local_learningsuccess\local\risk\risk_provider;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class snapshot_service {
-
     /** @var risk_provider */
     private risk_provider $riskprovider;
 
@@ -126,4 +123,3 @@ class snapshot_service {
         return $result;
     }
 }
-

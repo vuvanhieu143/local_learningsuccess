@@ -16,8 +16,6 @@
 
 namespace local_learningsuccess\local\actionability;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Value object encapsulating student actionability state, priority score, and recommendations.
  *
@@ -26,11 +24,19 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class actionability_result {
+    /** @var string Urgent action required. */
+    public const LEVEL_URGENT = 'urgent';
 
-    public const LEVEL_URGENT    = 'urgent';
+    /** @var string Follow-up due. */
     public const LEVEL_FOLLOW_UP = 'follow_up';
+
+    /** @var string Recommendation available. */
     public const LEVEL_RECOMMEND = 'recommend';
-    public const LEVEL_MONITOR   = 'monitor';
+
+    /** @var string Passive monitoring. */
+    public const LEVEL_MONITOR = 'monitor';
+
+    /** @var string No action needed. */
     public const LEVEL_NO_ACTION = 'no_action';
 
     /** @var int Target user ID */
